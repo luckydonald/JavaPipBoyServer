@@ -117,6 +117,9 @@ class DBBoolean extends DBEntry {
         return 0;
     }
 
+    public DBBoolean(boolean bool) {
+        this(null, bool);
+    }
     public DBBoolean(Database db, boolean bool) {
         super(db);
         this.value = bool;
@@ -296,12 +299,20 @@ class DBInteger32 extends DBEntry {
 
 class DBFloat extends DBEntry {
     private float value;
-
+    public DBFloat(int value){
+        this(null, value);
+    }
     public DBFloat(Database db, int value) {
         this(db, (float) value);
     }
+    public DBFloat(double value) {
+        this(null, value);
+    }
     public DBFloat(Database db, double value) {
         this(db, (float) value);
+    }
+    public DBFloat(float value) {
+        this(null, value);
     }
     public DBFloat(Database db, float value) {
         super(db);
@@ -392,6 +403,9 @@ class DBString extends DBEntry {
 class DBList extends DBEntry {
     private List<DBEntry> value;
 
+    public DBList() {
+        this(null);
+    }
     public DBList(Database db) {
         super(db);
         this.value = new ArrayList<>();
@@ -432,12 +446,17 @@ class DBList extends DBEntry {
 
     @Override
     public String toString() {
-        String s = "DBList[";
+        StringBuilder s = new StringBuilder("DBList[");
+        boolean notFirst = false;
         for (DBEntry item : this.value) {
-            s += item.toString() + ", ";
+            if (notFirst) {
+                s.append(", ");
+            } else {
+                notFirst = true;
+            }
+            s.append(item.toString()).append(", ");
         }
-        s += "]";
-        return s;
+        return s.append("]").toString();
     }
     public DBList append(int id) {
         return this.append(this.getDatabase().get(id));
@@ -445,19 +464,24 @@ class DBList extends DBEntry {
     public DBList append(DBEntry entry) {
         //TODO: update notification
         this.value.add(entry);
-        this.dirty = false;
+        this.dirty = true;
         return this;
     }
 
     @Override
     public String toSimpleString(boolean showID) {
         //TODO: showID
-        String s = "DBList[";
+        StringBuilder sb = new StringBuilder("DBList[");
+        boolean notFirst = false;
         for (DBEntry item : this.value) {
-            s += item.getID() + ", ";
+            if (notFirst) {
+                sb.append(", ");
+            } else {
+                notFirst = true;
+            }
+            sb.append(item.getID());
         }
-        s += "]";
-        return s;
+        return sb.append("]").toString();
     }
 
     public List<DBEntry> getValue() {
@@ -624,46 +648,62 @@ class DBDict extends DBEntry {
 
     @Override
     public String toString() {
-        String s = "DBDict(";
+        StringBuilder s = new StringBuilder("DBDict(");
         if (this.getID() <= 0){
-            s+="id=" + this.getID() + ", ";
+            s.append("id=").append(this.getID()).append(", ");
         }
-        s += "data={";
+        s.append("data={");
         for (Map.Entry<String, DBEntry> entry  : this.data.entrySet()) {
-            s += "\"" + entry.getKey() + "\":" + entry.getValue().toString() + ", ";
+            s.append("\"").append(entry.getKey()).append("\":").append(entry.getValue().toString()).append(", ");
         }
-        s += "}, inserts={";
+        s.append("}, inserts={");
         for (Map.Entry<String, DBEntry> entry  : this.inserts.entrySet()) {
-            s += "\"" + entry.getKey() + "\":" + entry.getValue().toString() + ", ";
+            s.append("\"").append(entry.getKey()).append("\":").append(entry.getValue().toString()).append(", ");
         }
-        s += "}, removes=[";
+        s.append("}, removes=[");
         for (DBEntry entry  : this.removes) {
-            s += entry.toString() + ", ";
+            s.append(entry.toString()).append(", ");
         }
-        s += "]";
-        return s;
+        return s.append("]").toString();
     }
 
     @Override
     public String toSimpleString(boolean showID) {
         //TODO: showID
-        String s = "DBDict(";
+        StringBuilder sb = new StringBuilder("DBDict(");
+        boolean notFirst = false;
         if (this.getID() <= 0){
-            s+="id=" + this.getID() + ", ";
+            sb.append("id=").append(this.getID()).append(", ");
         }
-        s += "data={";
+        sb.append("data={");
         for (Map.Entry<String, DBEntry> entry  : this.data.entrySet()) {
-            s += "\"" + entry.getKey() + "\":" + entry.getValue().getID() + ", ";
+            if (notFirst) {
+                sb.append(", ");
+            } else {
+                notFirst = true;
+            }
+            sb.append("\"").append(entry.getKey()).append("\":").append(entry.getValue().getID());
         }
-        s += "}, inserts={";
+        sb.append("}, inserts={");
+        notFirst = false;
         for (Map.Entry<String, DBEntry> entry  : this.inserts.entrySet()) {
-            s += "\"" + entry.getKey() + "\":" + entry.getValue().getID() + ", ";
+            if (notFirst) {
+                sb.append(", ");
+            } else {
+                notFirst = true;
+            }
+            sb.append("\"").append(entry.getKey()).append("\":").append(entry.getValue().getID());
         }
-        s += "}, removes=[";
+        sb.append("}, removes=[");
+        notFirst = false;
         for (DBEntry entry  : this.removes) {
-            s += entry.getID() + ", ";
+            if (notFirst) {
+                sb.append(", ");
+            } else {
+                notFirst = true;
+            }
+            sb.append(entry.getID());
         }
-        s += "]";
-        return s;
+        return sb.append("]").toString();
     }
 }

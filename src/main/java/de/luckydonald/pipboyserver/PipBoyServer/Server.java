@@ -32,15 +32,19 @@ public class Server {
             try {
                 ServerSocket socket = new ServerSocket(Constants.CONNECT_TCP_PORT);
                 while (!this.quit) {
-                    System.out.println(db.toSimpleString());
                     System.out.println("Waiting for game to connect.");
                     Socket acceptedSocket = socket.accept();
                     Runnable session = new Session(acceptedSocket, db);
                     threadPool.submit(session);
+                    System.out.println("Started Game session.");
+                    System.out.println(db.toSimpleString());
                 }
             } catch (IOException e) {
                 socket = null;
                 e.printStackTrace();
+                try {
+                    Thread.sleep(999);
+                } catch (InterruptedException ignored) {}
             }
         }
     }
@@ -73,9 +77,14 @@ class Session implements Runnable, IDataUpdateListener {
                 System.out.println("Checking for updates.");
                 DataUpdate update = this.updates.poll();
                 if (update != null) {
-                    System.out.println("Sending update: " + update.toString());
+                    System.out.println("Sending update.");
                     stream.write(update.toBytes());
                     stream.flush();
+                    System.out.println("Send update: " + update.toString());
+                }
+                if (!heartbeatThread.isAlive()) {
+                    System.out.println("Heartbeat thread is dead.");
+                    break;
                 }
                 try {
                     Thread.sleep(999);
@@ -95,6 +104,7 @@ class Session implements Runnable, IDataUpdateListener {
             }
             e.printStackTrace();
         }
+        System.out.println("Shuting down update thread.");
     }
 
     @Override
@@ -107,6 +117,13 @@ class Session implements Runnable, IDataUpdateListener {
         return "Session{" +
                 "db=" + db +
                 ", socket=" + socket +
+                ", updates=" + updates +
+                ", quit=" + quit +
+                '}';
+    }
+    public String toStringWithoutDB() {
+        return "Session{" +
+                "socket=" + socket +
                 ", updates=" + updates +
                 ", quit=" + quit +
                 '}';
@@ -126,6 +143,7 @@ class KeepAliveThread implements Runnable{
                 System.out.println("ping");
                 stream.write(new KeepAlive().toBytes());
                 stream.flush();
+                //TODO: read answer.
                 try {
                     Thread.sleep(999);
                 } catch (InterruptedException ignore) {
@@ -135,5 +153,6 @@ class KeepAliveThread implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Heartbeat thread done.");
     }
 }

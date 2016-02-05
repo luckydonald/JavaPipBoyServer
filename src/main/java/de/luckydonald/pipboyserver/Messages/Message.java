@@ -3,18 +3,17 @@ package de.luckydonald.pipboyserver.Messages;
 import sun.plugin2.message.HeartbeatMessage;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class Message{
-    int type;
-    byte[] content;
+    private int type;
+    private byte[] content;
     ByteArrayOutputStream message = new ByteArrayOutputStream();
 
+    public Message(int type) {
+        this(type, null);
+    }
     public Message(int type, byte[] content) {
         this.type = type;
         this.content = content;
@@ -49,10 +48,10 @@ public class Message{
         byte[] bytes = header.array();
         return bytes;
     }
-    public static void main(String[] args) throws IOException {
+    /*public static void main(String[] args) throws IOException {
         //new Message(2, "HELLOWORLD".getBytes());
         new ConnectionAccepted().toBytes();
-    }
+    }*/
     public static void printBytes(byte[] bytes){
         //int i = 0;
         for (byte b : bytes) {
@@ -61,6 +60,10 @@ public class Message{
             //    System.out.print(" ");
             //}
         }
+    }
+
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 }
 

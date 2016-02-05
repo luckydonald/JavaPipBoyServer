@@ -58,17 +58,9 @@ public class Database {
         return e;
     }
     public DataUpdate initialDump() {
-        ByteArrayOutputStream allDatShit = new ByteArrayOutputStream();
         this.entriesLock.readLock().lock();
-        for (DBEntry entry : this.entries) {
-            try {
-                allDatShit.write(entry.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        DataUpdate update = new DataUpdate(this.entries);
         this.entriesLock.readLock().unlock();
-        DataUpdate update = new DataUpdate(allDatShit.toByteArray());
         return update;
     }
     public int getNextFreeIndex() {
@@ -170,7 +162,7 @@ public class Database {
         db.add(statusDict);
         rootDict.add("Status", statusDict);
 
-        DBList effectColorList = new DBList();  // EffectColor
+        DBList effectColorList = new DBList(null);  // EffectColor
         db.add(effectColorList);
         statusDict.add("EffectColor", effectColorList);
 
@@ -278,9 +270,9 @@ public class Database {
         if (end >= 0) {
             for (int i = 0; i < end; i++) {
                 IDataUpdateListener entry = this.updateListener.get(i);
-                s += entry.toString() + ", ";
+                s += entry.toStringWithoutDB() + ", ";
             }
-            s+= "" + end + ": " + this.updateListener.get(end).toString();
+            s+= "" + end + ": " + this.updateListener.get(end).toStringWithoutDB();
         }
         this.updateListenerLock.readLock().unlock();
         s+="])";
@@ -288,35 +280,34 @@ public class Database {
     }
 
     public String toSimpleString() {
-        String s =  "Database(entries=[";
+        StringBuilder sb =  new StringBuilder("Database(entries=[");
         int end = -1;
         this.entriesLock.readLock().lock();
         end = this.entries.size() - 1;
         if (end >= 0) {
-
             for (int i = 0; i < end; i++) {
                 DBEntry entry = this.entries.get(i);
                 if (entry == null) {
                     continue;
                 }
-                s += "" + i + ": " + entry.toSimpleString() + ", ";
+                sb.append(i).append(": ").append(entry.toSimpleString()).append(", ");
             }
-            s += "" + end + ": " + this.entries.get(end).toString();
+            sb.append(end).append(": ").append(this.entries.get(end).toString());
         }
         this.entriesLock.readLock().unlock();
-        s+="], updateListener=[";
+        sb.append("], updateListener=[");
         this.updateListenerLock.readLock().lock();
         end = this.updateListener.size() - 1;
         if (end >= 0) {
             for (int i = 0; i < end; i++) {
                 IDataUpdateListener entry = this.updateListener.get(i);
-                s += entry.toString() + ", ";
+                sb.append(entry).append(", ");
             }
-            s+= "" + end + ": " + this.updateListener.get(end).toString();
+            sb.append(end).append(": ").append(this.updateListener.get(end).toStringWithoutDB());
         }
         this.updateListenerLock.readLock().unlock();
-        s+="])";
-        return s;
+        sb.append("])");
+        return sb.toString();
     }
 }
 class DatabasePlace {

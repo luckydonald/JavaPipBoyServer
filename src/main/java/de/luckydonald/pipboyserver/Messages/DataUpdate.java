@@ -2,31 +2,77 @@ package de.luckydonald.pipboyserver.Messages;
 
 import de.luckydonald.pipboyserver.PipBoyServer.DBEntry;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DataUpdate extends Message{
     static final int TYPE = 3;
-    public DataUpdate(byte[] data) {
+    private List<DBEntry> entries = new ArrayList<DBEntry>();
+
+    /*public DataUpdate(byte[] data) {
         super(TYPE, data);
-    }
+    }*/
     public DataUpdate(DBEntry e) {
-        this(e.getBytes());
+        super(TYPE, e.getBytes());
+        this.entries.add(e);
+    }
+    public DataUpdate(List<DBEntry> entries) {
+        super(TYPE);
+        this.entries.addAll(entries);
+
+    }
+    public DataUpdate(DBEntry[] entries) {
+        this(Arrays.asList(entries));
+    }
+
+    public DataUpdate addEntry(DBEntry e) {
+        this.entries.add(e);
+        return this;
+    }
+
+    @Override
+    public byte[] toBytes() {
+        ByteArrayOutputStream allContent = new ByteArrayOutputStream();
+        for (DBEntry entry : this.entries) {
+            System.out.println("Packaging " + entry.toSimpleString());
+            try {
+                allContent.write(entry.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        this.setContent(allContent.toByteArray());
+        return super.toBytes();
+    }
+
+    public String toString(boolean simple) {
+        StringBuilder sb = new StringBuilder("DataUpdate(");
+        boolean notFirst = false;
+        for (DBEntry entry : this.entries) {
+            if (notFirst) {
+                sb.append(", ");
+            } else {
+                notFirst = true;
+            }
+            if (simple) {
+                sb.append(entry.toSimpleString());
+            } else {
+                sb.append(entry.toString());
+            }
+        }
+        return sb.append(")").toString();
+    }
+    public String toSimpleString() {
+        return this.toString(true);
+    }
+    @Override
+    public String toString() {
+        return this.toString(false);
     }
 }
-
-class DATA_UPDATE_TYPES {
-    public static final int BOOL    = 0;  // 1: true if non zero
-    public static final int INT_8   = 1;  // 1: signed
-    public static final int UINT_8  = 2;  // 1: unsigned
-    public static final int INT_32  = 3;  // 4: signed
-    public static final int UINT_32 = 4;  // 4: unsigned
-    public static final int FLOAT   = 5;  // 4: float
-    public static final int STRING  = 6;  // n: null terminated, dynamic length
-    public static final int ARRAY   = 7;  // 2: element count; then $n 4 byte nodeId
-    public static final int OBJECT  = 8;  // 2: element count; then $n 4 byte nodeId with null terminated string following; then 2: removed element count; then $n 4 byte removed nodeId with null terminated string following
-
-}
-
 
 /*
 struct Entry {
