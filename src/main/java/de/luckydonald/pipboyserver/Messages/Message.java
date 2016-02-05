@@ -18,7 +18,9 @@ public class Message{
         this.type = type;
         this.content = content;
         if(type != KeepAlive.type) {
-            System.out.println("New Message, type "+ type + ".");
+            //String[] clazzNameHierarchy = .toString().split(".");
+            //String clazzName = clazzNameHierarchy[clazzNameHierarchy.length-1];
+            System.out.println("created new Message, type " + type + " (" + this.getClass().getSimpleName() + ").");
         }
 
     }
