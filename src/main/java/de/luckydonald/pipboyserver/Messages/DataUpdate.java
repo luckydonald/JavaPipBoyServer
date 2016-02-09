@@ -37,7 +37,7 @@ public class DataUpdate extends Message{
     public byte[] toBytes() {
         ByteArrayOutputStream allContent = new ByteArrayOutputStream();
         for (DBEntry entry : this.entries) {
-            System.out.println("Packaging " + entry.toSimpleString());
+            System.out.println("Packaging " + entry.getID());
             try {
                 allContent.write(entry.getBytes());
             } catch (IOException e) {

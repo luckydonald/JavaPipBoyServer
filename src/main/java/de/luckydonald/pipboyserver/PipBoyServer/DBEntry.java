@@ -9,7 +9,7 @@ import java.util.*;
 public class DBEntry{
     private Integer id = null;
     private Database database = null;
-    boolean dirty = false;
+    boolean dirty = true;
     public int getType() {
         throw new NotImplementedException();
     }
@@ -121,11 +121,12 @@ public class DBEntry{
 */
 
 class DBBoolean extends DBEntry {
+    public static final int TYPE = 0;
     private Boolean value = null;
 
     @Override
     public int getType() {
-        return 0;
+        return TYPE;
     }
 
     public DBBoolean(boolean bool) {
@@ -185,6 +186,7 @@ class DBBoolean extends DBEntry {
 */
 
 class DBInteger8 extends DBEntry {
+    public static final int TYPE = 2;
     private byte value;
 
     public DBInteger8(Database db, int i) {
@@ -200,7 +202,7 @@ class DBInteger8 extends DBEntry {
 
     @Override
     public int getType() {
-        return 2;
+        return TYPE;
     }
 
     public byte[] getBytes_() {
@@ -252,6 +254,7 @@ class DBInteger8 extends DBEntry {
 */
 
 class DBInteger32 extends DBEntry {
+    public static final int TYPE = 3;
     private int value;
 
     public DBInteger32(Database db, int i) {
@@ -261,7 +264,7 @@ class DBInteger32 extends DBEntry {
 
     @Override
     public int getType() {
-        return 3;
+        return TYPE;
     }
 
     public ByteBuffer putValueIntoBuffer(ByteBuffer b) {
@@ -309,6 +312,7 @@ class DBInteger32 extends DBEntry {
 }
 
 class DBFloat extends DBEntry {
+    public static final int TYPE = 5;
     private float value;
     public DBFloat(int value){
         this(null, value);
@@ -332,7 +336,7 @@ class DBFloat extends DBEntry {
 
     @Override
     public int getType() {
-        return 5;
+        return TYPE;
     }
 
     @Override
@@ -372,6 +376,7 @@ class DBFloat extends DBEntry {
 }
 
 class DBString extends DBEntry {
+    public static final int TYPE = 6;
     private String value;
 
     public DBString(Database db, String value) {
@@ -381,7 +386,7 @@ class DBString extends DBEntry {
 
     @Override
     public int getType() {
-        return 6;
+        return TYPE;
     }
 
     @Override
@@ -412,6 +417,7 @@ class DBString extends DBEntry {
 }
 
 class DBList extends DBEntry {
+    public static final int TYPE = 7;
     private List<DBEntry> value;
 
     public DBList() {
@@ -436,7 +442,7 @@ class DBList extends DBEntry {
 
     @Override
     public int getType() {
-        return 7;
+        return TYPE;
     }
 
     @Override
@@ -520,6 +526,7 @@ class DBList extends DBEntry {
 }
 
 class DBDict extends DBEntry {
+    public static final int TYPE = 8;
     private HashMap<String, DBEntry> data;
     private HashMap<String, DBEntry> inserts;
     private List<DBEntry> removes;
@@ -544,7 +551,7 @@ class DBDict extends DBEntry {
 
     @Override
     public int getType() {
-        return 8;
+        return TYPE;
     }
 
     @Override
@@ -583,40 +590,83 @@ class DBDict extends DBEntry {
     }
 
     public DBDict add(DictEntry entry) {
+        //todo UPDATEs
+        this.getDatabase().entriesLock.writeLock().lock();
         if (entry.getDBEntry() == null) {
             throw new NullPointerException("entry.getDBEntry() is null. Did you create it with a DBEntry?");
         }
-        return this.add(entry.name, entry.getDBEntry());
+        DBDict result = this.add(entry.name, entry.getDBEntry());
+        this.getDatabase().entriesLock.writeLock().unlock();
+        return result;
     }
+
+    /**
+     * Adds a element to the array.
+     *
+     * DB-Thread-safe
+     * @param key The key.
+     * @param value The {@link DBEntry}.
+     * @returns itself, the {@link DBDict}.
+     */
     public DBDict add(String key, DBEntry value) {
         //TODO: update events
+        this.getDatabase().entriesLock.writeLock().lock();
         this.data.put(key, value);
         this.inserts.put(key, value);
+        synchronized (this.getDatabase().entriesLock.writeLock()) {
+
+        }
+        this.getDatabase().entriesLock.writeLock().unlock();
         return this;
     }
     public DBDict remove(DictEntry entry) {
         return this.remove(entry.getName());
     }
+
+    /**
+     * removes a Entry by its name.
+     *
+     * DB-Thread-safe
+     *
+     * @param key
+     * @return
+     */
     public DBDict remove(String key) {
         //TODO: update events
+        this.getDatabase().entriesLock.writeLock().lock();
         DBEntry deleted = this.data.get(key);
         this.data.remove(key);
         this.inserts.remove(key);
         this.removes.add(deleted);
+        this.getDatabase().entriesLock.writeLock().unlock();
         return this;
     }
+
+    /**
+     * Removes a Entry by a given id.
+     *
+     * DB-Thread-safe *
+     * @param id the id of the element.
+     * @returns itself
+     */
     public DBDict remove(int id) {
+        //TODO: update events
+        this.getDatabase().entriesLock.writeLock().lock();
         DBEntry deleted = null;
         String del_key = null;
         for (Map.Entry<String, DBEntry> entry  : this.data.entrySet()) {
             if (entry.getValue().getID() == id) {
                 deleted = entry.getValue();
+                del_key = entry.getKey();
             }
         }
         if(deleted == null || del_key == null) {
+            this.getDatabase().entriesLock.writeLock().unlock();
             throw new NullPointerException("Could not find ID in array.");
         }
-        return this.remove(del_key);
+        DBDict result = this.remove(del_key);
+        this.getDatabase().entriesLock.writeLock().unlock();
+        return result;
     }
     static class DictEntry {
         private int id; //uint32_t //int

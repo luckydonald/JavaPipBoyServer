@@ -120,8 +120,7 @@ public class Database {
     public static void main(String[] args) {
         Database db = new Database();
         fillWithBasicDefault(db);
-
-        System.out.println(db.toString());
+        db.print();
         boolean quit = false;
         while (!quit) {
             /*DataUpdate update = this.updates.poll();
@@ -303,7 +302,6 @@ public class Database {
 
     public void jsonNodeToDBEntry(DBEntry currentLevel, ContainerNode dictNode, JsonNode subnode, String key) {
         DBEntry dbEntry;
-        System.out.println(subnode.getNodeType().toString());
         switch (subnode.getNodeType()) {
             case ARRAY:
                 dbEntry = new DBList(this);
