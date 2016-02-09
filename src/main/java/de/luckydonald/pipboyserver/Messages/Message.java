@@ -18,8 +18,6 @@ public class Message{
         this.type = type;
         this.content = content;
         if(type != KeepAlive.type) {
-            //String[] clazzNameHierarchy = .toString().split(".");
-            //String clazzName = clazzNameHierarchy[clazzNameHierarchy.length-1];
             System.out.println("created new Message, type " + type + " (" + this.getClass().getSimpleName() + ").");
         }
 
@@ -47,8 +45,7 @@ public class Message{
         }
         */
         //Files.write(file, data, StandardOpenOption.APPEND);
-        byte[] bytes = header.array();
-        return bytes;
+        return header.array();
     }
     /*public static void main(String[] args) throws IOException {
         //new Message(2, "HELLOWORLD".getBytes());

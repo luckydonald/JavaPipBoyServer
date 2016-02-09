@@ -79,12 +79,23 @@ public class DBEntry{
             return "DBEntry{" +
                 "type=" + this.getType() + ", " +
                 (showId?"id=" + this.getID() + ", ": "") +
-                "database=" + this.getDatabase() +
                 "}";
     }
+
+    /**
+     * {@inheritDoc #toSimpleString}
+     * @return
+     */
     public String toSimpleString() {
         return toSimpleString(true);
     }
+
+    /**
+     * Presents the data in a simple non-recursive way, printing the ids instead.
+     * This should only differ to the {@link #toString()} for {@link DBList} and {@link DBDict}.
+     * @param showId
+     * @return
+     */
     public String toSimpleString(boolean showId) {
         return toString(showId);
     }
@@ -458,6 +469,7 @@ class DBList extends DBEntry {
         }
         return s.append("]").toString();
     }
+
     public DBList append(int id) {
         return this.append(this.getDatabase().get(id));
     }

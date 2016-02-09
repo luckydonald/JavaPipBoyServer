@@ -1,17 +1,28 @@
 package de.luckydonald.pipboyserver.PipBoyServer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ContainerNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.Messages.IDataUpdateListener;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
+import java.util.logging.Logger;
 
 /**
  * Created by luckydonald on 15.01.16.
  */
 public class Database {
+    // assumes the current class is called logger
+    private final static Logger logger = Logger.getLogger(Database.class.getName());
+    public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/NimVek/pipboy/1087a1c820fae6265fbce2a614e62e85cd146442/DemoMode.json";
+
     final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
     private List<DBEntry> entries = new ArrayList<>();
 
@@ -57,6 +68,24 @@ public class Database {
         this.updateListenerLock.readLock().unlock();
         return e;
     }
+    public Void cmd_List(String command) {
+        print();
+        return null;
+    }
+    public void print() {
+        this.entriesLock.readLock().lock();
+        for (DBEntry entry : this.entries) {
+            System.out.println(entry.getID() + ":\t" + entry.toSimpleString(false));
+        }
+        entriesLock.readLock().unlock();
+    }
+
+    public void startCLI() {
+        Function<String, Void> f = this::cmd_List;  // ignore that IntelliJ marks this as wrong!
+        CommandInput cmd = new CommandInput("list", f);
+        cmd.start();
+    }
+
     public DataUpdate initialDump() {
         this.entriesLock.readLock().lock();
         DataUpdate update = new DataUpdate(this.entries);
@@ -90,7 +119,7 @@ public class Database {
 
     public static void main(String[] args) {
         Database db = new Database();
-        fillWithDefault(db);
+        fillWithBasicDefault(db);
 
         System.out.println(db.toString());
         boolean quit = false;
@@ -118,7 +147,14 @@ public class Database {
     public Database fillWithDefault() {
         return fillWithDefault(this);
     }
-    public static Database fillWithDefault(Database db) {
+    public static Database newWithBasicDefault() {
+        Database db = new Database();
+        return db.fillWithBasicDefault();
+    }
+    public Database fillWithBasicDefault() {
+        return fillWithBasicDefault(this);
+    }
+    public static Database fillWithBasicDefault(Database db) {
         DBDict rootDict = new DBDict(null);
         db.add(rootDict);
 
@@ -233,6 +269,85 @@ public class Database {
         rootDict.add("Workshop", workshopList);
         return db;
     }
+    public static Database fillWithDefault(Database db) {
+        ObjectMapper mapper = new ObjectMapper();
+        //mapper.registerModule(new Jdk8Module());
+        ObjectNode rootNode = null;
+        try {
+            rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
+            db.loadJsonRoot(rootNode);
+        } catch (IOException e){    // MalformedURLException | JsonParseException | JsonMappingException | IOException
+            logger.info("Getting default from " + DEFAULT_JSON_URL + " failed: " + e.toString());
+            return fillWithBasicDefault(db);
+        }
+        return fillWithBasicDefault(db);
+        // src can be a File, URL, InputStream etc
+    }
+
+    public void loadJsonRoot(ObjectNode node) {
+        DBDict rootDict = new DBDict(null);
+        this.add(rootDict);
+        this.loadJsonNode(rootDict, node);
+    }
+
+    public void loadJsonNode(DBDict currentLevel, ObjectNode dictNode) {
+        Iterator it = dictNode.fields();
+        while (it.hasNext()) {
+            Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) it.next();
+            JsonNode subnode = entry.getValue();
+            String key = entry.getKey();
+            jsonNodeToDBEntry(currentLevel, dictNode, subnode, key);
+        }
+        return;
+    }
+
+    public void jsonNodeToDBEntry(DBEntry currentLevel, ContainerNode dictNode, JsonNode subnode, String key) {
+        DBEntry dbEntry;
+        System.out.println(subnode.getNodeType().toString());
+        switch (subnode.getNodeType()) {
+            case ARRAY:
+                dbEntry = new DBList(this);
+                break;
+            case BOOLEAN:
+                dbEntry = new DBBoolean(subnode.asBoolean());
+                break;
+            case NUMBER:
+                dbEntry = new DBInteger32(this, subnode.asInt());
+                break;
+            case OBJECT:
+            case POJO:
+                dbEntry = new DBDict(this);
+                break;
+            case STRING:
+                dbEntry = new DBString(this, subnode.asText());
+                break;
+            case BINARY:
+            case MISSING:
+            case NULL:
+            default:
+                throw new IllegalStateException("What is that json? " + dictNode.toString());
+        }
+        this.add(dbEntry);
+        if (currentLevel instanceof DBDict) {
+            ((DBDict)currentLevel).add(key, dbEntry);
+        } else if (currentLevel instanceof DBList) {
+            ((DBList)currentLevel).append(dbEntry);
+        }
+        if (dbEntry instanceof DBList) {
+            this.loadJsonNode((DBList) dbEntry, ((ArrayNode) subnode));
+        } else if (dbEntry instanceof DBDict) {
+            this.loadJsonNode((DBDict) dbEntry, ((ObjectNode) subnode));
+        }
+    }
+
+    private void loadJsonNode(DBList currentLevel, ArrayNode listNode) {
+        Iterator it = listNode.elements();
+        while (it.hasNext()) {
+            JsonNode subnode = (JsonNode) it.next();
+            this.jsonNodeToDBEntry(currentLevel, listNode, subnode, null);
+        }
+    }
+
 
     public void registerDataUpdateListener(IDataUpdateListener listener) {
         this.updateListenerLock.writeLock().lock();
@@ -248,6 +363,15 @@ public class Database {
 
     @Override
     public String toString() {
+        // check if we are recursively called from one of our siblings.
+        final StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        for(int i=0; i < trace.length-1; i++) {
+            if( trace[i].equals(trace[trace.length-1]) ) {
+                return "[DB detected recursion]";
+            }
+        }
+        //
+
         String s =  "Database(entries=[";
         int end = -1;
         this.entriesLock.readLock().lock();

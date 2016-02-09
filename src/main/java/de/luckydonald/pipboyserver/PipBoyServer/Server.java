@@ -9,6 +9,7 @@ import de.luckydonald.pipboyserver.Messages.KeepAlive;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,13 +22,11 @@ public class Server {
     ServerSocket socket;
     Database db;
     boolean quit = false;
-    public Server() {
-
-    }
     ExecutorService threadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
     public void run() {
         db = new Database();
         db.fillWithDefault();
+        db.startCLI();
         while (!this.quit) {
             try {
                 ServerSocket socket = new ServerSocket(Constants.CONNECT_TCP_PORT);
@@ -37,7 +36,7 @@ public class Server {
                     Runnable session = new Session(acceptedSocket, db);
                     threadPool.submit(session);
                     System.out.println("Started Game session.");
-                    System.out.println(db.toSimpleString());
+                    //System.out.println(db.toSimpleString());
                 }
             } catch (IOException e) {
                 socket = null;
@@ -66,12 +65,14 @@ class Session implements Runnable, IDataUpdateListener {
     public void run() {
         KeepAliveThread heartbeat = null;
         Thread heartbeatThread = null;
+        System.out.println("Started session.");
         try {
             OutputStream stream = socket.getOutputStream();
-            heartbeat = new KeepAliveThread(stream);
+            InputStream inStream = socket.getInputStream();
+            heartbeat = new KeepAliveThread(socket);
             stream.write(new ConnectionAccepted().toBytes());
             stream.flush();
-            heartbeatThread = new Thread(heartbeat);
+            heartbeatThread = new Thread(heartbeat, "Heartbeat");
             heartbeatThread.start();
             while (!quit) {
                 System.out.println("Checking for updates.");
@@ -130,17 +131,17 @@ class Session implements Runnable, IDataUpdateListener {
     }
 }
 class KeepAliveThread implements Runnable{
-    OutputStream stream;
+    Socket socket;
     boolean quit = false;
-    public KeepAliveThread(OutputStream stream) {
-        this.stream = stream;
+    public KeepAliveThread(Socket socket) {
+        this.socket = socket;
     }
 
     @Override
     public void run(){
         try {
+            OutputStream stream = this.socket.getOutputStream();
             while (!quit) {
-                System.out.println("ping");
                 stream.write(new KeepAlive().toBytes());
                 stream.flush();
                 //TODO: read answer.
@@ -154,5 +155,6 @@ class KeepAliveThread implements Runnable{
             e.printStackTrace();
         }
         System.out.println("Heartbeat thread done.");
+        return;
     }
 }

@@ -18,6 +18,18 @@ import static de.luckydonald.pipboyserver.Constants.discover_response;
  *
  */
 public class Discovery implements Runnable {
+    String[] serverTypes;
+    public Discovery() {
+        this("PC");
+    }
+    public Discovery(String serverTypes) {
+        this.serverTypes = new String[]{serverTypes};
+        //python: self.type = [type]
+    }
+    public Discovery(String[] serverTypes){
+        this.serverTypes = serverTypes;
+    }
+
     @Override
     public void run() {
         while (true) {
@@ -41,17 +53,13 @@ public class Discovery implements Runnable {
                     String message = new String(packet.getData()).trim();
                     if (message.equals(DISCOVER_STRING)) {
                         //Send a response
-                        byte[] response = discover_response("PC").getBytes();
-                        System.out.println(">>>Sending packet: " + Arrays.toString(response));
-                        DatagramPacket sendPacket = new DatagramPacket(response, response.length, packet.getAddress(), packet.getPort());
-                        socket.send(sendPacket);
-                        System.out.println(">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
-                        //---
-                        response = discover_response("PS4").getBytes();
-                        System.out.println(">>>Sending packet: " + Arrays.toString(response));
-                        sendPacket = new DatagramPacket(response, response.length, packet.getAddress(), packet.getPort());
-                        socket.send(sendPacket);
-                        System.out.println(">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                        for (String serverType : this.serverTypes) {
+                            byte[] response = discover_response(serverType).getBytes();
+                            System.out.println(">>>Sending " + serverType + " packet: " + Arrays.toString(response));
+                            DatagramPacket sendPacket = new DatagramPacket(response, response.length, packet.getAddress(), packet.getPort());
+                            socket.send(sendPacket);
+                            System.out.println(">>>Sent packet to " + serverType + " " + sendPacket.getAddress().getHostAddress());
+                        }
                     }
                 }
             } catch (BindException e) {
