@@ -71,6 +71,7 @@ public class DBDict extends DBContainer {
         //char_t *name //null terminated
         //uint16_t remove_count;
         //uint32_t references[remove_count];
+        getLogger().info("locking Update: write");
         this.getUpdateLock().writeLock().lock();
         int insertCount = this.inserts.size();
         b.putShort((short) insertCount);
@@ -99,13 +100,15 @@ public class DBDict extends DBContainer {
             }
         }
         this.getUpdateLock().writeLock().unlock();
+        getLogger().info("unlocked Update: write");
         return b;
     }
 
     @Override
     public int getRequiredValueBufferLength() {
         int length = 2; // insert_count
-        this.getUpdateLock().readLock().lock();
+        getLogger().info("locking DB: read");
+        this.getDatabase().getEntriesLock().readLock().lock();
         for (Map.Entry<String, DBEntry> entry  : this.inserts.entrySet()) {
             DBEntry ent = entry.getValue();
             length += entry.getKey().getBytes().length + 1; //name string .length + null terminator
@@ -114,17 +117,20 @@ public class DBDict extends DBContainer {
         length += 2; // remove_count
         length += (this.removes.size() * 4); //id = 4; n-th times
         this.getUpdateLock().readLock().unlock();
+        getLogger().info("unlocked DB: read");
         return length;
     }
 
     public DBDict add(DictEntry entry) throws AlreadyTakenException, AlreadyInsertedException {
         //todo UPDATEs
+        getLogger().info("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
         if (entry.getDBEntry() == null) {
             throw new NullPointerException("entry.getDBEntry() is null. Did you create it with a DBEntry?");
         }
         DBDict result = this.add(entry.name, entry.getDBEntry());
         this.getDatabase().getEntriesLock().writeLock().unlock();
+        getLogger().info("unlocked DB: write");
         return result;
     }
 
@@ -138,12 +144,13 @@ public class DBDict extends DBContainer {
      * @return The result
      */
     public DBEntry get(String key) {
+        getLogger().info("locking DB: read");
         this.getDatabase().getEntriesLock().readLock().lock();
-        this.getUpdateLock().readLock().lock();
         DBEntry dbEntry = this.data.get(key);
         this.getUpdateLock().readLock().unlock();
+        getLogger().info("unlocked DB: read");
         this.getDatabase().getEntriesLock().readLock().unlock();
-        return dbEntry;
+        getLogger().info("unlocked Update: read");         return dbEntry;
     }
 
     /**
@@ -156,13 +163,17 @@ public class DBDict extends DBContainer {
      */
     public DBDict add(String key, DBEntry value) throws AlreadyInsertedException, AlreadyTakenException {
         //TODO: update events
+        getLogger().info("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
+        getLogger().info("locking Update: write");
         this.getUpdateLock().writeLock().lock();
         this.addNewEntryToDB(value);  // check if is not in DB -> db.add
         this.data.put(key, value);
         this.inserts.put(key, value);   //TODO: update events
         this.getUpdateLock().writeLock().unlock();
+        getLogger().info("unlocked Update: write");
         this.getDatabase().getEntriesLock().writeLock().unlock();
+        getLogger().info("unlocked DB: write");
         return this;
     }
     public DBDict remove(DictEntry entry) {
@@ -179,7 +190,9 @@ public class DBDict extends DBContainer {
      */
     public DBDict remove(String key) {
         //TODO: update events
+        getLogger().info("locking Update: write");
         this.getUpdateLock().writeLock().lock();
+        getLogger().info("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
         DBEntry deleted = this.data.get(key);
         this.data.remove(key);
@@ -189,7 +202,9 @@ public class DBDict extends DBContainer {
             this.removes.add(deleted);
         }
         this.getUpdateLock().writeLock().unlock();
+        getLogger().info("unlocked Update: write");
         this.getDatabase().getEntriesLock().writeLock().unlock();
+        getLogger().info("unlocked DB: write");
         return this;
     }
 
@@ -202,7 +217,9 @@ public class DBDict extends DBContainer {
      */
     public DBDict remove(int id) {
         //TODO: update events
+        getLogger().info("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
+        getLogger().info("locking Update: write");
         this.getUpdateLock().writeLock().lock();
         DBEntry deleted = null;
         String del_key = null;
@@ -214,13 +231,17 @@ public class DBDict extends DBContainer {
         }
         if(deleted == null || del_key == null) {
             this.getDatabase().getEntriesLock().writeLock().unlock();
+            getLogger().info("unlocked DB: write");
             this.getUpdateLock().writeLock().unlock();
+            getLogger().info("unlocked Update: write");
             throw new NullPointerException("Could not find ID in array.");
         }
         //  Now remove it and add set the update lists accordingly:
         DBDict result = this.remove(del_key);
         this.getDatabase().getEntriesLock().writeLock().unlock();
+        getLogger().info("unlocked DB: write");
         this.getUpdateLock().writeLock().unlock();
+        getLogger().info("unlocked Update: write");
         return result;
     }
 
@@ -267,11 +288,13 @@ public class DBDict extends DBContainer {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder("DBDict(");
+        getLogger().info("locking Update: read");
+        this.getUpdateLock().readLock().lock();
+        getLogger().info("locking DB: read");
         this.getDatabase().getEntriesLock().readLock().lock();
         if (this.getID() <= 0){
             s.append("id=").append(this.getID()).append(", ");
         }
-        this.getUpdateLock().readLock().lock();
         s.append("data={");
         for (Map.Entry<String, DBEntry> entry  : this.data.entrySet()) {
             s.append("\"").append(entry.getKey()).append("\":").append(entry.getValue().toString()).append(", ");
@@ -285,7 +308,9 @@ public class DBDict extends DBContainer {
             s.append(entry.toString()).append(", ");
         }
         this.getUpdateLock().readLock().unlock();
+        getLogger().info("unlocked DB: read");
         this.getDatabase().getEntriesLock().readLock().unlock();
+        getLogger().info("unlocked Update: read");
         return s.append("]").toString();
     }
 
@@ -294,12 +319,13 @@ public class DBDict extends DBContainer {
         //TODO: showID
         StringBuilder sb = new StringBuilder("DBDict(");
         boolean notFirst = false;
-        this.getDatabase().getEntriesLock().readLock().lock();
+        getLogger().info("locking Update: read");
         this.getUpdateLock().readLock().lock();
+        getLogger().info("locking DB: read");
+        this.getDatabase().getEntriesLock().readLock().lock();
         if (this.getID() <= 0){
             sb.append("id=").append(this.getID()).append(", ");
         }
-        this.getUpdateLock().readLock().lock();
         sb.append("data={");
         for (Map.Entry<String, DBEntry> entry  : this.data.entrySet()) {
             if (notFirst) {
@@ -330,7 +356,9 @@ public class DBDict extends DBContainer {
             sb.append(entry.getID());
         }
         this.getDatabase().getEntriesLock().readLock().unlock();
+        getLogger().info("unlocked Update: read");
         this.getUpdateLock().readLock().unlock();
+        getLogger().info("unlocked DB: read");
         return sb.append("]").toString();
     }
 

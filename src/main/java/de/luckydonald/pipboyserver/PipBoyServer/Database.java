@@ -83,7 +83,17 @@ public class Database {
         return null;
     }
     public Void cmd_Test(String command) {
-        this.get(1);
+        System.out.println("command: \"" + command + "\".");
+        return null;
+    }
+    public Void cmd_Get(String command) {
+        DBEntry e = this.get(command.trim());
+        System.out.println("" + e.getID() + ":\t" + e.toSimpleString(false));
+        return null;
+    }
+    public Void cmd_Set(String command) {
+        DBEntry e = this.get(command.trim());
+        System.out.println("" + e.getID() + ":\t" + e.toSimpleString(false));
         return null;
     }
     public void print() {
@@ -95,8 +105,14 @@ public class Database {
     }
 
     public void startCLI() {
-        Function<String, Void> f = this::cmd_List;  // ignore that IntelliJ marks this as wrong!
+        Function<String, Void> f = this::cmd_List;
         CommandInput cmd = new CommandInput("list", f);
+        f = this::cmd_Get;
+        cmd.add("get", f);
+        f = this::cmd_Set;
+        cmd.add("set", f);
+        f = this::cmd_Test;
+        cmd.add("test", f);
         cmd.start();
     }
 
@@ -421,7 +437,6 @@ public class Database {
         this.entriesLock.readLock().lock();
         end = this.entries.size() - 1;
         if (end >= 0) {
-
             for (int i = 0; i < end; i++) {
                 DBEntry entry = this.entries.get(i);
                 if (entry == null) {
@@ -479,7 +494,6 @@ public class Database {
     }
 
     public boolean has(Integer id) {
-        //TODO IMPLEMENT!
         try {
             this.entries.get(id);
         } catch (IndexOutOfBoundsException e) {
