@@ -18,27 +18,26 @@ import static de.luckydonald.pipboyserver.Constants.discover_response;
  *
  */
 public class Discovery implements Runnable {
-    String[] serverTypes;
+    private String serverType;
+    private boolean shouldStop = false;
+
     public Discovery() {
         this("PC");
     }
-    public Discovery(String serverTypes) {
-        this.serverTypes = new String[]{serverTypes};
-        //python: self.type = [type]
-    }
-    public Discovery(String[] serverTypes){
-        this.serverTypes = serverTypes;
+    public Discovery(String serverType){
+        this.serverType = serverType;
+        this.shouldStop = false;
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (!shouldStop) {
             DatagramSocket socket = null;
             try {
                 //Keep a socket open to listen to all the UDP trafic that is destined for this port
                 socket = new DatagramSocket(DISCOVER_UDP_PORT, InetAddress.getByName("0.0.0.0"));
                 socket.setBroadcast(true);
-                while (true) {
+                while (!shouldStop) {
                     System.out.println(">>>Ready to receive broadcast packets!");
 
                     //Receive a packet
@@ -53,13 +52,11 @@ public class Discovery implements Runnable {
                     String message = new String(packet.getData()).trim();
                     if (message.equals(DISCOVER_STRING)) {
                         //Send a response
-                        for (String serverType : this.serverTypes) {
-                            byte[] response = discover_response(serverType).getBytes();
-                            System.out.println(">>>Sending " + serverType + " packet: " + Arrays.toString(response));
-                            DatagramPacket sendPacket = new DatagramPacket(response, response.length, packet.getAddress(), packet.getPort());
-                            socket.send(sendPacket);
-                            System.out.println(">>>Sent packet to " + serverType + " " + sendPacket.getAddress().getHostAddress());
-                        }
+                        byte[] response = discover_response(this.serverType).getBytes();
+                        System.out.println(">>>Sending " + serverType + " packet: " + Arrays.toString(response));
+                        DatagramPacket sendPacket = new DatagramPacket(response, response.length, packet.getAddress(), packet.getPort());
+                        socket.send(sendPacket);
+                        System.out.println(">>>Sent packet to " + serverType + " " + sendPacket.getAddress().getHostAddress());
                     }
                 }
             } catch (BindException e) {
@@ -79,5 +76,21 @@ public class Discovery implements Runnable {
                 }
             }
         }
+    }
+
+    public boolean shouldStop() {
+        return shouldStop;
+    }
+
+    public void shouldStop(boolean shouldStop) {
+        this.shouldStop = shouldStop;
+    }
+
+    public String getServerType() {
+        return serverType;
+    }
+
+    public void setServerType(String serverType) {
+        this.serverType = serverType;
     }
 }
