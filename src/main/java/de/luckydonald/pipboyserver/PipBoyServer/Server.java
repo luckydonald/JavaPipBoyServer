@@ -116,15 +116,15 @@ class Session implements Runnable, IDataUpdateListener {
     @Override
     public String toString() {
         return "Session{" +
-                "db=" + db +
-                ", socket=" + socket +
+                "socket=" + socket +
                 ", updates=" + updates +
                 ", quit=" + quit +
                 '}';
     }
-    public String toStringWithoutDB() {
+    public String toStringWithDB() {
         return "Session{" +
-                "socket=" + socket +
+                "db=" + db +
+                ", socket=" + socket +
                 ", updates=" + updates +
                 ", quit=" + quit +
                 '}';

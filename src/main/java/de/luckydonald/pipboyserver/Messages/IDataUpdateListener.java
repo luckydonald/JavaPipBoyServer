@@ -8,5 +8,5 @@ public interface IDataUpdateListener {
      *
      * @return String: A textual representation.
      */
-    String toStringWithoutDB();
+    String toStringWithDB();
 }

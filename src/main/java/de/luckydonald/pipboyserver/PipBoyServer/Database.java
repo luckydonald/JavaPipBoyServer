@@ -438,9 +438,9 @@ public class Database {
         if (end >= 0) {
             for (int i = 0; i < end; i++) {
                 IDataUpdateListener entry = this.updateListener.get(i);
-                s += entry.toStringWithoutDB() + ", ";
+                s += entry.toString() + ", ";
             }
-            s+= "" + end + ": " + this.updateListener.get(end).toStringWithoutDB();
+            s+= "" + end + ": " + this.updateListener.get(end).toString();
         }
         this.updateListenerLock.readLock().unlock();
         s+="])";
@@ -471,7 +471,7 @@ public class Database {
                 IDataUpdateListener entry = this.updateListener.get(i);
                 sb.append(entry).append(", ");
             }
-            sb.append(end).append(": ").append(this.updateListener.get(end).toStringWithoutDB());
+            sb.append(end).append(": ").append(this.updateListener.get(end).toString());
         }
         this.updateListenerLock.readLock().unlock();
         sb.append("])");
