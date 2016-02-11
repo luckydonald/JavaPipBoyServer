@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.Messages.IDataUpdateListener;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
+import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,14 +51,15 @@ public class Database {
         return this.add(entry.getDBEntry());
     }
     public DBEntry add(DBEntry e) {
-        int nextFreeInt = this.getNextFreeIndex();
         this.entriesLock.writeLock().lock();
+        int nextFreeInt = this.getNextFreeIndex();
+        this.entries.add(nextFreeInt, e);
         e._setID(nextFreeInt);
         e._setDatabase(this);
-        this.entries.add(nextFreeInt, e);
         this.entriesLock.writeLock().unlock();
         //DatabasePlace place = new DatabasePlace(nextFreeInt, e);
-        DataUpdate update = new DataUpdate(e);
+        /*
+        DataUpdate update = new DataUpdate(e); //TODO Updates!
         //this.updates.add(update);
         this.updateListenerLock.readLock().lock();
         for (IDataUpdateListener listener : this.updateListener) {
@@ -66,10 +70,15 @@ public class Database {
             }
         }
         this.updateListenerLock.readLock().unlock();
+        */
         return e;
     }
     public Void cmd_List(String command) {
         print();
+        return null;
+    }
+    public Void cmd_Test(String command) {
+        this.get(1);
         return null;
     }
     public void print() {
@@ -102,6 +111,11 @@ public class Database {
         }
         this.entriesLock.readLock().unlock();
         return size;
+    }
+    public DBEntry get(String path) {
+        DBDict root = (DBDict) this.get(0);  // root node should be 0.
+
+        return root;
     }
     public DBEntry get(int id) {
         this.entriesLock.readLock().lock();
@@ -154,119 +168,126 @@ public class Database {
         return fillWithBasicDefault(this);
     }
     public static Database fillWithBasicDefault(Database db) {
-        DBDict rootDict = new DBDict(null);
-        db.add(rootDict);
+        try {
+            DBDict rootDict = new DBDict(null);
+            db.add(rootDict);
 
-        DBDict invDict = new DBDict(null); //Inventory
-        db.add(invDict);
-        rootDict.add("Inventory", invDict);
+            DBDict invDict = new DBDict(null); //Inventory
+            db.add(invDict);
+            rootDict.add("Inventory", invDict);
 
-        DBList logList = new DBList(null);      // Log
-        db.add(logList);
-        rootDict.add("Log", logList);
+            DBList logList = new DBList(null);      // Log
+            db.add(logList);
+            rootDict.add("Log", logList);
 
-        DBDict mapDict = new DBDict(null);      // Map
-        db.add(mapDict);
-        rootDict.add("Map", mapDict);
+            DBDict mapDict = new DBDict(null);      // Map
+            db.add(mapDict);
+            rootDict.add("Map", mapDict);
 
-        DBList perksList = new DBList(null);    // Perks
-        db.add(perksList);
-        rootDict.add("Perks", perksList);
+            DBList perksList = new DBList(null);    // Perks
+            db.add(perksList);
+            rootDict.add("Perks", perksList);
 
-        DBDict playerDict = new DBDict(null);   // PlayerInfo
-        db.add(playerDict);
-        rootDict.add("PlayerInfo", playerDict);
+            DBDict playerDict = new DBDict(null);   // PlayerInfo
+            db.add(playerDict);
+            rootDict.add("PlayerInfo", playerDict);
 
-        DBList questList = new DBList(null);    // Quests
-        db.add(questList);
-        rootDict.add("Quests", questList);
+            DBList questList = new DBList(null);    // Quests
+            db.add(questList);
+            rootDict.add("Quests", questList);
 
-        DBList radioList = new DBList(null);    // Radio
-        db.add(radioList);
-        rootDict.add("Radio", radioList);
+            DBList radioList = new DBList(null);    // Radio
+            db.add(radioList);
+            rootDict.add("Radio", radioList);
 
-        DBList specialList = new DBList(null);  // Special
-        db.add(specialList);
-        rootDict.add("Special", specialList);
+            DBList specialList = new DBList(null);  // Special
+            db.add(specialList);
+            rootDict.add("Special", specialList);
 
-        DBList statsList = new DBList(null);    // Stats
-        db.add(statsList);
-        rootDict.add("Stats", statsList);
+            DBList statsList = new DBList(null);    // Stats
+            db.add(statsList);
+            rootDict.add("Stats", statsList);
 
-        DBDict statusDict = new DBDict(null);  // Status
-        db.add(statusDict);
-        rootDict.add("Status", statusDict);
+            DBDict statusDict = new DBDict(null);  // Status
+            db.add(statusDict);
+            rootDict.add("Status", statusDict);
 
-        DBList effectColorList = new DBList(null);  // EffectColor
-        db.add(effectColorList);
-        statusDict.add("EffectColor", effectColorList);
-
-
-        DBFloat effectColorRedFloat = new DBFloat(0.08);       // 1st color
-        db.add(effectColorRedFloat);
-        effectColorList.append(effectColorRedFloat);
-
-        DBFloat effectColorGreenFloat = new DBFloat(1);  // 2nd color
-        db.add(effectColorGreenFloat);
-        effectColorList.append(effectColorGreenFloat);
-
-        DBFloat effectColorBlueFloat = new DBFloat(0.08);   // 3rd color
-        db.add(effectColorBlueFloat);
-        effectColorList.append(effectColorBlueFloat);
+            DBList effectColorList = new DBList(null);  // EffectColor
+            db.add(effectColorList);
+            statusDict.add("EffectColor", effectColorList);
 
 
-        DBBoolean isDataUnavailableBool = new DBBoolean(false);  // IsDataUnavailable
-        db.add(isDataUnavailableBool);
-        statusDict.add("IsDataUnavailable", isDataUnavailableBool);
+            DBFloat effectColorRedFloat = new DBFloat(0.08);       // 1st color
+            db.add(effectColorRedFloat);
+            effectColorList.append(effectColorRedFloat);
 
-        DBBoolean isInAnimationBool = new DBBoolean(false);  // IsInAnimation
-        db.add(isInAnimationBool);
-        statusDict.add("IsInAnimation", isInAnimationBool);
+            DBFloat effectColorGreenFloat = new DBFloat(1);  // 2nd color
+            db.add(effectColorGreenFloat);
+            effectColorList.append(effectColorGreenFloat);
 
-        DBBoolean isInAutoVanityBool = new DBBoolean(false);  // IsInAutoVanity
-        db.add(isInAutoVanityBool);
-        statusDict.add("IsInAutoVanity", isInAutoVanityBool);
+            DBFloat effectColorBlueFloat = new DBFloat(0.08);   // 3rd color
+            db.add(effectColorBlueFloat);
+            effectColorList.append(effectColorBlueFloat);
 
-        DBBoolean isInVatsBool = new DBBoolean(false);  // IsInVats
-        db.add(isInVatsBool); // IsInVats
-        statusDict.add("IsInVats", isInVatsBool);
 
-        DBBoolean isInVatsPlaybackBool = new DBBoolean(false);  // IsInVatsPlayback
-        db.add(isInVatsPlaybackBool); // IsInVatsPlayback
-        statusDict.add("IsInVatsPlayback", isInVatsBool);
+            DBBoolean isDataUnavailableBool = new DBBoolean(false);  // IsDataUnavailable
+            db.add(isDataUnavailableBool);
+            statusDict.add("IsDataUnavailable", isDataUnavailableBool);
 
-        DBBoolean isLoadingBool = new DBBoolean(false);  // IsLoading
-        db.add(isLoadingBool); // IsLoading
-        statusDict.add("IsLoading", isLoadingBool);
+            DBBoolean isInAnimationBool = new DBBoolean(false);  // IsInAnimation
+            db.add(isInAnimationBool);
+            statusDict.add("IsInAnimation", isInAnimationBool);
 
-        DBBoolean isMenuOpenBool = new DBBoolean(false);  // IsMenuOpen
-        db.add(isMenuOpenBool); // IsMenuOpen
-        statusDict.add("IsMenuOpen", isMenuOpenBool);
+            DBBoolean isInAutoVanityBool = new DBBoolean(false);  // IsInAutoVanity
+            db.add(isInAutoVanityBool);
+            statusDict.add("IsInAutoVanity", isInAutoVanityBool);
 
-        DBBoolean isPipboyNotEquippedBool = new DBBoolean(false);  // IsPipboyNotEquipped
-        db.add(isPipboyNotEquippedBool); // IsPipboyNotEquipped
-        statusDict.add("IsPipboyNotEquipped", isPipboyNotEquippedBool);
+            DBBoolean isInVatsBool = new DBBoolean(false);  // IsInVats
+            db.add(isInVatsBool); // IsInVats
+            statusDict.add("IsInVats", isInVatsBool);
 
-        DBBoolean isPlayerDeadBool = new DBBoolean(false);  // IsPlayerDead
-        db.add(isPlayerDeadBool); // IsPlayerDead
-        statusDict.add("IsPlayerDead", isPlayerDeadBool);
+            DBBoolean isInVatsPlaybackBool = new DBBoolean(false);  // IsInVatsPlayback
+            db.add(isInVatsPlaybackBool); // IsInVatsPlayback
+            statusDict.add("IsInVatsPlayback", isInVatsBool);
 
-        DBBoolean isPlayerInDialogueBool = new DBBoolean(false);  // IsPlayerInDialogue
-        db.add(isPlayerInDialogueBool);
-        statusDict.add("IsPlayerInDialogue", isPlayerInDialogueBool);
+            DBBoolean isLoadingBool = new DBBoolean(false);  // IsLoading
+            db.add(isLoadingBool); // IsLoading
+            statusDict.add("IsLoading", isLoadingBool);
 
-        DBBoolean isPlayerMovementLockedBool = new DBBoolean(false);  // IsPlayerMovementLocked
-        db.add(isPlayerMovementLockedBool); // IsPlayerMovementLocked
-        statusDict.add("IsPlayerMovementLocked", isPlayerMovementLockedBool);
+            DBBoolean isMenuOpenBool = new DBBoolean(false);  // IsMenuOpen
+            db.add(isMenuOpenBool); // IsMenuOpen
+            statusDict.add("IsMenuOpen", isMenuOpenBool);
 
-        DBBoolean isPlayerPipboyLockedBool = new DBBoolean(false);  // IsPlayerPipboyLocked
-        db.add(isPlayerPipboyLockedBool); // IsPlayerPipboyLocked
-        statusDict.add("IsPlayerPipboyLocked", isPlayerPipboyLockedBool);
+            DBBoolean isPipboyNotEquippedBool = new DBBoolean(false);  // IsPipboyNotEquipped
+            db.add(isPipboyNotEquippedBool); // IsPipboyNotEquipped
+            statusDict.add("IsPipboyNotEquipped", isPipboyNotEquippedBool);
 
-        DBList workshopList = new DBList();  // Workshop
-        db.add(workshopList); // Workshop
-        rootDict.add("Workshop", workshopList);
+            DBBoolean isPlayerDeadBool = new DBBoolean(false);  // IsPlayerDead
+            db.add(isPlayerDeadBool); // IsPlayerDead
+            statusDict.add("IsPlayerDead", isPlayerDeadBool);
+
+            DBBoolean isPlayerInDialogueBool = new DBBoolean(false);  // IsPlayerInDialogue
+            db.add(isPlayerInDialogueBool);
+            statusDict.add("IsPlayerInDialogue", isPlayerInDialogueBool);
+
+            DBBoolean isPlayerMovementLockedBool = new DBBoolean(false);  // IsPlayerMovementLocked
+            db.add(isPlayerMovementLockedBool); // IsPlayerMovementLocked
+            statusDict.add("IsPlayerMovementLocked", isPlayerMovementLockedBool);
+
+            DBBoolean isPlayerPipboyLockedBool = new DBBoolean(false);  // IsPlayerPipboyLocked
+            db.add(isPlayerPipboyLockedBool); // IsPlayerPipboyLocked
+            statusDict.add("IsPlayerPipboyLocked", isPlayerPipboyLockedBool);
+
+            DBList workshopList = new DBList();  // Workshop
+            db.add(workshopList); // Workshop
+            rootDict.add("Workshop", workshopList);
+        } catch (AlreadyTakenException e) {
+            e.printStackTrace();
+        } catch (AlreadyInsertedException e) {
+            e.printStackTrace();
+        }
         return db;
+
     }
     public static Database fillWithDefault(Database db) {
         ObjectMapper mapper = new ObjectMapper();
@@ -297,7 +318,6 @@ public class Database {
             String key = entry.getKey();
             jsonNodeToDBEntry(currentLevel, dictNode, subnode, key);
         }
-        return;
     }
 
     public void jsonNodeToDBEntry(DBEntry currentLevel, ContainerNode dictNode, JsonNode subnode, String key) {
@@ -327,9 +347,17 @@ public class Database {
         }
         this.add(dbEntry);
         if (currentLevel instanceof DBDict) {
-            ((DBDict)currentLevel).add(key, dbEntry);
+            try {
+                ((DBDict)currentLevel).add(key, dbEntry);
+            } catch (AlreadyInsertedException | AlreadyTakenException e) {
+                e.printStackTrace();
+            }
         } else if (currentLevel instanceof DBList) {
-            ((DBList)currentLevel).append(dbEntry);
+            try {
+                ((DBList)currentLevel).append(dbEntry);
+            } catch (AlreadyInsertedException | AlreadyTakenException e) {
+                e.printStackTrace();
+            }
         }
         if (dbEntry instanceof DBList) {
             this.loadJsonNode((DBList) dbEntry, ((ArrayNode) subnode));
@@ -430,6 +458,30 @@ public class Database {
         this.updateListenerLock.readLock().unlock();
         sb.append("])");
         return sb.toString();
+    }
+
+    public boolean has(Integer id) {
+        //TODO IMPLEMENT!
+        try {
+            this.entries.get(id);
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean has(DBEntry entry) {
+        if (this.entries.contains(entry)) {
+            return true;
+        }
+        if (this.has(entry.getID())) {
+            logger.warning("But the Database has a element at the same ID.");
+        }
+        return false;
+    }
+
+    public int getID(DBEntry dbEntry) {
+        return dbEntry.getID();
     }
 }
 class DatabasePlace {

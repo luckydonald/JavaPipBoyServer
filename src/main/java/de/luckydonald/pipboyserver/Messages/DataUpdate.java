@@ -1,6 +1,6 @@
 package de.luckydonald.pipboyserver.Messages;
 
-import de.luckydonald.pipboyserver.PipBoyServer.DBEntry;
+import de.luckydonald.pipboyserver.PipBoyServer.types.DBEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
