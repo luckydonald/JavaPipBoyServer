@@ -227,6 +227,20 @@ public class DBEntry {
     }
 
     /**
+     * Method that can be used to check if this node is containing some other elements.
+     * E.g. {@link DBList} or {@link DBDict}
+     */
+    public boolean isContainer() {
+        switch (getType()) {
+            case DICT:
+            case LIST:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Method to use for accessing String values.
      * Does <b>NOT</b> do any conversions for non-String value nodes;
      * for non-String values (ones for which {@link #isTextual} returns
@@ -320,5 +334,25 @@ public class DBEntry {
      */
     public double doubleValue() { return 0.0; }
 
+    /**
+     * Returns the {@link DBDict} for this node, <b>if and only if</b>
+     * this node is a {@link DBDict}. For other
+     * types returns {@code null}.
+     *
+     * @return {@link DBDict} if any, {@code null} else.
+     */
+    public DBDict dictValue() {
+        return null;
+    }
+    /**
+     * Returns the {@link DBList} for this node, <b>if and only if</b>
+     * this node is a {@code DBList}. For other
+     * types returns {@code null}.
+     *
+     * @return {@link DBList} if any, {@code null} else.
+     */
+    public DBList listValue() {
+        return null;
+    }
 }
 

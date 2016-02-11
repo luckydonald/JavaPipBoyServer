@@ -166,4 +166,16 @@ public class DBList extends DBContainer {
         }
         return this;
     }
+
+    /**
+     * Returns the {@link DBList} for this node, <b>if and only if</b>
+     * this node is a {@code DBList}. For other
+     * types returns {@code null}.
+     *
+     * @return {@link DBList} if any, {@code null} else.
+     */
+    @Override
+    public DBList listValue() {
+        return this;
+    }
 }

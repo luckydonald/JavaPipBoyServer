@@ -287,4 +287,16 @@ public class DBDict extends DBContainer {
         }
         return sb.append("]").toString();
     }
+
+    /**
+     * Returns the {@link DBDict} for this node, <b>if and only if</b>
+     * this node is a {@link DBDict}. For other
+     * types returns {@code null}.
+     *
+     * @return {@link DBDict} if any, {@code null} else.
+     */
+    @Override
+    public DBDict dictValue() {
+        return this;
+    }
 }

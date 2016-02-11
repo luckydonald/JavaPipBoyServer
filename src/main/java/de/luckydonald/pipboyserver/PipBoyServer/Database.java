@@ -119,22 +119,35 @@ public class Database {
     }
     public DBEntry get(String path) {
         DBDict root = (DBDict) this.get(0);  // root node should be 0.
-
         return root;
     }
     public DBEntry get(int id) {
         this.entriesLock.readLock().lock();
         DBEntry entry = this.entries.get(id);
         this.entriesLock.readLock().unlock();
-        if (entry.getID() == -1) {
-            throw new AssertionError("Id of element in db is undefined (-1)!");
-        }
-        if (entry.getID() != id) {
+        if (entry.getID() == -1 ||entry.getID() == null) {
+            throw new AssertionError("Id of element in db is undefined (-1/null)!");
+        } else if (entry.getID() != id) {
             throw new AssertionError("Id in db differs with id of element!");
+        } else {
+            return entry;
         }
-        return entry;
     }
-
+    public DBContainer getRootContainer() {
+        DBEntry root = this.getRoot();
+        if (root.isContainer()) {
+            return (DBContainer) root;
+        }
+        else {
+            throw new ClassCastException("Root is no Container, but " + root.getType().toString());
+        }
+    }
+    public DBEntry getRoot() {
+        if(!has(0)) {
+            throw new ArrayIndexOutOfBoundsException("No root (id=0) found. Did you add a DBDict or DBList?");
+        }
+        return this.get(0);
+    }
 
     public static void main(String[] args) {
         Database db = new Database();
