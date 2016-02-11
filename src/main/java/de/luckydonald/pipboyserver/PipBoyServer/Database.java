@@ -26,7 +26,11 @@ public class Database {
     private final static Logger logger = Logger.getLogger(Database.class.getName());
     public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/NimVek/pipboy/1087a1c820fae6265fbce2a614e62e85cd146442/DemoMode.json";
 
-    final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
+    public ReentrantReadWriteLock getEntriesLock() {
+        return entriesLock;
+    }
+
+    private final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
     private List<DBEntry> entries = new ArrayList<>();
 
     final ReentrantReadWriteLock updateListenerLock = new ReentrantReadWriteLock();
@@ -44,6 +48,7 @@ public class Database {
 
     }
     */
+
     public DBEntry add(DBDict.DictEntry entry) {
         if (entry.getDBEntry() == null) {
             throw new NullPointerException("entry.getDBEntry() is null. Did you create the DictEntry with a DBEntry?");

@@ -72,12 +72,45 @@ public class DBList extends DBContainer {
     public DBList append(int id) throws AlreadyTakenException, AlreadyInsertedException {
         return this.append(this.getDatabase().get(id));
     }
+
+    /**
+     * Appends the specified {@link DBEntry} element to the end of this list
+     *
+     * Note: DB-Thread-safe
+     *
+     * @param entry the element to add.
+     * @return itself.
+     * @throws AlreadyInsertedException See {@link DBContainer#addNewEntryToDB}.
+     * @throws AlreadyTakenException See {@link DBContainer#addNewEntryToDB}.
+     * @throws NullPointerException if the specified element is null
+     */
     public DBList append(DBEntry entry) throws AlreadyInsertedException, AlreadyTakenException {
         //TODO: update notification
+        if (entry == null) {
+            throw new NullPointerException();
+        }
+        this.getDatabase().getEntriesLock().writeLock().lock();
         addNewEntryToDB(entry);
         this.value.add(entry);
         this.dirty = true;
+        this.getDatabase().getEntriesLock().writeLock().unlock();
         return this;
+    }
+    /**
+     * Returns the {@link DBEntry} at the specified position in this {@link DBList}.
+     *
+     * Lookup is done DB-Thread-safe
+     *
+     * @param index index of the element to return
+     * @throws IndexOutOfBoundsException if the index is out of range
+     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     * @return the element at the specified position in this list
+     */
+    public DBEntry get(int index) {
+        this.getDatabase().getEntriesLock().readLock().lock();
+        DBEntry dbEntry = this.value.get(index);
+        this.getDatabase().getEntriesLock().readLock().unlock();
+        return dbEntry;
     }
 
     @Override

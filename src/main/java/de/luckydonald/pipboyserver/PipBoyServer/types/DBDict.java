@@ -94,13 +94,29 @@ public class DBDict extends DBContainer {
 
     public DBDict add(DictEntry entry) throws AlreadyTakenException, AlreadyInsertedException {
         //todo UPDATEs
-        //this.getDatabase().entriesLock.writeLock().lock();
+        this.getDatabase().getEntriesLock().writeLock().lock();
         if (entry.getDBEntry() == null) {
             throw new NullPointerException("entry.getDBEntry() is null. Did you create it with a DBEntry?");
         }
         DBDict result = this.add(entry.name, entry.getDBEntry());
-        //this.getDatabase().entriesLock.writeLock().unlock();
+        this.getDatabase().getEntriesLock().writeLock().unlock();
         return result;
+    }
+
+    /**
+     * Retrieves a {@link DBEntry} by its key,
+     * or {@code null} if this {@link DBDict} contains no mapping for the key.
+     *
+     * Lookup is done DB-Thread-safe
+     *
+     * @param key The key of the item.
+     * @return The result
+     */
+    public DBEntry get(String key) {
+        this.getDatabase().getEntriesLock().readLock().lock();
+        DBEntry dbEntry = this.data.get(key);
+        this.getDatabase().getEntriesLock().readLock().unlock();
+        return dbEntry;
     }
 
     /**
@@ -114,11 +130,11 @@ public class DBDict extends DBContainer {
     public DBDict add(String key, DBEntry value) throws AlreadyInsertedException, AlreadyTakenException {
         //TODO: update events
         //TODO: check if is not in DB -> db.add
-        //this.getDatabase().entriesLock.writeLock().lock(); //
+        this.getDatabase().getEntriesLock().writeLock().lock(); //
         this.addNewEntryToDB(value);
         this.data.put(key, value);
         this.inserts.put(key, value);   //TODO: update events
-        //this.getDatabase().entriesLock.writeLock().unlock();
+        this.getDatabase().getEntriesLock().writeLock().unlock();
         return this;
     }
     public DBDict remove(DictEntry entry) {
@@ -135,12 +151,12 @@ public class DBDict extends DBContainer {
      */
     public DBDict remove(String key) {
         //TODO: update events
-        //this.getDatabase().entriesLock.writeLock().lock();
+        this.getDatabase().getEntriesLock().writeLock().lock();
         DBEntry deleted = this.data.get(key);
         this.data.remove(key);
         this.inserts.remove(key);
         this.removes.add(deleted);
-        //this.getDatabase().entriesLock.writeLock().unlock();
+        this.getDatabase().getEntriesLock().writeLock().unlock();
         return this;
     }
 
@@ -153,7 +169,7 @@ public class DBDict extends DBContainer {
      */
     public DBDict remove(int id) {
         //TODO: update events
-        //this.getDatabase().entriesLock.writeLock().lock();
+        this.getDatabase().getEntriesLock().writeLock().lock();
         DBEntry deleted = null;
         String del_key = null;
         for (Map.Entry<String, DBEntry> entry  : this.data.entrySet()) {
@@ -163,11 +179,11 @@ public class DBDict extends DBContainer {
             }
         }
         if(deleted == null || del_key == null) {
-            //this.getDatabase().entriesLock.writeLock().unlock();
+            this.getDatabase().getEntriesLock().writeLock().unlock();
             throw new NullPointerException("Could not find ID in array.");
         }
         DBDict result = this.remove(del_key);
-        //this.getDatabase().entriesLock.writeLock().unlock();
+        this.getDatabase().getEntriesLock().writeLock().unlock();
         return result;
     }
 
