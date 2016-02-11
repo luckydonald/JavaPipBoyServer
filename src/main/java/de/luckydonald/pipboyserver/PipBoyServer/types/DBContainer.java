@@ -7,8 +7,6 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class DBContainer extends DBEntry {
-    private ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
-
     public DBContainer(Database db) {
         super(db);
     }
@@ -47,8 +45,4 @@ public abstract class DBContainer extends DBEntry {
      * @throws AlreadyInsertedException See {@link DBEntry#addToDB(Database)}
      */
     public abstract DBContainer addChildrenToDB(Database db) throws AlreadyInsertedException;
-
-    public ReentrantReadWriteLock getUpdateLock() {
-        return updateLock;
-    }
 }

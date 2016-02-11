@@ -10,12 +10,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DBDict extends DBContainer {
     public static final EntryType TYPE = EntryType.DICT;
     private HashMap<String, DBEntry> data;
     private HashMap<String, DBEntry> inserts;
     private List<DBEntry> removes;
+    private ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
+
+    public ReentrantReadWriteLock getUpdateLock() {
+        return updateLock;
+    }
 
     public DBDict(Database db) {
         super(db);
