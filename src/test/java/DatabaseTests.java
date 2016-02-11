@@ -5,12 +5,10 @@ import de.luckydonald.pipboyserver.PipBoyServer.*;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import java.util.function.Function;
 import java.util.logging.*;
 
 public class DatabaseTests {
@@ -212,7 +210,7 @@ public class DatabaseTests {
         // }
         assertEquals(
                 "root[\"a6\"][2] traversal",
-                db.getRoot().dictValue().get("a6").listValue().get(2).dictValue().get("c1").textValue(),
+                db.getRoot().getDBDict().get("a6").getDBList().get(2).getDBDict().get("c1").textValue(),
                 "baz"
         );
     }

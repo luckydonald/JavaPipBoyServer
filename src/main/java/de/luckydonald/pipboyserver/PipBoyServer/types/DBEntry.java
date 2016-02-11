@@ -341,7 +341,7 @@ public class DBEntry {
      *
      * @return {@link DBDict} if any, {@code null} else.
      */
-    public DBDict dictValue() {
+    public DBDict getDBDict() {
         return null;
     }
     /**
@@ -351,7 +351,7 @@ public class DBEntry {
      *
      * @return {@link DBList} if any, {@code null} else.
      */
-    public DBList listValue() {
+    public DBList getDBList() {
         return null;
     }
 }

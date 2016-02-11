@@ -175,7 +175,7 @@ public class DBList extends DBContainer {
      * @return {@link DBList} if any, {@code null} else.
      */
     @Override
-    public DBList listValue() {
+    public DBList getDBList() {
         return this;
     }
 }

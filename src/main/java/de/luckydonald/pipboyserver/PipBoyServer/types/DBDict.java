@@ -296,7 +296,7 @@ public class DBDict extends DBContainer {
      * @return {@link DBDict} if any, {@code null} else.
      */
     @Override
-    public DBDict dictValue() {
+    public DBDict getDBDict() {
         return this;
     }
 }
