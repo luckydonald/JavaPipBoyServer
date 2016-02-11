@@ -2,15 +2,16 @@ package de.luckydonald.pipboyserver.PipBoyServer;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 
-public class DBEntry{
+public class DBEntry {
     private Integer id = null;
     private Database database = null;
     boolean dirty = true;
-    public int getType() {
+    public EntryType getType() {
         throw new NotImplementedException();
     }
     public int getID(){
@@ -36,7 +37,7 @@ public class DBEntry{
     public byte[] getBytes(){
         ByteBuffer content = ByteBuffer.allocate(this.getRequiredBufferLength());
         content.order(ByteOrder.LITTLE_ENDIAN);
-        content.put((byte) this.getType()); // type
+        content.put(this.getType().getByte()); // type
         content.putInt(this.getID());       // id
         this.putValueIntoBuffer(content);
         return content.array();
@@ -114,6 +115,160 @@ public class DBEntry{
     public boolean isDirty() {
         return this.dirty;
     }
+
+    /**********************************************************
+     /* Public API, straight value access
+     /**********************************************************
+     */
+
+    /**
+     * @return True if this node represents a numeric JSON value, ignoring the size.
+     */
+    public final boolean isNumber() {
+        switch (getType()) {
+            case INT8:
+            case INT32:
+            case FLOAT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * @return True if this node represents a non-integral
+     *   numeric JSON value
+     */
+    public boolean isFloatingPointNumber() {
+        return getType() == EntryType.FLOAT;
+    }
+
+
+    // OMITED:
+    // * Note, however, that even if this method returns false, it
+    // * is possible that conversion would be possible from other numeric
+    // * types -- to check if this is possible, use
+    // * {@link #canConvertToInt()} instead.
+    // OMITED!
+
+    /**
+     * Method that can be used to check whether contained value
+     * is a number represented as Java <code>int</code>.
+     *
+     * @return True if the value contained by this node is stored as Java int
+     */
+    public boolean isInt() { return getType() == EntryType.INT32; }
+
+    /**
+     * Method that checks whether this node represents basic JSON String
+     * value.
+     */
+    public final boolean isTextual() {
+        return getType() == EntryType.STRING;
+    }
+
+    /**
+     * Method that can be used to check if this node was created from
+     * JSON boolean value (literals "true" and "false").
+     */
+    public final boolean isBoolean() {
+        return getType() == EntryType.BOOLEAN;
+    }
+
+    /**
+     * Method to use for accessing String values.
+     * Does <b>NOT</b> do any conversions for non-String value nodes;
+     * for non-String values (ones for which {@link #isTextual} returns
+     * false) null will be returned.
+     * For String values, null is never returned (but empty Strings may be)
+     *
+     * @return Textual value this node contains, iff it is a textual
+     *   JSON node (comes from JSON String value entry)
+     */
+    public String textValue() { return null; }
+
+    /**
+     * Method to use for accessing JSON boolean values (value
+     * literals 'true' and 'false').
+     * For other types, always returns false.
+     *
+     * @return Textual value this node contains, iff it is a textual
+     *   json node (comes from JSON String value entry)
+     */
+    public boolean booleanValue() { return false; }
+
+    /**
+     * Returns numeric value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true); otherwise
+     * returns null
+     *
+     * @return Number value this node contains, if any (null for non-number
+     *   nodes).
+     */
+    public Number numberValue() { return null; }
+
+    /**
+     * Returns 16-bit short value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to short operates.
+     *
+     * @return Short value this node contains, if any; 0 for non-number
+     *   nodes.
+     */
+    public short shortValue() { return 0; }
+
+    /**
+     * Returns integer value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to int operates.
+     *
+     * @return Integer value this node contains, if any; 0 for non-number
+     *   nodes.
+     */
+    public int intValue() { return 0; }
+
+    /**
+     * Returns 64-bit long value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to long operates.
+     *
+     * @return Long value this node contains, if any; 0 for non-number
+     *   nodes.
+     */
+    public long longValue() { return 0L; }
+
+    /**
+     * Returns 32-bit floating value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this means
+     * that an overflow is possible for `long` values
+     *
+     * @return 32-bit float value this node contains, if any; 0.0 for non-number nodes.
+     *
+     * @since 2.2
+     */
+    public float floatValue() { return 0.0f; }
+
+    /**
+     * Returns 64-bit floating point (double) value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this may result
+     * in overflows with {@link BigInteger} values.
+     *
+     * @return 64-bit double value this node contains, if any; 0.0 for non-number nodes.
+     *
+     * @since 2.2
+     */
+    public double doubleValue() { return 0.0; }
+
 }
 
 /*
@@ -121,11 +276,11 @@ public class DBEntry{
 */
 
 class DBBoolean extends DBEntry {
-    public static final int TYPE = 0;
+    public static final EntryType TYPE = EntryType.BOOLEAN;
     private Boolean value = null;
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
@@ -140,7 +295,7 @@ class DBBoolean extends DBEntry {
     public byte[] getBytes() {
         ByteBuffer content = ByteBuffer.allocate(1 + 4 + 1); //type=1, id=4, bool=1
         content.order(ByteOrder.LITTLE_ENDIAN);
-        content.put((byte) this.getType());
+        content.put(this.getType().getByte());
         content.put((byte) (this.value ? 1 : 0));
         return content.array();
     }
@@ -179,6 +334,18 @@ class DBBoolean extends DBEntry {
         this.dirty = false;
     }
 
+    /**
+     * Method to use for accessing JSON boolean values (value
+     * literals 'true' and 'false').
+     * For other types, always returns false.
+     *
+     * @return Textual value this node contains, iff it is a textual
+     * json node (comes from JSON String value entry)
+     */
+    @Override
+    public boolean booleanValue() {
+        return this.getValue();
+    }
 }
 
 /*
@@ -186,7 +353,7 @@ class DBBoolean extends DBEntry {
 */
 
 class DBInteger8 extends DBEntry {
-    public static final int TYPE = 2;
+    public static final EntryType TYPE = EntryType.INT8;
     private byte value;
 
     public DBInteger8(Database db, int i) {
@@ -201,14 +368,14 @@ class DBInteger8 extends DBEntry {
     }
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
     public byte[] getBytes_() {
         ByteBuffer content = ByteBuffer.allocate(1 + 4 + 1); //type=1, id=4, bool=1
         content.order(ByteOrder.LITTLE_ENDIAN);
-        content.put((byte) this.getType());
+        content.put(this.getType().getByte());
         content.put(this.value);
         return content.array();
     }
@@ -247,6 +414,94 @@ class DBInteger8 extends DBEntry {
         this.value = value;
         this.dirty = true;
     }
+
+    /**
+     * Returns numeric value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true); otherwise
+     * returns null
+     *
+     * @return Number value this node contains, if any (null for non-number
+     * nodes).
+     */
+    @Override
+    public Number numberValue() {
+        return (this.getValue());
+    }
+
+    /**
+     * Returns 16-bit short value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to short operates.
+     *
+     * @return Short value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public short shortValue() {
+        return ((short) this.getValue());
+    }
+
+    /**
+     * Returns integer value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to int operates.
+     *
+     * @return Integer value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public int intValue() {
+        return ((int) this.getValue());
+    }
+
+    /**
+     * Returns 64-bit long value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to long operates.
+     *
+     * @return Long value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public long longValue() {
+        return ((long) this.getValue());
+    }
+
+    /**
+     * Returns 32-bit floating value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this means
+     * that an overflow is possible for `long` values
+     *
+     * @return 32-bit float value this node contains, if any; 0.0 for non-number nodes.
+     * @since 2.2
+     */
+    @Override
+    public float floatValue() {
+        return ((float) this.getValue());
+    }
+
+    /**
+     * Returns 64-bit floating point (double) value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this may result
+     * in overflows with {@link BigInteger} values.
+     *
+     * @return 64-bit double value this node contains, if any; 0.0 for non-number nodes.
+     * @since 2.2
+     */
+    @Override
+    public double doubleValue() {
+        return ((double) this.getValue());
+    }
 }
 
 /*
@@ -254,7 +509,7 @@ class DBInteger8 extends DBEntry {
 */
 
 class DBInteger32 extends DBEntry {
-    public static final int TYPE = 3;
+    public static final EntryType TYPE = EntryType.INT32;
     private int value;
 
     public DBInteger32(Database db, int i) {
@@ -263,7 +518,7 @@ class DBInteger32 extends DBEntry {
     }
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
@@ -280,7 +535,7 @@ class DBInteger32 extends DBEntry {
     public byte[] getBytes_() {
         ByteBuffer content = ByteBuffer.allocate(1 + 4 + 1); //type=1, id=4, bool=1
         content.order(ByteOrder.LITTLE_ENDIAN);
-        content.put((byte) this.getType());
+        content.put(this.getType().getByte());
         content.putInt(this.value);
         return content.array();
     }
@@ -309,10 +564,98 @@ class DBInteger32 extends DBEntry {
         this.value = value;
         this.dirty = true;
     }
+
+    /**
+     * Returns numeric value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true); otherwise
+     * returns null
+     *
+     * @return Number value this node contains, if any (null for non-number
+     * nodes).
+     */
+    @Override
+    public Number numberValue() {
+        return ((Number) this.getValue());
+    }
+
+    /**
+     * Returns 16-bit short value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to short operates.
+     *
+     * @return Short value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public short shortValue() {
+        return ((short) this.getValue());
+    }
+
+    /**
+     * Returns integer value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to int operates.
+     *
+     * @return Integer value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public int intValue() {
+        return (this.getValue());
+    }
+
+    /**
+     * Returns 64-bit long value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to long operates.
+     *
+     * @return Long value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public long longValue() {
+        return ((long) this.getValue());
+    }
+
+    /**
+     * Returns 32-bit floating value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this means
+     * that an overflow is possible for `long` values
+     *
+     * @return 32-bit float value this node contains, if any; 0.0 for non-number nodes.
+     * @since 2.2
+     */
+    @Override
+    public float floatValue() {
+        return ((float) this.getValue());
+    }
+
+    /**
+     * Returns 64-bit floating point (double) value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this may result
+     * in overflows with {@link BigInteger} values.
+     *
+     * @return 64-bit double value this node contains, if any; 0.0 for non-number nodes.
+     * @since 2.2
+     */
+    @Override
+    public double doubleValue() {
+        return ((double) this.getValue());
+    }
 }
 
 class DBFloat extends DBEntry {
-    public static final int TYPE = 5;
+    public static final EntryType TYPE = EntryType.FLOAT;
     private float value;
     public DBFloat(int value){
         this(null, value);
@@ -335,7 +678,7 @@ class DBFloat extends DBEntry {
     }
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
@@ -373,10 +716,98 @@ class DBFloat extends DBEntry {
         this.value = value;
         this.dirty = true;
     }
+
+    /**
+     * Returns 64-bit floating point (double) value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this may result
+     * in overflows with {@link BigInteger} values.
+     *
+     * @return 64-bit double value this node contains, if any; 0.0 for non-number nodes.
+     * @since 2.2
+     */
+    @Override
+    public double doubleValue() {
+        return ((double) this.getValue());
+    }
+
+    /**
+     * Returns integer value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to int operates.
+     *
+     * @return Integer value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public int intValue() {
+        return ((int) this.getValue());
+    }
+
+    /**
+     * Returns 64-bit long value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to long operates.
+     *
+     * @return Long value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public long longValue() {
+        return ((long) this.getValue());
+    }
+
+    /**
+     * Returns 32-bit floating value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.0.
+     * For integer values, conversion is done using coercion; this means
+     * that an overflow is possible for `long` values
+     *
+     * @return 32-bit float value this node contains, if any; 0.0 for non-number nodes.
+     * @since 2.2
+     */
+    @Override
+    public float floatValue() {
+        return (this.getValue());
+    }
+
+    /**
+     * Returns 16-bit short value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true). For other
+     * types returns 0.
+     * For floating-point numbers, value is truncated using default
+     * Java coercion, similar to how cast from double to short operates.
+     *
+     * @return Short value this node contains, if any; 0 for non-number
+     * nodes.
+     */
+    @Override
+    public short shortValue() {
+        return ((short) this.getValue());
+    }
+
+    /**
+     * Returns numeric value for this node, <b>if and only if</b>
+     * this node is numeric ({@link #isNumber} returns true); otherwise
+     * returns null
+     *
+     * @return Number value this node contains, if any (null for non-number
+     * nodes).
+     */
+    @Override
+    public Number numberValue() {
+        return ((Number) this.getValue());
+    }
 }
 
 class DBString extends DBEntry {
-    public static final int TYPE = 6;
+    public static final EntryType TYPE = EntryType.STRING;
     private String value;
 
     public DBString(Database db, String value) {
@@ -385,7 +816,7 @@ class DBString extends DBEntry {
     }
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
@@ -414,10 +845,34 @@ class DBString extends DBEntry {
         this.value = value;
         this.dirty = true;
     }
+
+    /**
+     * Method to use for accessing String values.
+     * Does <b>NOT</b> do any conversions for non-String value nodes;
+     * for non-String values (ones for which {@link #isTextual} returns
+     * false) null will be returned.
+     * For String values, null is never returned (but empty Strings may be)
+     *
+     * @return Textual value this node contains, iff it is a textual
+     * JSON node (comes from JSON String value entry)
+     */
+    @Override
+    public String textValue() {
+        return this.getValue();
+    }
 }
 
-class DBList extends DBEntry {
-    public static final int TYPE = 7;
+class DBContainer extends DBEntry{
+    public DBContainer(Database db) {
+        super(db);
+    }
+
+    public DBContainer() {
+    }
+}
+
+class DBList extends DBContainer {
+    public static final EntryType TYPE = EntryType.LIST;
     private List<DBEntry> value;
 
     public DBList() {
@@ -441,7 +896,7 @@ class DBList extends DBEntry {
     }*/
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
@@ -523,10 +978,11 @@ class DBList extends DBEntry {
         }
         return false;
     }
+
 }
 
-class DBDict extends DBEntry {
-    public static final int TYPE = 8;
+class DBDict extends DBContainer {
+    public static final EntryType TYPE = EntryType.DICT;
     private HashMap<String, DBEntry> data;
     private HashMap<String, DBEntry> inserts;
     private List<DBEntry> removes;
@@ -550,7 +1006,7 @@ class DBDict extends DBEntry {
     }
 
     @Override
-    public int getType() {
+    public EntryType getType() {
         return TYPE;
     }
 
