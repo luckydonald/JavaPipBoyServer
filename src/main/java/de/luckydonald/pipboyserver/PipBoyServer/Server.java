@@ -81,7 +81,7 @@ class Session implements Runnable, IDataUpdateListener {
                     System.out.println("Sending update.");
                     stream.write(update.toBytes());
                     stream.flush();
-                    System.out.println("Send update: " + update.toString());
+                    System.out.println("Send update: " + update.toString().substring(0, Math.min(1000, update.toString().length())));
                 }
                 if (!heartbeatThread.isAlive()) {
                     System.out.println("Heartbeat thread is dead.");

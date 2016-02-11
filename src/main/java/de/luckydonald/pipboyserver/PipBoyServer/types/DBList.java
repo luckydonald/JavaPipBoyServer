@@ -64,7 +64,7 @@ public class DBList extends DBContainer {
             } else {
                 notFirst = true;
             }
-            s.append(item.toString()).append(", ");
+            s.append(item.toString());
         }
         return s.append("]").toString();
     }
