@@ -7,9 +7,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class DBInteger8 extends DBEntry {
+public class DBInteger8 extends DBSimple<Byte> {
     public static final EntryType TYPE = EntryType.INT8;
-    private byte value;
 
     public DBInteger8(int i) {
         this(null, i);
@@ -71,11 +70,6 @@ public class DBInteger8 extends DBEntry {
 
     public byte getValue() {
         return value;
-    }
-
-    public void setValue(byte value) {
-        this.value = value;
-        this.dirty = true;
     }
 
     /**

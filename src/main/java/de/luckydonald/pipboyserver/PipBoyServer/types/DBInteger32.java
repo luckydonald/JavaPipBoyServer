@@ -7,9 +7,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class DBInteger32 extends DBEntry {
+public class DBInteger32 extends DBSimple<Integer> {
     public static final EntryType TYPE = EntryType.INT32;
-    private int value;
 
     public DBInteger32(Database db, int i) {
         super(db);
@@ -17,8 +16,7 @@ public class DBInteger32 extends DBEntry {
     }
 
     public DBInteger32(int i) {
-        super();
-        this.value = i;
+        this(null, i);
     }
     @Override
     public EntryType getType() {
@@ -63,9 +61,16 @@ public class DBInteger32 extends DBEntry {
         return value;
     }
 
-    public void setValue(int value) {
-        this.value = value;
-        this.dirty = true;
+    /**
+     * Parses and applies the value from a given string.
+     *
+     * @param s The string.
+     * @return the updated {@link DBEntry entry} (type {@link DBSimple}).
+     */
+    @Override
+    public DBInteger32 setValueFromString(String s) {
+        this.setValue(Integer.parseInt(s));
+        return this;
     }
 
     /**

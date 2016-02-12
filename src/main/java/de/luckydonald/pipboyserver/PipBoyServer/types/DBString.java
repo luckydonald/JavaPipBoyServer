@@ -2,13 +2,11 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
-import java.util.logging.Logger;
 
 import java.nio.ByteBuffer;
 
-public class DBString extends DBEntry {
+public class DBString extends DBSimple<String> {
     public static final EntryType TYPE = EntryType.STRING;
-    private String value;
 
     public DBString(Database db, String value) {
         super(db);
@@ -41,9 +39,16 @@ public class DBString extends DBEntry {
         return value;
     }
 
-    public void setValue(String value) {
-        this.value = value;
-        this.dirty = true;
+    /**
+     * Parses and applies the value from a given string.
+     *
+     * @param s The string.
+     * @return the updated {@link DBEntry entry} (type {@link DBSimple}).
+     */
+    @Override
+    public DBString setValueFromString(String s) {
+        this.setValue(s);
+        return this;
     }
 
     /**

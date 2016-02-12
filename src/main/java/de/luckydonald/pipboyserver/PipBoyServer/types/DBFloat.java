@@ -6,9 +6,8 @@ import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-public class DBFloat extends DBEntry {
+public class DBFloat extends DBSimple<Float> {
     public static final EntryType TYPE = EntryType.FLOAT;
-    private float value;
     public DBFloat(int value){
         this(null, value);
     }
@@ -62,11 +61,6 @@ public class DBFloat extends DBEntry {
 
     public float getValue() {
         return value;
-    }
-
-    public void setValue(float value) {
-        this.value = value;
-        this.dirty = true;
     }
 
     /**

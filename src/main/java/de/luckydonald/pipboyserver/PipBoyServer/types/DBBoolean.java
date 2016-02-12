@@ -6,9 +6,8 @@ import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class DBBoolean extends DBEntry {
+public class DBBoolean extends DBSimple<Boolean> {
     public static final EntryType TYPE = EntryType.BOOLEAN;
-    private Boolean value = null;
 
     @Override
     public EntryType getType() {
@@ -58,11 +57,6 @@ public class DBBoolean extends DBEntry {
     }
     public Boolean getValue() {
         return value;
-    }
-
-    public void setValue(Boolean value) {
-        this.value = value;
-        this.dirty = false;
     }
 
     /**
