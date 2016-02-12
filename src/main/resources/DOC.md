@@ -1,3 +1,22 @@
+# Discover
+
+### PC & PS4
+
+The app send following broadcast packet to **UDP/28000**
+```json
+{"cmd": "autodiscover"}
+```
+It send receives a packet containing Information about the game.
+The machine type is either `PC` or `PS4`.
+```json
+{"IsBusy": false, "MachineType": "PC"}
+```
+
+### XBox One
+
+The app sends a 16 byte broadcast packet to port **UDP/5050**
+The content is omitted because of possible privacy issues. (Can anyone explain me the protocol? Its XBox standard.)
+
 # Communication
 Once Discovery has completed, the app connects to the server on Port TCP/27000.
 
@@ -218,3 +237,4 @@ Messages of type 6 are responses to commands. Currently, it appears that respons
 ####### Sources
  - [mattbaker/pipboyspec/communication.md PR#1](https://github.com/ekimekim/pipboyspec/blob/data-update-format/communication.md)
  - [gist luckydonald/d128fe05acdfff76d8be](https://gist.github.com/luckydonald/d128fe05acdfff76d8be)
+ - [NimVek/pipboy/PROTOCOL.md](https://github.com/NimVek/pipboy/blob/master/PROTOCOL.md)
