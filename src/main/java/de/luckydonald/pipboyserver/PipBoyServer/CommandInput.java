@@ -82,8 +82,13 @@ public class CommandInput extends Thread implements Runnable {
             System.out.println("Enter command.");
             line = scanner.nextLine();
             try {
-                this.process(line);
-            } catch (RuntimeException e) {
+                try {
+                    this.process(line);
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                    System.out.println("Continuing.");
+                }
+            } catch (Exception | StackOverflowError e) {
                 e.printStackTrace();
                 System.out.println("Continuing.");
             }

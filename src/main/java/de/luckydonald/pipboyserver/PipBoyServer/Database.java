@@ -9,6 +9,7 @@ import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.Messages.IDataUpdateListener;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 
 import java.io.IOException;
@@ -167,7 +168,7 @@ public class Database {
                 default: // (FLOAT, BOOLEAN, INT8, INT32, STRING)
                     getEntriesLock().readLock().unlock();
                     logger.finest("unlocked DB: read");
-                    throw new StackOverflowError("There should be the key " + s + ". But we got a "+ node.getType() + " object: " + node);
+                    throw new KeyDoesNotExistsException("There should be the key \"" + s + "\". But have a "+ node.getType() + " object: " + node);
             }
             level++;
         }

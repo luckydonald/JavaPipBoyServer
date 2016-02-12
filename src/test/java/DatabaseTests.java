@@ -209,11 +209,12 @@ public class DatabaseTests {
         //  ]
         // }
         assertEquals(
-                "root[\"a6\"][2] traversal",
+                "root[\"a6\"][2][\"c1\"] traversal",
                 "baz",
                 db.getRoot().getDBDict().get("a6").getDBList().get(2).getDBDict().get("c1").textValue()
         );
     }
+
     @Test
     public void testStringTraversal() throws AlreadyTakenException, AlreadyInsertedException {
         testCreation();
@@ -230,7 +231,7 @@ public class DatabaseTests {
         //  ]
         // }
         assertEquals(
-                "root[\"a6\"][2] string traversal",
+                "root[\"a6.2.c1\"] string traversal",
                 "baz",
                 db.get("a6.2.c1").textValue()
         );
