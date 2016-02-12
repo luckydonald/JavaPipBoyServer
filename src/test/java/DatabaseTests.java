@@ -231,6 +231,14 @@ public class DatabaseTests {
         a1b.setValueFromString("no");
         assertEquals("(DBBoolean) updated to no=false", a1.getValue(), false);
     }
+
+    @Test
+    public void testUnicodeStrings() throws AlreadyTakenException, AlreadyInsertedException {
+        DBString str = new DBString("Günter was here.");
+        root.add("äöüß", str);
+        db.get("äöüß").textValue();
+    }
+
     @Test
     public void testTraversal() throws AlreadyTakenException, AlreadyInsertedException {
         testCreation();

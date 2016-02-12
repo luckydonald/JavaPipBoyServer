@@ -3,7 +3,9 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
 
 public class DBString extends DBSimple<String> {
     public static final EntryType TYPE = EntryType.STRING;
@@ -11,6 +13,10 @@ public class DBString extends DBSimple<String> {
     public DBString(Database db, String value) {
         super(db);
         this.value = value;
+    }
+
+    public DBString(String value) {
+        this(null, value);
     }
 
     @Override
@@ -27,7 +33,12 @@ public class DBString extends DBSimple<String> {
 
     @Override
     public int getRequiredValueBufferLength() {
-        return this.value.length()+1; //+1 because Null-Termination.
+        try {
+            return this.value.getBytes("UTF-8").length+1; //+1 because Null-Termination.
+        } catch (UnsupportedEncodingException e) {
+            this.getLogger().log(Level.WARNING, e.getLocalizedMessage(), e);
+            return this.value.getBytes().length+1; //+1 because Null-Termination.
+        }
     }
 
     @Override
