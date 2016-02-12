@@ -111,9 +111,13 @@ public class DBList extends DBContainer {
     public DBEntry get(int index) {
         getLogger().finest("locking DB: read");
         this.getDatabase().getEntriesLock().readLock().lock();
-        DBEntry dbEntry = this.value.get(index);
-        this.getDatabase().getEntriesLock().readLock().unlock();
-        getLogger().finest("unlocked DB: read");
+        DBEntry dbEntry;
+        try {
+            dbEntry = this.value.get(index);
+        } finally {
+            this.getDatabase().getEntriesLock().readLock().unlock();
+            getLogger().finest("unlocked DB: read");
+        }
         return dbEntry;
     }
 

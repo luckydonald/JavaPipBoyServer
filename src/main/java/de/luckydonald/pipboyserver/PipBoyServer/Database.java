@@ -11,6 +11,7 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedExcept
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
+import de.luckydonald.utils.interactions.CommandInput;
 
 import java.io.IOException;
 import java.net.URL;
@@ -79,31 +80,58 @@ public class Database {
         */
         return e;
     }
-    public Void cmd_List(String command) {
+    public Void cmd_List(Scanner command) {
         print();
         return null;
     }
-    public Void cmd_Test(String command) {
-        if (command.startsWith("test")) {
-            command = command.substring("test".length()).trim();
-        }
-        System.out.println("command: \"" + command + "\".");
+    public Void cmd_Test(Scanner command) {
+        System.out.println("command: \"" + command.nextLine() + "\".");
         return null;
     }
-    public Void cmd_Get(String command) {
-        if (command.startsWith("get")) {
-            command = command.substring("get".length()).trim();
-        }
-        DBEntry e = this.get(command);
-        System.out.println("" + e.getID() + ":\t" + e.toSimpleString(false));
+    public Void cmd_Get(Scanner scanner) {
+        cmdGetter(scanner);
         return null;
     }
-    public Void cmd_Set(String command) {
-        if (command.startsWith("set")) {
-            command = command.substring("set".length()).trim();
+    public LinkedList<String> cmdGetter(Scanner scanner) {
+        System.out.println("db.get()");
+        DBEntry e = this.get("");
+        System.out.println(e.getID() + ":\t" + e.toSimpleString(false));
+        LinkedList<String> levels = new LinkedList<>();
+        boolean isJustStarted = true;
+        while (scanner.hasNextLine()) {
+            String lineInput = scanner.nextLine();
+            if (!isJustStarted && lineInput.trim().equals("")) {
+                break;
+            } else {
+                isJustStarted = false;
+            }
+            Scanner ss = new Scanner(lineInput);
+            while (ss.hasNext()) {
+                String input = ss.next();
+                if (input.trim().equals("..")) {
+                    levels.removeLast();
+                } else {
+                    levels.add(input);
+                }
+                String key = String.join(".", levels);
+                System.out.println("db.get(" + key + ")");
+                try {
+                    e = this.get(key);
+                    System.out.println(e.getID() + ":\t" + e.toSimpleString(false));
+                } catch (IndexOutOfBoundsException ex) {
+                    ex.printStackTrace();
+                    levels.removeLast();
+                }
+            }
         }
-        DBEntry e = this.get(command);
-        System.out.println("" + e.getID() + ":\t" + e.toSimpleString(false));
+        return levels;
+    }
+    public Void cmd_Set(Scanner scanner) {
+
+        LinkedList<String> levels = cmdGetter(scanner);
+        String key = String.join(".", levels);
+        DBEntry e = this.get(key);
+        System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
         return null;
     }
     public void print() {
@@ -115,7 +143,7 @@ public class Database {
     }
 
     public void startCLI() {
-        Function<String, Void> f = this::cmd_List;
+        Function<Scanner, Void> f = this::cmd_List;
         CommandInput cmd = new CommandInput("list", f);
         f = this::cmd_Get;
         cmd.add("get", f);
@@ -160,10 +188,21 @@ public class Database {
             switch (node.getType()) {
                 case DICT:
                     node = ((DBDict)node).get(s);
+                    if (node == null){
+                        getEntriesLock().readLock().unlock();
+                        logger.finest("unlocked DB: read");
+                        throw new KeyDoesNotExistsException("There should be the key \"" + s + "\". It doesn't exists.");
+                    }
                     break;
                 case LIST:
                     int index = new Integer(s);
-                    node = ((DBList)node).get(index);
+                    try {
+                        node = ((DBList) node).get(index);
+                    } catch (IndexOutOfBoundsException e) {
+                        getEntriesLock().readLock().unlock();
+                        logger.finest("unlocked DB: read");
+                        throw e;
+                    }
                     break;
                 default: // (FLOAT, BOOLEAN, INT8, INT32, STRING)
                     getEntriesLock().readLock().unlock();
