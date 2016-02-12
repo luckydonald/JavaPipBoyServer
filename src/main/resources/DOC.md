@@ -116,38 +116,46 @@ In this case, the new value replaces the old value.
 Objects are unordered and keys will not be repeated.
 
 ###### Example
-(read from top to down, left to right)
+(read from top to down, left to right. Remember, data is [little-endian](https://en.wikipedia.org/wiki/Endianness#Calculation_order).)
 
-| Data Update Attributes | Attributes | Data Attributes |            | bytes        | Interpretation |
-| -----------            | ---------- | --------------- | ---------- | ------------ | -------------- |
-| size                   |            |                 |            | 3b000000     | Whole size of the package to be send |
-| type                   |            |                 |            | 03           | Type 3: Data Update |
-|                        |            |                 |            |              |  |
-| content                | type       |                 |            | 03           | **First Package**<br> Data Type 3: `INT32` |
-|                        | id         |                 |            | 0a000000     | ID: 10 |
-|                        | data       |                 |            | 2a000000     | Value: 42 |
-|                        |            |                 |            |              |  |
-|                        | type       |                 |            | 07           | **Second Package**<br>Data Type 7: Array |
-|                        | id         |                 |            | 0b000000     | ID: 11 |
-|                        | data       | length          |            | 0200         | Length 2: Array has 2 entries |
-|                        |            | first id        |            | 01000000     | ID of element 1: >>1 |
-|                        |            | second id       |            | 02000000     | ID of element 2: >>2 |
-|                        |            |                 |            |              |  |
-|                        | type       |                 |            | 08           | **Third Package**<br>Data Type 8:  |
-|                        | id         |                 |            | 0c000000     | ID: 12 |
-|                        | data       | added           | length     | 0200         | 2 elements to insert |
-|                        |            |                 | first id   | 05000000     | ID  of element 1: >>5 |
-|                        |            |                 | first key  | 666f6f00     | Key of element 1: `"foo\0"` |
-|                        |            |                 | second id  | 06000000     | ID  of element 2: >>6 |
-|                        |            |                 | second key | 68656c6c6f00 | Key of element 2: `"hello\0"` |
-|                        |            | removed         | length     | 0200         | 2 elements to remove |
-|                        |            |                 | first id   | 03000000     | remove element with ID >>3 |
-|                        |            |                 | second id  | 04000000     | remove element with ID >>4 |
+| Data Update Attributes | example (bytes) | Interpretation                                       |
+| -----------            | ------------    | --------------                                       |
+| size                   | 3b000000        | `59` bytes content, size of packages (next table) included |
+| type                   | 03              | Type 3: Data Update                                  |
+| content                | (`59` bytes)    | **See next Table**                                   |
+
+
+The content can contain many Data Packages.
+They just follow after each other. 
+
+| Data Item          | Attributes   | Data Attributes | example (bytes) | Interpretation |
+| ------------------ | ------------ | --------------- | --------------- | -------------- |
+| **First Package**  | type         |                 | 03              | Data Type 3: `INT32` |
+|                    | id           |                 | 0a000000        | ID: 10 |
+|                    | data         |                 | 2a000000        | Value: 42 |
+|                    |              |                 |                 |  |
+| **Second Package** | type         |                 | 07              | Data Type 7: Array |
+|                    | id           |                 | 0b000000        | ID: 11 |
+|                    | data         | length          | 0200            | Length 2: Array has 2 entries |
+|                    |              | `id #1`         | 01000000        | ID of element 1: >>1 |
+|                    |              | `id #2`         | 02000000        | ID of element 2: >>2 |
+|                    |              |                 |                 |  |
+| **Third Package**  | type         |                 | 08              | Data Type 8:  |
+|                    | id           |                 | 0c000000        | ID: 12 |
+|                    | added        | length          | 0200            | 2 elements to insert |
+|                    |              | `id  #1`        | 05000000        | ID  of element 1: >>5 |
+|                    |              | `key #1`        | 666f6f00        | Key of element 1: `"foo\0"` |
+|                    |              | `id  #2`        | 06000000        | ID  of element 2: >>6 |
+|                    |              | `key #2`        | 68656c6c6f00    | Key of element 2: `"hello\0"` |
+|                    | removed      | length          | 0200            | 2 elements to remove |
+|                    |              | first id        | 03000000        | remove element with ID >>3 |
+|                    |              | second id       | 04000000        | remove element with ID >>4 |
  
 corresponds to an update that:
 * sets value with id `10` to be a `uint32` equal to `42`
 * sets value with id `11` to be an array containing the values with ids `1, 2`
 * updates value with id `12`, an object, to add keys `"foo": 5, "hello": 6` and remove values `3, 4`
+Total size `59 bytes` is valid. *1 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 4 + 6 + 2 + 4 + 4* = *59*
 
 #### Type 4: Local Map Update
 
