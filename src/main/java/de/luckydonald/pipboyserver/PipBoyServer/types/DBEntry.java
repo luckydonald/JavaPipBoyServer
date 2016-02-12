@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class DBEntry {
     private Logger logger = null;
-    Logger getLogger() {
+    public Logger getLogger() {
         if (this.logger == null) {
            this.logger =  Logger.getLogger(this.getClass().getCanonicalName());
         }

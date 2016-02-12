@@ -83,16 +83,25 @@ public class Database {
         return null;
     }
     public Void cmd_Test(String command) {
+        if (command.startsWith("test")) {
+            command = command.substring("test".length()).trim();
+        }
         System.out.println("command: \"" + command + "\".");
         return null;
     }
     public Void cmd_Get(String command) {
-        DBEntry e = this.get(command.trim());
+        if (command.startsWith("get")) {
+            command = command.substring("get".length()).trim();
+        }
+        DBEntry e = this.get(command);
         System.out.println("" + e.getID() + ":\t" + e.toSimpleString(false));
         return null;
     }
     public Void cmd_Set(String command) {
-        DBEntry e = this.get(command.trim());
+        if (command.startsWith("set")) {
+            command = command.substring("set".length()).trim();
+        }
+        DBEntry e = this.get(command);
         System.out.println("" + e.getID() + ":\t" + e.toSimpleString(false));
         return null;
     }
@@ -134,8 +143,37 @@ public class Database {
         return size;
     }
     public DBEntry get(String path) {
+        int level = 0;
+        logger.finest("locking DB: read");
+        getEntriesLock().readLock().lock();
         DBDict root = (DBDict) this.get(0);  // root node should be 0.
-        return root;
+        DBEntry node = root;
+        String[] parts = path.split("\\.");
+        if (parts.length == 0) {
+            parts = new String[]{path};
+        }
+        for (String s : parts) {
+            if (s.length() == 0) {
+                continue;
+            }
+            switch (node.getType()) {
+                case DICT:
+                    node = ((DBDict)node).get(s);
+                    break;
+                case LIST:
+                    int index = new Integer(s);
+                    node = ((DBList)node).get(index);
+                    break;
+                default: // (FLOAT, BOOLEAN, INT8, INT32, STRING)
+                    getEntriesLock().readLock().unlock();
+                    logger.finest("unlocked DB: read");
+                    throw new StackOverflowError("There should be the key " + s + ". But we got a "+ node.getType() + " object: " + node);
+            }
+            level++;
+        }
+        getEntriesLock().readLock().unlock();
+        logger.finest("unlocked DB: read");
+        return node;
     }
     public DBEntry get(int id) {
         this.entriesLock.readLock().lock();

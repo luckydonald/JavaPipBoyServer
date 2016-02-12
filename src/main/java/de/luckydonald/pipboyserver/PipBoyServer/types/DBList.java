@@ -89,13 +89,13 @@ public class DBList extends DBContainer {
         if (entry == null) {
             throw new NullPointerException();
         }
-        getLogger().info("locking DB: write");
+        getLogger().finest("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
         addNewEntryToDB(entry);
         this.value.add(entry);
         this.dirty = true;
         this.getDatabase().getEntriesLock().writeLock().unlock();
-        getLogger().info("unlocked DB: write");
+        getLogger().finest("unlocked DB: write");
         return this;
     }
     /**
@@ -109,11 +109,11 @@ public class DBList extends DBContainer {
      * @return the element at the specified position in this list
      */
     public DBEntry get(int index) {
-        getLogger().info("locking DB: read");
+        getLogger().finest("locking DB: read");
         this.getDatabase().getEntriesLock().readLock().lock();
         DBEntry dbEntry = this.value.get(index);
         this.getDatabase().getEntriesLock().readLock().unlock();
-        getLogger().info("unlocked DB: read");
+        getLogger().finest("unlocked DB: read");
         return dbEntry;
     }
 
