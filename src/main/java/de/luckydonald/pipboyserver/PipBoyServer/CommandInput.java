@@ -60,8 +60,19 @@ public class CommandInput extends Thread implements Runnable {
         }
         if (longestHit != null) {
             longestHit.getValue().apply(line);
+        } else if (line.trim().equals("help")){
+            this.printHelp();
         }
 
+    }
+
+    /**
+     * Prints the help about this commands.
+     */
+    public void printHelp() {
+        for (Map.Entry<String, Function<String, Void>> cmd : this.commandCallbacks.entrySet()) {
+            System.out.println(" - " + cmd.getKey() + "\t" + cmd.getValue().toString());
+        }
     }
 
     /**
