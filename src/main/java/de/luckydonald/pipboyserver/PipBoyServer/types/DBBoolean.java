@@ -57,9 +57,6 @@ public class DBBoolean extends DBSimple<Boolean> {
         }
         return s + "value=" + value + ")";
     }
-    public Boolean getValue() {
-        return value;
-    }
 
     /**
      * Parses and applies the {@code boolean} value from a given string.

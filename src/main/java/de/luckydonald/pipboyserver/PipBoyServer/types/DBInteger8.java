@@ -69,10 +69,6 @@ public class DBInteger8 extends DBSimple<Byte> {
         return s + "value=" + value + ")";
     }
 
-    public byte getValue() {
-        return value;
-    }
-
     /**
      * Parses and applies the {@code byte} value from a given {@code String}.
      *

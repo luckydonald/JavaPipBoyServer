@@ -58,9 +58,6 @@ public class DBInteger32 extends DBSimple<Integer> {
 
     }
 
-    public int getValue() {
-        return value;
-    }
     /**
      * Parses and applies the {@code int} value from a given {@code String}.
      *
@@ -88,7 +85,7 @@ public class DBInteger32 extends DBSimple<Integer> {
      */
     @Override
     public Number numberValue() {
-        return ((Number) this.getValue());
+        return this.getValue();
     }
 
     /**
@@ -103,7 +100,7 @@ public class DBInteger32 extends DBSimple<Integer> {
      */
     @Override
     public short shortValue() {
-        return ((short) this.getValue());
+        return this.getValue().shortValue();
     }
 
     /**
@@ -118,7 +115,7 @@ public class DBInteger32 extends DBSimple<Integer> {
      */
     @Override
     public int intValue() {
-        return (this.getValue());
+        return this.getValue();
     }
 
     /**

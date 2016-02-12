@@ -35,11 +35,6 @@ public class DBString extends DBSimple<String> {
         return "DBString(\"" + value + "\")";
     }
 
-    public String getValue() {
-        return value;
-    }
-
-
     /**
      * Applies the {@code String} value from a given string.
      *

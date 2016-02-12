@@ -12,7 +12,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author luckydonald
  * @since 12.02.2016
  */
-public class DBSimple<T> extends DBEntry {
+public abstract class DBSimple<T> extends DBEntry {
 
     public DBSimple(Database db) {
         super(db);
@@ -24,9 +24,7 @@ public class DBSimple<T> extends DBEntry {
      * @return the updated {@link DBEntry} entry.
      * @throws ParserException the parser failed.
      */
-    public DBSimple setValueFromString(String s) throws ParserException {
-        throw new ParserException("There is no Parser implemented!");
-    }
+    abstract public DBSimple setValueFromString(String s) throws ParserException;
     T value = null;
     public void setValue(T value) {
         getLogger().finest("locking DB: write");
@@ -36,7 +34,7 @@ public class DBSimple<T> extends DBEntry {
         getLogger().finest("unlocked DB: write");
         this.getDatabase().queueDataUpdate(new DataUpdate(this));
     }
-    /*public T getValue() {
+    public T getValue() {
         return this.value;
-    }*/
+    }
 }

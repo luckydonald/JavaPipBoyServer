@@ -60,10 +60,6 @@ public class DBFloat extends DBSimple<Float> {
         return s + "value=" + value + ")";
     }
 
-    public float getValue() {
-        return value;
-    }
-
     /**
      * Parses and applies the {@code float} value from a given string.
      *
@@ -109,7 +105,7 @@ public class DBFloat extends DBSimple<Float> {
      */
     @Override
     public int intValue() {
-        return ((int) this.getValue());
+        return this.getValue().intValue();
     }
 
     /**
@@ -124,7 +120,7 @@ public class DBFloat extends DBSimple<Float> {
      */
     @Override
     public long longValue() {
-        return ((long) this.getValue());
+        return this.getValue().longValue();
     }
 
     /**
@@ -154,7 +150,7 @@ public class DBFloat extends DBSimple<Float> {
      */
     @Override
     public short shortValue() {
-        return ((short) this.getValue());
+        return this.getValue().shortValue();
     }
 
     /**
