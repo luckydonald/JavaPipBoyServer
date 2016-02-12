@@ -54,8 +54,12 @@ public class Database extends ObjectWithLogger {
         e._setID(nextFreeInt);
         e._setDatabase(this);
         this.entriesLock.writeLock().unlock();
-        DataUpdate update = new DataUpdate(e); //TODO Updates!
-        //this.updates.add(update);
+        DataUpdate update = new DataUpdate(e);
+        queueDataUpdate(update);
+        return e;
+    }
+
+    public synchronized void queueDataUpdate(DataUpdate update) {
         this.updateListenerLock.readLock().lock();
         for (IDataUpdateListener listener : this.updateListener) {
             try {
@@ -65,8 +69,8 @@ public class Database extends ObjectWithLogger {
             }
         }
         this.updateListenerLock.readLock().unlock();
-        return e;
     }
+
     public Void cmd_List(Scanner command) {
         print();
         return null;

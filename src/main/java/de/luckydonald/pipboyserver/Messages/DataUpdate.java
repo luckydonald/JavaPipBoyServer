@@ -17,7 +17,7 @@ public class DataUpdate extends Message{
     }*/
     public DataUpdate(DBEntry e) {
         super(TYPE, e.getBytes());
-        this.entries.add(e);
+        this.entries.add(e); //TODO: deep copy
     }
     public DataUpdate(List<DBEntry> entries) {
         super(TYPE);
