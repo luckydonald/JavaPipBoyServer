@@ -123,6 +123,10 @@ public class Database {
                     levels.removeLast();
                 }
             }
+            System.out.println(" _");
+            System.out.println("| Give a key/index where to go next or \"..\" to move up agan.");
+            System.out.println("| Blank line exits.");
+            System.out.print("'>");
         }
         return levels;
     }
