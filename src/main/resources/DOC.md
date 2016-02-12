@@ -83,17 +83,21 @@ struct UpdateHeader {
 
 This is followed by data depending on the value type. The possible types are as follows:
 
-| Type ID | Type     | Format of update data                                                                    |
-| ------- | -------- | ---------------------------------------------------------------------------------------- |
-| 0       | BOOLEAN  | `uint8_t`, value is true if data is non-zero                                             |
-| 1       | INT8     | `int8_t`                                                                                 |
-| 2       | UINT8    | `uint8_t`                                                                                |
-| 3       | INT32    | `int32_t`                                                                                |
-| 4       | UINT32   | `uint32_t`                                                                               |
-| 5       | FLOAT    | `float32_t`                                                                              |
-| 6       | STRING   | `0x00`-termined byte string                                                              |
-| 7       | ARRAY    | `uint16_t length, uint32_t ids[length]`, ids are the value IDs of previously sent values |
-| 8       | OBJECT   | See below.                                                                               |
+| Type ID | Type     | Java      | Python    | Bytes           | Format of update data                                                                    |
+| ------- | -------- | --------- | --------- | --------------- | ---------------------------------------------------------------------------------------- |
+| 0       | BOOLEAN  | `boolean` | `bool`    |   1             | `uint8_t` 0: false 1: true. , value is true if data is non-zero.                         |
+| 1       | INT8     | `byte`    | `byte`    |   1             | `int8_t` \[0x00-0xFF\]                                                                   |
+| 2       | UINT8    | -         | (?)       |   1             | `uint8_t` \[0-255\]                                                                      |
+| 3       | INT32    | `int`     | `int`     |   4             | `int32_t` \[0x00000000-0xFFFFFFFF\]                                                      |
+| 4       | UINT32   | -         | (?)       |   4             | `uint32_t` \[0-4294967295\]                                                              |
+| 5       | FLOAT    | `float`   | `float`   |   4             | `float32_t`                                                                              |
+| 6       | STRING   | `String`  | `str`     |   n             | Null(`0x00`)-termined byte string. Encoding?                                             |
+| 7       | ARRAY    | `[]`      | `list`    | 2+(n*4)         | `uint16_t length, uint32_t ids[length]`, ids are the value IDs of previously sent values |
+| 8       | OBJECT   | `Hashmap` | `dict  `  | 2+(i*4)+2+(d*4) | See picture/text below                                                                   |
+
+
+![fallout4](https://cloud.githubusercontent.com/assets/2737108/12401272/a91e8db2-be25-11e5-85f5-533f6e7f4006.png)
+
 
 Objects are complex. There are two parts - a set of (key, value) pairs to add, followed by a set of old values to remove.
 The first time an object is sent, the remove set will be empty.
@@ -111,31 +115,35 @@ In this case, the new value replaces the old value.
 
 Objects are unordered and keys will not be repeated.
 
-e.x.
+###### Example
+(read from top to down, left to right)
 
-        |               |      |           |            | bytes        |
-------- | ------------- | ---- | --------- | ---------- | ------------ |
-size    |               |      |           |            | 3b000000     |
-type    |               |      |           |            | 03           |
-content | first update  | type |           |            | 03           |
-        |               | id   |           |            | 0a000000     |
-        |               | data |           |            | 2a000000     |
-        | second update | type |           |            | 07           |
-        |               | id   |           |            | 0b000000     |
-        |               | data | length    |            | 0200         |
-        |               |      | first id  |            | 01000000     |
-        |               |      | second id |            | 02000000     |
-        | third update  | type |           |            | 08           |
-        |               | id   |           |            | 0c000000     |
-        |               | data | added     | length     | 0200         |
-        |               |      |           | first id   | 05000000     |
-        |               |      |           | first key  | 666f6f00     |
-        |               |      |           | second id  | 06000000     |
-        |               |      |           | second key | 68656c6c6f00 |
-        |               |      | removed   | length     | 0200         |
-        |               |      |           | first id   | 03000000     |
-        |               |      |           | second id  | 04000000     |
-
+| Data Update Attributes | Attributes | Data Attributes |            | bytes        | Interpretation |
+| -----------            | ---------- | --------------- | ---------- | ------------ | -------------- |
+| size                   |            |                 |            | 3b000000     | Whole size of the package to be send |
+| type                   |            |                 |            | 03           | Type 3: Data Update |
+|                        |            |                 |            |              |  |
+| content                | type       |                 |            | 03           | **First Package**<br> Data Type 3: `INT32` |
+|                        | id         |                 |            | 0a000000     | ID: 10 |
+|                        | data       |                 |            | 2a000000     | Value: 42 |
+|                        |            |                 |            |              |  |
+|                        | type       |                 |            | 07           | **Second Package**<br>Data Type 7: Array |
+|                        | id         |                 |            | 0b000000     | ID: 11 |
+|                        | data       | length          |            | 0200         | Length 2: Array has 2 entries |
+|                        |            | first id        |            | 01000000     | ID of element 1: >>1 |
+|                        |            | second id       |            | 02000000     | ID of element 2: >>2 |
+|                        |            |                 |            |              |  |
+|                        | type       |                 |            | 08           | **Third Package**<br>Data Type 8:  |
+|                        | id         |                 |            | 0c000000     | ID: 12 |
+|                        | data       | added           | length     | 0200         | 2 elements to insert |
+|                        |            |                 | first id   | 05000000     | ID  of element 1: >>5 |
+|                        |            |                 | first key  | 666f6f00     | Key of element 1: `"foo\0"` |
+|                        |            |                 | second id  | 06000000     | ID  of element 2: >>6 |
+|                        |            |                 | second key | 68656c6c6f00 | Key of element 2: `"hello\0"` |
+|                        |            | removed         | length     | 0200         | 2 elements to remove |
+|                        |            |                 | first id   | 03000000     | remove element with ID >>3 |
+|                        |            |                 | second id  | 04000000     | remove element with ID >>4 |
+ 
 corresponds to an update that:
 * sets value with id `10` to be a `uint32` equal to `42`
 * sets value with id `11` to be an array containing the values with ids `1, 2`
@@ -199,5 +207,6 @@ Messages of type 6 are responses to commands. Currently, it appears that respons
 {"allowed":true,"id":3,"success":true}
 ```
 
-# Sources
+####### Sources
  - [mattbaker/pipboyspec/communication.md PR#1](https://github.com/ekimekim/pipboyspec/blob/data-update-format/communication.md)
+ - [gist luckydonald/d128fe05acdfff76d8be](https://gist.github.com/luckydonald/d128fe05acdfff76d8be)
