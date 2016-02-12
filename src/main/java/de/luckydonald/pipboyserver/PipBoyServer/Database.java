@@ -64,7 +64,6 @@ public class Database {
         e._setID(nextFreeInt);
         e._setDatabase(this);
         this.entriesLock.writeLock().unlock();
-        //DatabasePlace place = new DatabasePlace(nextFreeInt, e);
         /*
         DataUpdate update = new DataUpdate(e); //TODO Updates!
         //this.updates.add(update);
@@ -131,7 +130,6 @@ public class Database {
         return levels;
     }
     public Void cmd_Set(Scanner scanner) {
-
         LinkedList<String> levels = cmdGetter(scanner);
         String key = String.join(".", levels);
         DBEntry e = this.get(key);
@@ -596,14 +594,6 @@ public class Database {
 
     public int getID(DBEntry dbEntry) {
         return dbEntry.getID();
-    }
-}
-class DatabasePlace {
-    int id;
-    DBEntry value;
-    public DatabasePlace(int id, DBEntry value) {
-        this.id = id;
-        this.value = value;
     }
 }
 
