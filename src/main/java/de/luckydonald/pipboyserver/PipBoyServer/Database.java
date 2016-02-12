@@ -10,6 +10,7 @@ import de.luckydonald.pipboyserver.Messages.IDataUpdateListener;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.interactions.CommandInput;
 import de.luckydonald.utils.ObjectWithLogger;
@@ -84,17 +85,18 @@ public class Database extends ObjectWithLogger {
         return null;
     }
     public LinkedList<String> cmdGetter(Scanner scanner) {
-        System.out.println("db.get()");
-        DBEntry e = this.get("");
-        System.out.println(e.getID() + ":\t" + e.toSimpleString(false));
         LinkedList<String> levels = new LinkedList<>();
         boolean isJustStarted = true;
+        DBEntry e;
         while (scanner.hasNextLine()) {
             String lineInput = scanner.nextLine();
-            if (!isJustStarted && lineInput.trim().equals("")) {
-                break;
-            } else {
+            if (isJustStarted) {
                 isJustStarted = false;
+                e = this.get("");
+                System.out.println("(" + e.getID() + "):\t" + e.toSimpleString(false));
+            } else if (lineInput.trim().equals("")){
+                // empty row => done
+                break;
             }
             Scanner ss = new Scanner(lineInput);
             while (ss.hasNext()) {
@@ -106,7 +108,7 @@ public class Database extends ObjectWithLogger {
                         if (!part.trim().equals("")) {
                             levels.add(part);
                             try {
-                                e = this.get(String.join(".", levels));
+                                this.get(String.join(".", levels));  // just try to see if it raises an exception.
                             } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                                 levels.removeLast();
                                 System.out.println("Failed to go further as \"" + String.join(".", levels) + "\". Ignoring rest. (" + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage() + ")");
@@ -118,10 +120,9 @@ public class Database extends ObjectWithLogger {
                     }
                 }
                 String key = String.join(".", levels);
-                System.out.println("db.get(" + key + ")");
                 try {
                     e = this.get(key);
-                    System.out.println(e.getID() + ":\t" + e.toSimpleString(false));
+                    System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
                 } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                     System.out.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
                     getLogger().log(Level.FINE,ex.toString(), ex);
@@ -135,10 +136,37 @@ public class Database extends ObjectWithLogger {
         }
         return levels;
     }
+    //Radio.1.text Günters Radio
     public Void cmd_Set(Scanner scanner) {
-        LinkedList<String> levels = cmdGetter(scanner);
-        String key = String.join(".", levels);
-        DBEntry e = this.get(key);
+        boolean isSimple = false;
+        String key = null;
+        DBEntry e = null;
+        while (!isSimple) {
+            LinkedList<String> levels = cmdGetter(scanner);
+            key = String.join(".", levels);
+            e = this.get(key);
+            if (e.isContainer()) {
+                System.out.println("Selected element is a container. Please choose a simple element.");
+            } else {
+                isSimple = true;
+                break;
+            }
+        }
+        System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
+        boolean didUpdate = false;
+        while (!didUpdate) {
+            System.out.println(" _");
+            System.out.println("| Enter your new value.");
+            System.out.print("'>");
+            String line = scanner.nextLine();
+            try {
+                e = ((DBSimple) e).setValueFromString(line);
+                didUpdate = true;
+            } catch (ParserException ex) {
+                System.out.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
+                getLogger().log(Level.FINE,ex.toString(), ex);
+            }
+        }
         System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
         return null;
     }
@@ -401,9 +429,7 @@ public class Database extends ObjectWithLogger {
             DBList workshopList = new DBList();  // Workshop
             db.add(workshopList); // Workshop
             rootDict.add("Workshop", workshopList);
-        } catch (AlreadyTakenException e) {
-            e.printStackTrace();
-        } catch (AlreadyInsertedException e) {
+        } catch (AlreadyTakenException | AlreadyInsertedException e) {
             e.printStackTrace();
         }
         return db;

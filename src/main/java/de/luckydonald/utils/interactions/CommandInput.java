@@ -142,7 +142,7 @@ public class CommandInput extends Thread implements Runnable {
          * @return if it its Help string has a value.
          */
         public boolean hasHelp() {
-            return this.help == null || this.help.trim().equals("");
+            return this.help != null && !this.help.trim().equals("");
         }
         /**
          * Returns the help string, or an empty string if not set.
