@@ -1,12 +1,12 @@
 package de.luckydonald.pipboyserver.Messages;
 
-import sun.plugin2.message.HeartbeatMessage;
+import de.luckydonald.utils.interactions.ObjectWithLogger;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class Message{
+public class Message extends ObjectWithLogger{
     private int type;
     private byte[] content;
     ByteArrayOutputStream message = new ByteArrayOutputStream();
@@ -18,7 +18,7 @@ public class Message{
         this.type = type;
         this.content = content;
         if(type != KeepAlive.type) {
-            System.out.println("created new Message, type " + type + " (" + this.getClass().getSimpleName() + ").");
+            getLogger().fine("created new Message, type " + type + " (" + this.getClass().getSimpleName() + ").");
         }
 
     }

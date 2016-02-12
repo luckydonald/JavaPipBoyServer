@@ -116,7 +116,7 @@ public class DBDict extends DBContainer {
         }
         length += 2; // remove_count
         length += (this.removes.size() * 4); //id = 4; n-th times
-        this.getUpdateLock().readLock().unlock();
+        this.getDatabase().getEntriesLock().readLock().unlock();
         getLogger().finest("unlocked DB: read");
         return length;
     }

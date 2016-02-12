@@ -3,6 +3,7 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
+import de.luckydonald.utils.interactions.ObjectWithLogger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.math.BigInteger;
@@ -11,14 +12,7 @@ import java.nio.ByteOrder;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class DBEntry {
-    private Logger logger = null;
-    public Logger getLogger() {
-        if (this.logger == null) {
-           this.logger =  Logger.getLogger(this.getClass().getCanonicalName());
-        }
-        return this.logger;
-    }
+public class DBEntry extends ObjectWithLogger {
     private Integer id = null;
     private Database database = null;
     boolean dirty = true;
@@ -43,7 +37,7 @@ public class DBEntry {
                 // So check whether the ids match.
                 if (this.getDatabase().get(this.getID()) == this) { // Check ids
                     // already added in right DB, id here and in the DB are equal.
-                    logger.info("Skipped adding to DB, as we are already are added correctly (IDs match).");
+                    getLogger().info("Skipped adding to DB, as we are already are added correctly (IDs match).");
                 } else {
                     throw new AlreadyInsertedException("This entry should already be inserted, but not at the stored id-location!");
                 }

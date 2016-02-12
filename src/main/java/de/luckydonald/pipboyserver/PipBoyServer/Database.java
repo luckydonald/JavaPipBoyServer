@@ -11,7 +11,7 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedExcept
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
-import de.luckydonald.utils.interactions.CommandInput;
+import de.luckydonald.utils.CommandInput;
 
 import java.io.IOException;
 import java.net.URL;
@@ -64,7 +64,6 @@ public class Database {
         e._setID(nextFreeInt);
         e._setDatabase(this);
         this.entriesLock.writeLock().unlock();
-        /*
         DataUpdate update = new DataUpdate(e); //TODO Updates!
         //this.updates.add(update);
         this.updateListenerLock.readLock().lock();
@@ -76,7 +75,6 @@ public class Database {
             }
         }
         this.updateListenerLock.readLock().unlock();
-        */
         return e;
     }
     public Void cmd_List(Scanner command) {
