@@ -2,6 +2,7 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 
 import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -17,16 +18,17 @@ public class DBSimple<T> extends DBEntry {
         super(db);
     }
     /**
-     * Parses and applies the value from a given string.
+     * Parses and applies the {@code} value from a given {@code String}.
      *
-     * @param s The string.
-     * @return the updated {@link DBEntry entry} (type {@link DBSimple}).
+     * @param s The string to parse.
+     * @return the updated {@link DBEntry} entry.
+     * @throws ParserException the parser failed.
      */
-    public DBSimple setValueFromString(String s) {
-        throw new NotImplementedException();
+    public DBSimple setValueFromString(String s) throws ParserException {
+        throw new ParserException("There is no Parser implemented!");
     }
     T value = null;
-    void setValue(T value) {
+    public void setValue(T value) {
         getLogger().finest("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
         this.value = value;
@@ -34,4 +36,7 @@ public class DBSimple<T> extends DBEntry {
         getLogger().finest("unlocked DB: write");
         this.getDatabase().queueDataUpdate(new DataUpdate(this));
     }
+    /*public T getValue() {
+        return this.value;
+    }*/
 }

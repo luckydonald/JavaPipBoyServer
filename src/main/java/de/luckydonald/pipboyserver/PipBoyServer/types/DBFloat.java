@@ -2,6 +2,7 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -61,6 +62,24 @@ public class DBFloat extends DBSimple<Float> {
 
     public float getValue() {
         return value;
+    }
+
+    /**
+     * Parses and applies the {@code float} value from a given string.
+     *
+     * @param s The string to parse.
+     * @return the updated {@link DBFloat} entry.
+     * @throws ParserException if parsing as {@code float} fails.
+     */
+    @Override
+    public DBFloat setValueFromString(String s) throws ParserException {
+        try {
+            Float f = new Float(s);
+            this.setValue(f);
+        } catch (NumberFormatException e) {
+            throw new ParserException(e);
+        }
+        return this;
     }
 
     /**

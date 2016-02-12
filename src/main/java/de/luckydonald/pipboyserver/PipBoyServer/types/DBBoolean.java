@@ -2,9 +2,11 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.ParseException;
 
 public class DBBoolean extends DBSimple<Boolean> {
     public static final EntryType TYPE = EntryType.BOOLEAN;
@@ -57,6 +59,39 @@ public class DBBoolean extends DBSimple<Boolean> {
     }
     public Boolean getValue() {
         return value;
+    }
+
+    /**
+     * Parses and applies the {@code boolean} value from a given string.
+     *
+     * @param s The string.
+     * @return the updated {@link DBBoolean} entry).
+     * @throws ParserException if parsing as {@code float} fails.
+     */
+    @Override
+    public DBBoolean setValueFromString(String s) throws ParserException {
+        Boolean b = null;
+        switch (s.trim().toLowerCase()) {
+            case "true":
+            case "yes":
+            case "y":
+            case "ja":  // german yes
+            case "j":   // german y
+            case "1":
+                b = true;
+                break;
+            case "false":
+            case "nein": // german no
+            case "no":
+            case "n":
+            case "0":
+                b = false;
+                break;
+            default:
+                throw new ParserException("Seems to be no valid boolean information.");
+        }
+        this.setValue(b);
+        return this;
     }
 
     /**

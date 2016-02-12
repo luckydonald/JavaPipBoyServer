@@ -39,10 +39,11 @@ public class DBString extends DBSimple<String> {
         return value;
     }
 
+
     /**
-     * Parses and applies the value from a given string.
+     * Applies the {@code String} value from a given string.
      *
-     * @param s The string.
+     * @param s The string to apply.
      * @return the updated {@link DBEntry entry} (type {@link DBSimple}).
      */
     @Override

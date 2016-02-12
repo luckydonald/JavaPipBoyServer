@@ -2,6 +2,7 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -60,16 +61,20 @@ public class DBInteger32 extends DBSimple<Integer> {
     public int getValue() {
         return value;
     }
-
     /**
-     * Parses and applies the value from a given string.
+     * Parses and applies the {@code int} value from a given {@code String}.
      *
-     * @param s The string.
-     * @return the updated {@link DBEntry entry} (type {@link DBSimple}).
+     * @param s The string to parse.
+     * @return the updated {@link DBInteger8} entry.
+     * @throws ParserException if parsing as {@code int} fails.
      */
     @Override
-    public DBInteger32 setValueFromString(String s) {
-        this.setValue(Integer.parseInt(s));
+    public DBInteger32 setValueFromString(String s) throws ParserException {
+        try {
+            this.setValue(Integer.parseInt(s));
+        } catch (NumberFormatException  e){
+            throw new ParserException(e);
+        }
         return this;
     }
 
