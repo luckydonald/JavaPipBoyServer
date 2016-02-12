@@ -4,6 +4,7 @@
 import de.luckydonald.pipboyserver.PipBoyServer.*;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -186,13 +187,50 @@ public class DatabaseTests {
     public void testInsertInt32() throws AlreadyTakenException, AlreadyInsertedException {
         DBInteger32 i1 = new DBInteger32(db, 16);
         root.add("Integer32_1a", i1);
-        assertEquals("boolean without DB added", i1, db.get(1));
+        assertEquals("integer with DB added", i1, db.get(1));
 
-        DBInteger32 i2 = new DBInteger32(16);
+        Integer integer_test_value = 300;
+        DBInteger32 i2 = new DBInteger32(integer_test_value);
         root.add("Integer32_1b", i2);
-        assertEquals("boolean with DB added", i2, db.get(2));
+        assertEquals("integer with DB added", i2, db.get(2));
+        assertEquals("integer with DB has correct number", integer_test_value, ((DBInteger32)db.get(2)).getValue());
+        //{ "Integer32_1a": 16, "Integer32_1b": 300}
     }
 
+    @Test
+    public void testGetInt32() throws AlreadyTakenException, AlreadyInsertedException {
+        testInsertInt32();
+        //{ "Integer32_1a": 16, "Integer32_1b": 300}
+        assertEquals("db.get -> Int32 -> intValue() == 300", 300, db.get("Integer32_1b").intValue());
+    }
+    @Test
+    public void testUpdateFromString() throws AlreadyTakenException, AlreadyInsertedException, ParserException {
+        testCreation();
+        // {
+        //  "a1": True,
+        //  "a2": 0x08,
+        //  "a3": 32,
+        //  "a4": 3.4,
+        //  "a5: "foo",
+        //  "a6": [
+        //          "bar",
+        //          34,
+        //          {"c1": "baz", "c2": 35}
+        //  ]
+        // }
+        DBSimple a1 = (DBSimple) db.get("a1");
+        a1.setValueFromString("false");
+        assertEquals("(DBSimple) updated to false=false", a1.getValue(), false);
+        a1.setValueFromString("1");
+        assertEquals("(DBSimple) updated to 1=true", a1.getValue(), true);
+        DBBoolean a1b = (DBBoolean) db.get("a1");
+        a1b.setValue(false);
+        assertEquals("(DBBoolean) directly updated to false", a1.getValue(), false);
+        a1b.setValueFromString("yes");
+        assertEquals("(DBBoolean) updated to yes=true", a1.getValue(), true);
+        a1b.setValueFromString("no");
+        assertEquals("(DBBoolean) updated to no=false", a1.getValue(), false);
+    }
     @Test
     public void testTraversal() throws AlreadyTakenException, AlreadyInsertedException {
         testCreation();
