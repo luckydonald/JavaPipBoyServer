@@ -7,7 +7,7 @@ The app send following broadcast packet to **UDP/28000**
 {"cmd": "autodiscover"}
 ```
 It send receives a packet containing Information about the game.
-The machine type is either `PC` or `PS4`.
+The machine type is either **`PC`** or **`PS4`**.
 ```json
 {"IsBusy": false, "MachineType": "PC"}
 ```
@@ -15,7 +15,7 @@ The machine type is either `PC` or `PS4`.
 ### XBox One
 
 The app sends a 16 byte broadcast packet to port **UDP/5050**
-The content is omitted because of possible privacy issues. (Can anyone explain me the protocol? Its XBox standard.)
+using protocol called Smartglass. (Can anyone explain me the protocol? Its XBox standard.)
 
 # Communication
 Once Discovery has completed, the app connects to the server on Port TCP/27000.
@@ -40,20 +40,22 @@ struct Message {
 }
 ```
 
-e.x.
+Basic format example:
 
 ```
-A0 00 00 00 03 48 45 4C 4C 4F 57 4F 52 4C 44
+0A 00 00 00 03 48 45 4C 4C 4F 57 4F 52 4C 44
 ```
 
-| size(32) | type(8) | content(size) |
-|----------|---------|---------------|
-| A0000000 | 03      | HELLOWORLD    |
+| size(32) | type(8) | content(size)           |
+|----------|---------|-------------------------|
+| 0A000000 | 03      | 48454C4C4F574F524C44    |
+| 10       | 3       | HELLOWORLD              |
 
 ### Message Types
 #### Type 0: Heartbeat
 
-The server will periodically send a "heartbeat" packet of type 0 and no content. In other words, length 0 and type 0.
+The app will periodically send a "heartbeat" packet of type 0 and no content. In other words, length 0 and type 0.
+The server replies with the same empty 5 bytes. The app will disconnect after 5 sends with incorrect/missing answer.
 
 e.x.
 
@@ -77,6 +79,7 @@ Messages of type 1 are sent when the app first connects to the server. It contai
 {"lang": "de", "version": "1.1.30.0"}
 ```
 
+The App presumably verifies version & lang, then replies with a heartbeat.
 #### Type 2: Busy
 
 Messages of type 2 are sent when the server is busy. A server will be busy if a Pipboy Companion app is already connected. The message contains no data.
@@ -85,6 +88,10 @@ e.x.
 ```
 00 00 00 00 02
 ```
+
+| size(32) | type(8) | content(size) |
+|----------|---------|---------------|
+| 00000000 | 02      |               |
 
 #### Type 3: Data Update
 
@@ -224,7 +231,7 @@ Messages of type 5 are sent by the app to the server to request an action be tak
 |  11            |   |                                                           |                                                                                                                     |
 |  12            |  `[<id>]`                                                     |  Toggle radio with index `<id>` in database                                                                         |
 |  13            |  `[]`                                                         |  Toggle receiving of local map update                                                                               |
-|  14            |  `[]`                                                         |  Refresh?? Command with no result                                                                                   |
+|  14            |  `[]`                                                         |  Refresh? Command with no result. Issued when tab is changed.                                                       |
 
 #### Type 6: Command Response
 
@@ -238,3 +245,4 @@ Messages of type 6 are responses to commands. Currently, it appears that respons
  - [mattbaker/pipboyspec/communication.md PR#1](https://github.com/ekimekim/pipboyspec/blob/data-update-format/communication.md)
  - [gist luckydonald/d128fe05acdfff76d8be](https://gist.github.com/luckydonald/d128fe05acdfff76d8be)
  - [NimVek/pipboy/PROTOCOL.md](https://github.com/NimVek/pipboy/blob/master/PROTOCOL.md)
+ - [Gavitron/pipulator/captures/notes.txt](https://github.com/Gavitron/pipulator/blob/33d0b9ecfedcfe0e1351be1cd16918e6336e3fdb/captures/notes.txt)
