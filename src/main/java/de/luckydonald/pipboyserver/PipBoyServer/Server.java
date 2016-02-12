@@ -154,7 +154,7 @@ class KeepAliveThread extends ObjectWithLogger implements Runnable{
                     int newlyRead = in.read(bytesToRead, 0, bytesToRead.length);
                     if (newlyRead == -1) {
                         getLogger().log(Level.SEVERE, "Got " + read + " of " + left + " bytes.");
-                        //throw new IOException("Möööp! Left: "+left);
+                        throw new IOException("Möööp! Left: " + left);
                     }
                     read += newlyRead;
                 }
