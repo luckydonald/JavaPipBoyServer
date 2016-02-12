@@ -78,12 +78,17 @@ public class DBEntry extends ObjectWithLogger {
      * @return the package.
      */
     public byte[] getBytes(){
+        getLogger().finest("locking DB: read");
+        this.getDatabase().getEntriesLock().readLock().lock();
         ByteBuffer content = ByteBuffer.allocate(this.getRequiredBufferLength());
         content.order(ByteOrder.LITTLE_ENDIAN);
         content.put(this.getType().getByte()); // type
         content.putInt(this.getID());       // id
         this.putValueIntoBuffer(content);
+        this.getDatabase().getEntriesLock().readLock().unlock();
+        getLogger().finest("unlocked DB: read");
         return content.array();
+
         //return new byte[]{(byte) this.getType()};
     }
 

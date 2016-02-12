@@ -4,6 +4,7 @@ import de.luckydonald.pipboyserver.PipBoyServer.types.DBEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +36,15 @@ public class DataUpdate extends Message{
 
     @Override
     public byte[] toBytes() {
-        ByteArrayOutputStream allContent = new ByteArrayOutputStream();
+        int size = 0;
         for (DBEntry entry : this.entries) {
-            System.out.println("Packaging " + entry.getID());
+            size += entry.getRequiredBufferLength();
+        }
+        getLogger().info("Preparing buffer with "+ size + " bytes.");
+        ByteArrayOutputStream allContent = new ByteArrayOutputStream(size);
+        int i = 1;
+        for (DBEntry entry : this.entries) {
+            System.out.println("Packaging " + entry.getID() + " (Entry " + i + " of " + this.entries.size() + ")");
             try {
                 allContent.write(entry.getBytes());
             } catch (IOException e) {

@@ -10,12 +10,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DBDict extends DBContainer {
     public static final EntryType TYPE = EntryType.DICT;
     private HashMap<String, DBEntry> data;
-    private HashMap<String, DBEntry> inserts;
+    private ConcurrentHashMap<String, DBEntry> inserts;
     private List<DBEntry> removes;
     private ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
 
@@ -26,7 +27,7 @@ public class DBDict extends DBContainer {
     public DBDict(Database db) {
         super(db);
         this.data = new HashMap<>();
-        this.inserts = new HashMap<>();
+        this.inserts = new ConcurrentHashMap<String, DBEntry>();
         this.removes = new ArrayList<>();
     }
 
@@ -49,7 +50,7 @@ public class DBDict extends DBContainer {
     public DBDict(Database db, HashMap<String, DBEntry> data) {
         super(db);
         this.data = data;
-        this.inserts = data;
+        this.inserts = new ConcurrentHashMap<String, DBEntry>(data);
         this.removes = new ArrayList<>();
     }
     public DBDict(Database db, String key, DBEntry data) {
@@ -71,6 +72,8 @@ public class DBDict extends DBContainer {
         //char_t *name //null terminated
         //uint16_t remove_count;
         //uint32_t references[remove_count];
+        getLogger().finest("locking DB: read");
+        this.getDatabase().getEntriesLock().readLock().lock();
         getLogger().finest("locking Update: write");
         this.getUpdateLock().writeLock().lock();
         int insertCount = this.inserts.size();
@@ -101,6 +104,8 @@ public class DBDict extends DBContainer {
         }
         this.getUpdateLock().writeLock().unlock();
         getLogger().finest("unlocked Update: write");
+        this.getDatabase().getEntriesLock().readLock().unlock();
+        getLogger().finest("unlocked DB: read");
         return b;
     }
 

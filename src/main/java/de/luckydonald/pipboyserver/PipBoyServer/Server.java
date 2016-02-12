@@ -9,7 +9,6 @@ import de.luckydonald.pipboyserver.Messages.KeepAlive;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -141,9 +140,22 @@ class KeepAliveThread implements Runnable{
     public void run(){
         try {
             OutputStream stream = this.socket.getOutputStream();
+            InputStream in = this.socket.getInputStream();
             while (!quit) {
-                stream.write(new KeepAlive().toBytes());
+                byte[] bytesToSend = new KeepAlive().toBytes();
+                byte[] bytesToRead = new byte[bytesToSend.length];
+                stream.write(bytesToSend);
                 stream.flush();
+                int left = bytesToSend.length;
+                int read = 0;
+                while (read < left) {
+                    int newlyRead = in.read(bytesToRead, 0, bytesToRead.length);
+                    if (newlyRead == -1) {
+                        System.out.println("Got " + read + " of " + left + " bytes.");
+                        //throw new IOException("Möööp! Left: "+left);
+                    }
+                    read += newlyRead;
+                }
                 //TODO: read answer.
                 try {
                     Thread.sleep(999);
