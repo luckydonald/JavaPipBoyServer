@@ -476,7 +476,11 @@ public class Database extends ObjectWithLogger {
                 dbEntry = new DBBoolean(subnode.asBoolean());
                 break;
             case NUMBER:
-                dbEntry = new DBInteger32(this, subnode.asInt());
+                if (subnode.isFloatingPointNumber()) {
+                    dbEntry = new DBFloat(this, subnode.floatValue());
+                    break;
+                }
+                dbEntry = new DBInteger32(this, subnode.intValue());
                 break;
             case OBJECT:
             case POJO:

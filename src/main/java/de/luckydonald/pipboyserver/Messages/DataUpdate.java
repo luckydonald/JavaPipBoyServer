@@ -44,7 +44,7 @@ public class DataUpdate extends Message{
         ByteArrayOutputStream allContent = new ByteArrayOutputStream(size);
         int i = 1;
         for (DBEntry entry : this.entries) {
-            System.out.println("Packaging " + entry.getID() + " (Entry " + i + " of " + this.entries.size() + ")");
+            getLogger().fine("Packaging Entry " + (i++) + " of " + this.entries.size() + " (ID: " + entry.getID() + ")");
             try {
                 allContent.write(entry.getBytes());
             } catch (IOException e) {
@@ -52,6 +52,7 @@ public class DataUpdate extends Message{
             }
         }
         this.setContent(allContent.toByteArray());
+        getLogger().info("Data is ready to send.");
         return super.toBytes();
     }
 

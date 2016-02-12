@@ -5,6 +5,7 @@ import de.luckydonald.pipboyserver.Messages.ConnectionAccepted;
 import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.Messages.IDataUpdateListener;
 import de.luckydonald.pipboyserver.Messages.KeepAlive;
+import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -12,6 +13,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 /**
  * Created by luckydonald on 14.01.16.
@@ -47,7 +49,7 @@ public class Server {
         }
     }
 }
-class Session implements Runnable, IDataUpdateListener {
+class Session extends ObjectWithLogger implements Runnable, IDataUpdateListener {
     private final Database db;
     private final Socket socket;
     private final ConcurrentLinkedQueue<DataUpdate> updates;
@@ -74,16 +76,16 @@ class Session implements Runnable, IDataUpdateListener {
             heartbeatThread = new Thread(heartbeat, "Heartbeat");
             heartbeatThread.start();
             while (!quit) {
-                System.out.println("Checking for updates.");
+                getLogger().finer("Checking for updates.");
                 DataUpdate update = this.updates.poll();
                 if (update != null) {
-                    System.out.println("Sending update.");
+                    getLogger().fine("Sending update.");
                     stream.write(update.toBytes());
                     stream.flush();
-                    System.out.println("Send update: " + update.toString().substring(0, Math.min(1000, update.toString().length())));
+                    getLogger().fine("Send update: " + update.toString().substring(0, Math.min(1000, update.toString().length())));
                 }
                 if (!heartbeatThread.isAlive()) {
-                    System.out.println("Heartbeat thread is dead.");
+                    getLogger().warning("Heartbeat thread is dead.");
                     break;
                 }
                 try {
@@ -104,7 +106,7 @@ class Session implements Runnable, IDataUpdateListener {
             }
             e.printStackTrace();
         }
-        System.out.println("Shuting down update thread.");
+        getLogger().warning("Shuting down update thread.");
     }
 
     @Override
@@ -129,7 +131,7 @@ class Session implements Runnable, IDataUpdateListener {
                 '}';
     }
 }
-class KeepAliveThread implements Runnable{
+class KeepAliveThread extends ObjectWithLogger implements Runnable{
     Socket socket;
     boolean quit = false;
     public KeepAliveThread(Socket socket) {
@@ -151,7 +153,7 @@ class KeepAliveThread implements Runnable{
                 while (read < left) {
                     int newlyRead = in.read(bytesToRead, 0, bytesToRead.length);
                     if (newlyRead == -1) {
-                        System.out.println("Got " + read + " of " + left + " bytes.");
+                        getLogger().log(Level.SEVERE, "Got " + read + " of " + left + " bytes.");
                         //throw new IOException("Möööp! Left: "+left);
                     }
                     read += newlyRead;
@@ -166,7 +168,6 @@ class KeepAliveThread implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Heartbeat thread done.");
-        return;
+        getLogger().warning("Heartbeat thread done.");
     }
 }
