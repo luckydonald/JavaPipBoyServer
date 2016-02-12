@@ -3,14 +3,12 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
-import de.luckydonald.utils.interactions.ObjectWithLogger;
+import de.luckydonald.utils.ObjectWithLogger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
-import java.util.logging.Logger;
 
 public class DBEntry extends ObjectWithLogger {
     private Integer id = null;

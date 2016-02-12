@@ -1,4 +1,4 @@
-package de.luckydonald.utils.interactions;
+package de.luckydonald.utils;
 
 import java.util.logging.Logger;
 

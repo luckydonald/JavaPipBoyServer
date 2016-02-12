@@ -1,4 +1,4 @@
-package de.luckydonald.utils;
+package de.luckydonald.utils.interactions;
 
 import java.util.Arrays;
 import java.util.List;

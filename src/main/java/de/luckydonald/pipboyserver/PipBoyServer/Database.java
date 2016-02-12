@@ -11,21 +11,20 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedExcept
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
-import de.luckydonald.utils.CommandInput;
+import de.luckydonald.utils.interactions.CommandInput;
+import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Created by luckydonald on 15.01.16.
  */
-public class Database {
-    // assumes the current class is called logger
-    private final static Logger logger = Logger.getLogger(Database.class.getName());
+public class Database extends ObjectWithLogger {
     public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/NimVek/pipboy/1087a1c820fae6265fbce2a614e62e85cd146442/DemoMode.json";
 
     public ReentrantReadWriteLock getEntriesLock() {
@@ -38,18 +37,9 @@ public class Database {
     final ReentrantReadWriteLock updateListenerLock = new ReentrantReadWriteLock();
     private List<IDataUpdateListener> updateListener = new LinkedList<>();
 
-    //Queue<DataUpdate> updates = new ConcurrentLinkedQueue<DataUpdate>();
     public Database() {
         //do nothing.
     }
-    /*
-    public Database<T>(T obj) {
-        this.load(obj,0);
-    }
-    private void load<T>(T obj, int i) {
-
-    }
-    */
 
     public DBEntry add(DBDict.DictEntry entry) {
         if (entry.getDBEntry() == null) {
@@ -108,15 +98,29 @@ public class Database {
                 if (input.trim().equals("..")) {
                     levels.removeLast();
                 } else {
-                    levels.add(input);
+                    for (String part : input.split("\\.")) {
+                        if (!part.trim().equals("")) {
+                            levels.add(part);
+                            try {
+                                e = this.get(String.join(".", levels));
+                            } catch (IndexOutOfBoundsException | NumberFormatException ex) {
+                                levels.removeLast();
+                                System.out.println("Failed to go further as \"" + String.join(".", levels) + "\". Ignoring rest. (" + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage() + ")");
+                                getLogger().log(Level.FINE,ex.toString(), ex);
+                                break;
+                            }
+                        }
+                        getLogger().fine("Skipped empty path part.");
+                    }
                 }
                 String key = String.join(".", levels);
                 System.out.println("db.get(" + key + ")");
                 try {
                     e = this.get(key);
                     System.out.println(e.getID() + ":\t" + e.toSimpleString(false));
-                } catch (IndexOutOfBoundsException ex) {
-                    ex.printStackTrace();
+                } catch (IndexOutOfBoundsException | NumberFormatException ex) {
+                    System.out.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
+                    getLogger().log(Level.FINE,ex.toString(), ex);
                     levels.removeLast();
                 }
             }
@@ -173,7 +177,7 @@ public class Database {
     }
     public DBEntry get(String path) {
         int level = 0;
-        logger.finest("locking DB: read");
+        getLogger().finest("locking DB: read");
         getEntriesLock().readLock().lock();
         DBDict root = (DBDict) this.get(0);  // root node should be 0.
         DBEntry node = root;
@@ -190,29 +194,29 @@ public class Database {
                     node = ((DBDict)node).get(s);
                     if (node == null){
                         getEntriesLock().readLock().unlock();
-                        logger.finest("unlocked DB: read");
+                        getLogger().finest("unlocked DB: read");
                         throw new KeyDoesNotExistsException("There should be the key \"" + s + "\". It doesn't exists.");
                     }
                     break;
                 case LIST:
-                    int index = new Integer(s);
                     try {
+                        int index = new Integer(s);
                         node = ((DBList) node).get(index);
                     } catch (IndexOutOfBoundsException e) {
                         getEntriesLock().readLock().unlock();
-                        logger.finest("unlocked DB: read");
+                        getLogger().finest("unlocked DB: read");
                         throw e;
                     }
                     break;
                 default: // (FLOAT, BOOLEAN, INT8, INT32, STRING)
                     getEntriesLock().readLock().unlock();
-                    logger.finest("unlocked DB: read");
+                    getLogger().finest("unlocked DB: read");
                     throw new KeyDoesNotExistsException("There should be the key \"" + s + "\". But have a "+ node.getType() + " object: " + node);
             }
             level++;
         }
         getEntriesLock().readLock().unlock();
-        logger.finest("unlocked DB: read");
+        getLogger().finest("unlocked DB: read");
         return node;
     }
     public DBEntry get(int id) {
@@ -409,7 +413,7 @@ public class Database {
             rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
             db.loadJsonRoot(rootNode);
         } catch (IOException e){    // MalformedURLException | JsonParseException | JsonMappingException | IOException
-            logger.info("Getting default from " + DEFAULT_JSON_URL + " failed: " + e.toString());
+            db.getLogger().info("Getting default from " + DEFAULT_JSON_URL + " failed: " + e.toString());
             return fillWithBasicDefault(db);
         }
         return fillWithBasicDefault(db);
@@ -585,7 +589,7 @@ public class Database {
             return true;
         }
         if (this.has(entry.getID())) {
-            logger.warning("But the Database has a element at the same ID.");
+            getLogger().warning("But the Database has a element at the same ID.");
         }
         return false;
     }

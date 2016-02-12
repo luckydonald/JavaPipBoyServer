@@ -1,6 +1,6 @@
 package de.luckydonald.pipboyserver.Messages;
 
-import de.luckydonald.utils.interactions.ObjectWithLogger;
+import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
