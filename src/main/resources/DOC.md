@@ -216,7 +216,7 @@ Messages of type 5 are sent by the app to the server to request an action be tak
  * The id of the command increments with every command send.
 
 |  Command Type  |  Args                                                         |  Comment                                                                                                            |
-|----------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 |  0             |  `[ <HandleId>, 0, <$.Inventory.Version> ]`                   |  Use an instance of item specified by `<HandleId>`                                                                  |
 |  1             |  `[ <HandleId>, <count>, <$.Inventory.Version>, <StackID> ]`  |  Drop `<count>` instances of item, `<StackID>` is the whole list under `StackID`                                    |
 |  2             |  `[<HandleId>, <StackID>, <position>, <$.Inventory.Version>]` |  Put item on favorite `<position>` counts from far left 0 to right 5, and north 6 to south 11                       |
@@ -233,6 +233,50 @@ Messages of type 5 are sent by the app to the server to request an action be tak
 |  13            |  `[]`                                                         |  Toggle receiving of local map update                                                                               |
 |  14            |  `[]`                                                         |  Refresh? Command with no result. Issued when tab is changed.                                                       |
 
+##### Command 1: Drop item
+
+Example:
+```json
+{"type":1,"args":[4207600413,1,0,[0]],"id":56}
+```
+
+Drop the item at index `0`, a fedora (amount: `1`), inside the apparel page (page index `1`)  
+
+##### Command 6: Set way point
+
+Example:
+```json
+{"type":6,"args":[-71774.303255814,87841.2072351421,false],"id":11}
+```
+
+##### Command 9: Fast travel
+
+Example:
+```json
+{"type":9,"args":[48363],"id":15}
+```
+
+##### Command 12: Toggle a radio station
+
+Example:
+```json
+{"type":12,"args":[50308],"id":34}
+```
+
+Known station ids:   
+             
+| ID    | Name         |
+| ----- | ------------ | 
+| 50313 | Diamond City |
+| 50308 | Classical    |
+
+##### Command 13: Toggle local map view
+
+Example:
+```json
+{"type":13,"args":[],"id":18}
+```
+
 #### Type 6: Command Response
 
 Messages of type 6 are responses to commands. Currently, it appears that responses are only received for commands of type 9.
@@ -246,3 +290,5 @@ Messages of type 6 are responses to commands. Currently, it appears that respons
  - [gist luckydonald/d128fe05acdfff76d8be](https://gist.github.com/luckydonald/d128fe05acdfff76d8be)
  - [NimVek/pipboy/PROTOCOL.md](https://github.com/NimVek/pipboy/blob/master/PROTOCOL.md)
  - [Gavitron/pipulator/captures/notes.txt](https://github.com/Gavitron/pipulator/blob/33d0b9ecfedcfe0e1351be1cd16918e6336e3fdb/captures/notes.txt)
+ - [RobCoIndustries/pipboylib/docs/app-msg-spec.md](https://github.com/RobCoIndustries/pipboylib/edit/master/docs/app-msg-spec.md)
+ 
