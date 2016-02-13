@@ -1,3 +1,20 @@
+| **Table of Contents**                                            |
+| ---------------------------------------------------------------- |
+| `1` [***Discover***](#discover)                                  |
+| `1.1` [PC & PS4](#pc--ps4)                                       |
+| `1.2` [XBox One](#xbox-one)                                      |
+| `2` [***Communication***](#communication)                        |
+| `2.1` [**Data Stream Format**](#data-stream-format)              |
+| `2.2` [**Message Types**](#message-types)                        |
+| `2.2.0` [Type 0: Heartbeat](#type-0-heartbeat)                   |
+| `2.2.1` [Type 1: New Connection](#type-1-new-connection)         |
+| `2.2.2` [Type 2: Busy](#type-2-busy)                             |
+| `2.2.3` [Type 3: Data Update](#type-3-data-update)               |
+| `2.2.4` [Type 4: Local Map Update](#type-4-local-map-update)     |
+| `2.2.5` [Type 5: Command Request](#type-5-command-request)       |
+| `2.2.6` [Type 6: Command Response](#type-6-command-response)     |
+| `3` [***Sources***](#sources)                                    |
+
 # Discover
 
 ### PC & PS4
@@ -285,9 +302,10 @@ Messages of type 6 are responses to commands. Currently, it appears that respons
 {"allowed":true,"id":3,"success":true}
 ```
 
-####### Sources
+# Sources
  - [mattbaker/pipboyspec/communication.md PR#1](https://github.com/ekimekim/pipboyspec/blob/data-update-format/communication.md)
- - [gist luckydonald/d128fe05acdfff76d8be](https://gist.github.com/luckydonald/d128fe05acdfff76d8be)
+ - [luckydonald/d128fe05acdfff76d8be (gist)](https://gist.github.com/luckydonald/d128fe05acdfff76d8be)
  - [NimVek/pipboy/PROTOCOL.md](https://github.com/NimVek/pipboy/blob/master/PROTOCOL.md)
  - [Gavitron/pipulator/captures/notes.txt](https://github.com/Gavitron/pipulator/blob/33d0b9ecfedcfe0e1351be1cd16918e6336e3fdb/captures/notes.txt)
  - [RobCoIndustries/pipboylib/docs/app-msg-spec.md](https://github.com/RobCoIndustries/pipboylib/edit/master/docs/app-msg-spec.md)
+ - [luckydonald/JavaPipBoyServer/PROTOCOL.md](https://github.com/luckydonald/JavaPipBoyServer/blob/master/PROTOCOL.md)
