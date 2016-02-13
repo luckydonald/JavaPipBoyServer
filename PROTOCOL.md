@@ -291,4 +291,3 @@ Messages of type 6 are responses to commands. Currently, it appears that respons
  - [NimVek/pipboy/PROTOCOL.md](https://github.com/NimVek/pipboy/blob/master/PROTOCOL.md)
  - [Gavitron/pipulator/captures/notes.txt](https://github.com/Gavitron/pipulator/blob/33d0b9ecfedcfe0e1351be1cd16918e6336e3fdb/captures/notes.txt)
  - [RobCoIndustries/pipboylib/docs/app-msg-spec.md](https://github.com/RobCoIndustries/pipboylib/edit/master/docs/app-msg-spec.md)
- 
