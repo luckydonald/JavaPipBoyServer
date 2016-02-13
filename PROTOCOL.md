@@ -128,7 +128,7 @@ This is followed by data depending on the value type. The possible types are as 
 
 | Type ID | Type     | Java      | Python    | Bytes           | Format of update data                                                                    |
 | ------- | -------- | --------- | --------- | --------------- | ---------------------------------------------------------------------------------------- |
-| 0       | BOOLEAN  | `boolean` | `bool`    |   1             | `uint8_t` 0: false 1: true. , value is true if data is non-zero.                         |
+| 0       | BOOLEAN  | `boolean` | `bool`    |   1             | `uint8_t` 0: false 1: true. Considered true if data is non-zero.                         |
 | 1       | INT8     | `byte`    | `byte`    |   1             | `int8_t` \[0x00-0xFF\]                                                                   |
 | 2       | UINT8    | -         | (?)       |   1             | `uint8_t` \[0-255\]                                                                      |
 | 3       | INT32    | `int`     | `int`     |   4             | `int32_t` \[0x00000000-0xFFFFFFFF\]                                                      |
@@ -159,7 +159,7 @@ In this case, the new value replaces the old value.
 Objects are unordered and keys will not be repeated.
 
 ###### Example
-(read from top to down, left to right. Remember, data is [little-endian](https://en.wikipedia.org/wiki/Endianness#Calculation_order).)
+(Read from top to down, left to right. Remember, data is [little-endian](https://en.wikipedia.org/wiki/Endianness#Calculation_order))
 
 | Data Update Attributes | example (bytes) | Interpretation                                       |
 | -----------            | ------------    | --------------                                       |
@@ -197,7 +197,8 @@ They just follow after each other.
 corresponds to an update that:
 * sets value with id `10` to be a `uint32` equal to `42`
 * sets value with id `11` to be an array containing the values with ids `1, 2`
-* updates value with id `12`, an object, to add keys `"foo": 5, "hello": 6` and remove values `3, 4`
+* updates value with id `12`, an object, to add keys `"foo": 5, "hello": 6` and remove values `3, 4`    
+
 Total size `59 bytes` is valid. *1 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 4 + 6 + 2 + 4 + 4* = *59*
 
 #### Type 4: Local Map Update
