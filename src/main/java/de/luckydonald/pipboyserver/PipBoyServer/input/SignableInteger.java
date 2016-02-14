@@ -21,6 +21,10 @@ abstract public class SignableInteger extends SignableNumber<Integer> {
         super(value);
     }
 
+    @Override
+    public String toString() {
+        return asLong().toString();
+    }
 
     abstract public Long asLong();
 }

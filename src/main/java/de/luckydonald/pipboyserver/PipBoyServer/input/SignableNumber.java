@@ -21,5 +21,7 @@ public abstract class SignableNumber<T>  extends ObjectWithLogger {
     public T getSignedValue() {
         return this.value;
     }
+
+    public abstract String toString();
 }
 

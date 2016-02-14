@@ -18,4 +18,9 @@ public class SignedLong extends SignableNumber<Long> {
     public boolean isSigned() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return this.value.toString();
+    }
 }

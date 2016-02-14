@@ -21,6 +21,11 @@ public class SignedByte extends SignableByte{
     }
 
     @Override
+    public String toString() {
+        return asInt().toString();
+    }
+
+    @Override
     public Integer asInt() {
         return (int) this.value;
     }

@@ -21,5 +21,11 @@ abstract public class SignableByte extends SignableNumber<Byte> {
         super(value);
     }
     abstract public Integer asInt();
+
+    @Override
+    public String toString() {
+        return asInt().toString();
+    }
+
 }
 

@@ -13,6 +13,10 @@ public class UnsignedLong extends SignableNumber<Long> {
     public UnsignedLong(Long value) {
         super(value);
     }
+    @Override
+    public String toString() {
+        return Long.toUnsignedString(this.value);
+    }
 
     @Override
     public boolean isSigned() {
