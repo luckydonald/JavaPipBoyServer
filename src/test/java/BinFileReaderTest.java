@@ -8,10 +8,7 @@ import org.junit.Test;
 import static java.lang.Integer.toUnsignedString;
 import static org.junit.Assert.*;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringJoiner;
@@ -190,10 +187,14 @@ public class BinFileReaderTest extends ObjectWithLogger {
 
     @Test
     public void test_main() throws IOException {
-        this.binFileReader = BinFileReader.fromFile("OfflineData.bin");
-        Database db = new Database();
-        ArrayList<DBEntry> foo = binFileReader.readAll(db);
-        System.out.println(Arrays.toString(foo.toArray()));
+        File f = new File("OfflineData.bin");
+        if(f.exists() && !f.isDirectory()) {
+            // do something
+            this.binFileReader = BinFileReader.fromFile("OfflineData.bin");
+            Database db = new Database();
+            ArrayList<DBEntry> foo = binFileReader.readAll(db);
+            System.out.println(Arrays.toString(foo.toArray()));
+        }
     }
 
 }
