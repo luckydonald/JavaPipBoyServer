@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 
 import java.util.logging.*;
 
-public class DatabaseTests {
+public class DatabaseTest {
     private static Logger jlog = Logger.getLogger("tests");
 
     static {
