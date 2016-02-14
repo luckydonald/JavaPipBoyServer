@@ -17,6 +17,7 @@ import java.util.ArrayList;
  **/
 public class BinFileReader extends ObjectWithLogger {
     private BufferedInputStream buff;
+    long pos;
 
     public BinFileReader(BufferedInputStream buff) {
         this.buff = buff;
@@ -112,11 +113,12 @@ public class BinFileReader extends ObjectWithLogger {
         return new String(b.toByteArray(), "UTF-8");
     }
 
-    public int readByte() throws IOException {
+    public synchronized int readByte() throws IOException {
         int read = buff.read();
         if (read == -1) {
             throw new EOFException();
         }
+        pos++;
         return read;
     }
 
@@ -164,9 +166,13 @@ public class BinFileReader extends ObjectWithLogger {
                 }
                 case 6: {
                     String string = string_t();
+                    if (string.equals("Klassisches Radio")) {
+                        System.out.println("Breakpoint here!");
+                    }
                     return db.add(value_id.getSignedValue(), new DBString(string));
                 }
                 default: {
+                    getLogger().info("Position: " + pos);
                     throw new InvalidObjectException("unknown primitive type: " + primitive_type);
                 }
             }
@@ -186,7 +192,8 @@ public class BinFileReader extends ObjectWithLogger {
                 if (!element_index.asLong().equals(i)) {
                     getLogger().severe("List index does not fit!" +
                             "List index is " + element_index + ", i is " + i + ", " +
-                            "and the element is " + element_value.toSimpleString(false)
+                            "and the element is " + element_value.toSimpleString(false) + ". " +
+                            "Current Position: " + pos
                     );
                 }
 
@@ -207,6 +214,7 @@ public class BinFileReader extends ObjectWithLogger {
             }
             return dict;
         } else {
+            getLogger().info("Position: " + pos);
             throw new InvalidObjectException("unknown type: " + value_type);
         }
     }

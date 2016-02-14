@@ -160,7 +160,8 @@ public class DBDict extends DBContainer {
         this.getUpdateLock().readLock().unlock();
         getLogger().finest("unlocked DB: read");
         this.getDatabase().getEntriesLock().readLock().unlock();
-        getLogger().finest("unlocked Update: read");         return dbEntry;
+        getLogger().finest("unlocked Update: read");
+        return dbEntry;
     }
 
     /**
