@@ -1,11 +1,13 @@
 package de.luckydonald.pipboyserver.PipBoyServer.input;
 
+import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * Created by  on
@@ -94,13 +96,18 @@ public class BinFileReader extends ObjectWithLogger {
         return Double.longBitsToDouble(integer);
     }
     public String string_t() throws IOException {
+        /*struct  String {
+            uint32_t length;
+            char str[length];
+        };
+        */
+
         ByteArrayOutputStream b = new ByteArrayOutputStream();
-        for( ;; ){
-            int i = readByte();
-            b.write(i);
-            if (i == 0) {
-                break;
-            }
+        UnsignedInteger length = uint32_t();
+        for (long i = 0; i < length.asLong(); i++) {
+            int c;
+            c = readByte();
+            b.write(c);
         }
         return new String(b.toByteArray(), "UTF-8");
     }
@@ -113,6 +120,17 @@ public class BinFileReader extends ObjectWithLogger {
         return read;
     }
 
+    public ArrayList<DBEntry> readAll(Database db) throws IOException {
+        ArrayList<DBEntry> entries = new ArrayList<>();
+        for ( ;; ) {
+            try {
+                entries.add(readNextEntry());
+            } catch (EOFException ignore) {
+                break;
+            }
+        }
+        return entries;
+    }
     public DBEntry readNextEntry() throws IOException {
         int value_type = uint8_t().asInt();
         UnsignedInteger value_id = uint32_t();
@@ -141,11 +159,15 @@ public class BinFileReader extends ObjectWithLogger {
                     return new DBFloat(integer.floatValue());
                 }
                 case 5: {
+                    int integer = uint8_t().asInt();
+                    return new DBBoolean(integer != 0);
+                }
+                case 6: {
                     String string = string_t();
                     return new DBString(string);
                 }
                 default: {
-                    throw new InvalidObjectException("unknown primitive type: " + value_type);
+                    throw new InvalidObjectException("unknown primitive type: " + primitive_type);
                 }
             }
 
@@ -237,5 +259,9 @@ struct Value {
             }
             break;
     }
+};
+struct  String {
+    uint32_t length;
+    char str[length];
 };
  */
