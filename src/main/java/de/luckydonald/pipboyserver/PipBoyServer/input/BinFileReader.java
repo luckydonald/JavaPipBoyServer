@@ -124,14 +124,14 @@ public class BinFileReader extends ObjectWithLogger {
         ArrayList<DBEntry> entries = new ArrayList<>();
         for ( ;; ) {
             try {
-                entries.add(readNextEntry());
+                entries.add(readNextEntry(db));
             } catch (EOFException ignore) {
                 break;
             }
         }
         return entries;
     }
-    public DBEntry readNextEntry() throws IOException {
+    public DBEntry readNextEntry(Database db) throws IOException {
         int value_type = uint8_t().asInt();
         UnsignedInteger value_id = uint32_t();
         if (value_type == 0) {
@@ -140,31 +140,31 @@ public class BinFileReader extends ObjectWithLogger {
             switch (primitive_type) {
                 case 0: {
                     SignedInteger integer = int32_t();
-                    return new DBInteger32(integer.getSignedValue());
+                    return db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue()));
                 }
                 case 1: {
                     UnsignedInteger integer = uint32_t();
-                    return new DBInteger32(integer.getSignedValue());
+                    return db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue()));
                 }
                 case 2: {
                     SignedLong integer = int64_t();
-                    return new DBInteger32(integer.getSignedValue().intValue());
+                    return db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue().intValue()));
                 }
                 case 3: {
                     Float integer = float32_t();
-                    return new DBFloat(integer);
+                    return db.add(value_id.getSignedValue(), new DBFloat(integer));
                 }
                 case 4: {
                     Double integer = float64_t();
-                    return new DBFloat(integer.floatValue());
+                    return db.add(value_id.getSignedValue(), new DBFloat(integer.floatValue()));
                 }
                 case 5: {
                     int integer = uint8_t().asInt();
-                    return new DBBoolean(integer != 0);
+                    return db.add(value_id.getSignedValue(), new DBBoolean(integer != 0));
                 }
                 case 6: {
                     String string = string_t();
-                    return new DBString(string);
+                    return db.add(value_id.getSignedValue(), new DBString(string));
                 }
                 default: {
                     throw new InvalidObjectException("unknown primitive type: " + primitive_type);
@@ -174,28 +174,31 @@ public class BinFileReader extends ObjectWithLogger {
         } else if (value_type == 1) {
             // array/list
             UnsignedInteger list_count = uint32_t();
-            DBList list = new DBList();
+            DBList list = (DBList) db.add(value_id.getSignedValue(), new DBList());
             for ( long i = 0; i < list_count.asLong(); i++) {
                 UnsignedInteger element_index = uint32_t();
-                DBEntry element_value = this.readNextEntry();
+                DBEntry element_value = this.readNextEntry(db);
                 try {
                     list.append(element_value);
                 } catch (AlreadyInsertedException | AlreadyTakenException e) {
                     e.printStackTrace();
                 }
-                System.out.println("Got List entrie, index is " + element_index + ", " +
-                                   "Element is" + element_value.toSimpleString(false)
-                );
+                if (!element_index.asLong().equals(i)) {
+                    getLogger().severe("List index does not fit!" +
+                            "List index is " + element_index + ", i is " + i + ", " +
+                            "and the element is " + element_value.toSimpleString(false)
+                    );
+                }
 
             }
             return list;
         } else if (value_type == 2) {
             // object/dict
             UnsignedInteger dict_count = uint32_t();
-            DBDict dict = new DBDict();
+            DBDict dict = (DBDict) db.add(value_id.getSignedValue(),new DBDict());
             for (long i = 0; i < dict_count.asLong(); i++) {
                 String dict_key = string_t();
-                DBEntry dict_value = readNextEntry();
+                DBEntry dict_value = readNextEntry(db);
                 try {
                     dict.add(dict_key, dict_value);
                 } catch (AlreadyInsertedException | AlreadyTakenException e) {
