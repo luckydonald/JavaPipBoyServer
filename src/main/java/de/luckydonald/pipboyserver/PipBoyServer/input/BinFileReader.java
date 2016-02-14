@@ -91,6 +91,18 @@ public class BinFileReader extends ObjectWithLogger {
         long integer = (i8 << 56) + (i7 << 48) + (i6 << 40) + (i5 << 32) + (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
         return Double.longBitsToDouble(integer);
     }
+    public String string_t() throws IOException {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        for( ;; ){
+            int i = readByte();
+            b.write(i);
+            if (i == 0) {
+                break;
+            }
+        }
+        return new String(b.toByteArray(), "UTF-8");
+    }
+
     public int readByte() throws IOException {
         int read = buff.read();
         if (read == -1) {
@@ -120,6 +132,15 @@ public class BinFileReader extends ObjectWithLogger {
                     }
                     case 3: {
                         Float integer = float32_t();
+                        break;
+                    }
+                    case 4: {
+                        Double integer = float64_t();
+                        break;
+                    }
+                    case 5: {
+                        String string = string_t();
+                        break;
                     }
 
                 }
