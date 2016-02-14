@@ -6,7 +6,7 @@ A Fallout 4 PipBoy compatible server implementation.
 - KeepAlive
 - Database + structure
 - Packaging data for sending
-- First project which uses tests `:D` [![Build Status](https://travis-ci.org/luckydonald/JavaPipBoyServer.svg?branch=master)](https://travis-ci.org/luckydonald/JavaPipBoyServer)
+- My first project which uses tests `:D` [![Build Status](https://travis-ci.org/luckydonald/JavaPipBoyServer.svg?branch=master)](https://travis-ci.org/luckydonald/JavaPipBoyServer)
 
 
 #### Known Bugs
@@ -28,7 +28,7 @@ A Fallout 4 PipBoy compatible server implementation.
  
     > XBOX uses smartglass, which works totally differently than the PC server would.
   
- - Why is this not Python 2.7 compatible? 
+- Why is this not Python 2.7 compatible? 
  
     > Because Python 3 and unicode strings are the future!
     > Aaand because this project is in java.
