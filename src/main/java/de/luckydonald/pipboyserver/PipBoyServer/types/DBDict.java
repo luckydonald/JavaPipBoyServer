@@ -24,6 +24,9 @@ public class DBDict extends DBContainer {
         return updateLock;
     }
 
+    public DBDict() {
+        this(null);
+    }
     public DBDict(Database db) {
         super(db);
         this.data = new HashMap<>();

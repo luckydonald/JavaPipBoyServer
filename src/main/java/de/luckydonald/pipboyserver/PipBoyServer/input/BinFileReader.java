@@ -1,9 +1,11 @@
 package de.luckydonald.pipboyserver.PipBoyServer.input;
 
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
+import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
+import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 
 /**
  * Created by  on
@@ -110,55 +112,80 @@ public class BinFileReader extends ObjectWithLogger {
         }
         return read;
     }
-    public void readStuff() throws IOException {
-        while (buff.available() > 0) {
-            int value_type = uint8_t().asInt();
-            UnsignedInteger value_id = uint32_t();
-            if (value_type == 0) {
-                // Primtive
-                int primitive_type = uint8_t().asInt();
-                switch (primitive_type) {
-                    case 0: {
-                        SignedInteger integer = int32_t();
-                        break;
-                    }
-                    case 1: {
-                        UnsignedInteger integer = uint32_t();
-                        break;
-                    }
-                    case 2: {
-                        SignedLong integer = int64_t();
-                        break;
-                    }
-                    case 3: {
-                        Float integer = float32_t();
-                        break;
-                    }
-                    case 4: {
-                        Double integer = float64_t();
-                        break;
-                    }
-                    case 5: {
-                        String string = string_t();
-                        break;
-                    }
 
+    public DBEntry readNextEntry() throws IOException {
+        int value_type = uint8_t().asInt();
+        UnsignedInteger value_id = uint32_t();
+        if (value_type == 0) {
+            // Primitive
+            int primitive_type = uint8_t().asInt();
+            switch (primitive_type) {
+                case 0: {
+                    SignedInteger integer = int32_t();
+                    return new DBInteger32(integer.getSignedValue());
                 }
-
+                case 1: {
+                    UnsignedInteger integer = uint32_t();
+                    return new DBInteger32(integer.getSignedValue());
+                }
+                case 2: {
+                    SignedLong integer = int64_t();
+                    return new DBInteger32(integer.getSignedValue().intValue());
+                }
+                case 3: {
+                    Float integer = float32_t();
+                    return new DBFloat(integer);
+                }
+                case 4: {
+                    Double integer = float64_t();
+                    return new DBFloat(integer.floatValue());
+                }
+                case 5: {
+                    String string = string_t();
+                    return new DBString(string);
+                }
+                default: {
+                    throw new InvalidObjectException("unknown primitive type: " + value_type);
+                }
             }
 
+        } else if (value_type == 1) {
+            // array/list
+            UnsignedInteger list_count = uint32_t();
+            DBList list = new DBList();
+            for ( long i = 0; i < list_count.asLong(); i++) {
+                UnsignedInteger element_index = uint32_t();
+                DBEntry element_value = this.readNextEntry();
+                try {
+                    list.append(element_value);
+                } catch (AlreadyInsertedException | AlreadyTakenException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Got List entrie, index is " + element_index + ", " +
+                                   "Element is" + element_value.toSimpleString(false)
+                );
+
+            }
+            return list;
+        } else if (value_type == 2) {
+            // object/dict
+            UnsignedInteger dict_count = uint32_t();
+            DBDict dict = new DBDict();
+            for (long i = 0; i < dict_count.asLong(); i++) {
+                String dict_key = string_t();
+                DBEntry dict_value = readNextEntry();
+                try {
+                    dict.add(dict_key, dict_value);
+                } catch (AlreadyInsertedException | AlreadyTakenException e) {
+                    e.printStackTrace();
+                }
+            }
+            return dict;
+        } else {
+            throw new InvalidObjectException("unknown type: " + value_type);
         }
     }
 }
-class Value extends ObjectWithLogger {
-    UnsignedByte type;
-    UnsignedInteger id;
-
-}
-class Primitive extends ObjectWithLogger {
-
-}
-
 
 /*
 struct  String {
