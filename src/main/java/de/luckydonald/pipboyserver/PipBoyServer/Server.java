@@ -80,8 +80,9 @@ class Session extends ObjectWithLogger implements Runnable, IDataUpdateListener 
                 DataUpdate update = this.updates.poll();
                 if (update != null) {
                     getLogger().fine("Sending update.");
-                    stream.write(update.toBytes());
-                    stream.flush();
+                    //stream.write(update.toBytes());
+                    heartbeat.sendMe.add(update.toBytes());
+                    //stream.flush();
                     getLogger().fine("Send update: " + update.toString().substring(0, Math.min(1000, update.toString().length())));
                 }
                 if (!heartbeatThread.isAlive()) {
@@ -137,7 +138,7 @@ class KeepAliveThread extends ObjectWithLogger implements Runnable{
     public KeepAliveThread(Socket socket) {
         this.socket = socket;
     }
-
+    public ConcurrentLinkedQueue<byte[]> sendMe = new ConcurrentLinkedQueue<>();
     @Override
     public void run(){
         try {
@@ -146,7 +147,9 @@ class KeepAliveThread extends ObjectWithLogger implements Runnable{
             while (!quit) {
                 byte[] bytesToSend = new KeepAlive().toBytes();
                 byte[] bytesToRead = new byte[bytesToSend.length];
-                stream.write(bytesToSend);
+                byte[] bytesToSendInstead = sendMe.poll();
+                bytesToSendInstead = (bytesToSendInstead == null ? bytesToSend : bytesToSendInstead);
+                stream.write(bytesToSendInstead);
                 stream.flush();
                 int left = bytesToSend.length;
                 int read = 0;
