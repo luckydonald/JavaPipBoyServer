@@ -33,7 +33,8 @@ public class Database extends ObjectWithLogger {
     }
 
     private final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
-    private List<DBEntry> entries = new ArrayList<>();
+    private HashMap<Integer, DBEntry> entries = new HashMap<Integer, DBEntry>();
+
 
     final ReentrantReadWriteLock updateListenerLock = new ReentrantReadWriteLock();
     private List<IDataUpdateListener> updateListener = new LinkedList<>();
@@ -48,16 +49,46 @@ public class Database extends ObjectWithLogger {
         }
         return this.add(entry.getDBEntry());
     }
+
     public DBEntry add(DBEntry e) {
         this.entriesLock.writeLock().lock();
         int nextFreeInt = this.getNextFreeIndex();
-        this.entries.add(nextFreeInt, e);
-        e._setID(nextFreeInt);
+        e = this.add(nextFreeInt, e);
+        this.entriesLock.writeLock().unlock();
+        return e;
+    }
+
+    public DBEntry add(int id, DBEntry e) {
+        this.entriesLock.writeLock().lock();
+        if (has(id)) {
+            this.entriesLock.writeLock().unlock();
+            throw new IllegalArgumentException("Id already existing.");
+        }
+        this.entries.put(id, e);
+        e._setID(id);
         e._setDatabase(this);
         this.entriesLock.writeLock().unlock();
         DataUpdate update = new DataUpdate(e);
         queueDataUpdate(update);
         return e;
+    }
+    public boolean has(int id) {
+        this.entriesLock.readLock().lock();
+        boolean contains = this.entries.containsKey(id);
+        this.entriesLock.readLock().unlock();
+        return contains;
+    }
+    public boolean has(DBEntry entry) {
+        this.entriesLock.readLock().lock();
+        if (this.entries.containsValue(entry)) {
+            this.entriesLock.readLock().unlock();
+            return true;
+        }
+        if (this.has(entry.getID())) {
+            getLogger().warning("But the Database has a element at the same ID.");
+        }
+        this.entriesLock.readLock().unlock();
+        return false;
     }
 
     public synchronized void queueDataUpdate(DataUpdate update) {
@@ -172,8 +203,11 @@ public class Database extends ObjectWithLogger {
     }
     public void print() {
         this.entriesLock.readLock().lock();
-        for (DBEntry entry : this.entries) {
-            System.out.println(entry.getID() + ":\t" + entry.toSimpleString(false));
+        for (Map.Entry<Integer, DBEntry> entry : this.entries.entrySet()) {
+            System.out.println(entry.getKey() + ":\t" + entry.getValue().toSimpleString(false));
+            if (!entry.getKey().equals(entry.getValue().getID())) {
+                getLogger().severe("IDs are different! DB says " + entry.getKey() + ", while DBEntry says " + entry.getValue().getID());
+            }
         }
         entriesLock.readLock().unlock();
     }
@@ -192,15 +226,16 @@ public class Database extends ObjectWithLogger {
 
     public DataUpdate initialDump() {
         this.entriesLock.readLock().lock();
-        DataUpdate update = new DataUpdate(this.entries);
+        DataUpdate update = new DataUpdate(new ArrayList<>(this.entries.values()));
         this.entriesLock.readLock().unlock();
         return update;
     }
     public int getNextFreeIndex() {
         this.entriesLock.readLock().lock();
         int size = this.entries.size();
-        for (int i = 0; i < size; i++) {
-            if (this.entries.get(i) == null) {
+        for (int i = 0; i < size+1; i++) {
+            if (!this.entries.containsKey(i)) {
+                this.entriesLock.readLock().unlock();
                 return i;
             }
         }
@@ -607,29 +642,6 @@ public class Database extends ObjectWithLogger {
         this.updateListenerLock.readLock().unlock();
         sb.append("])");
         return sb.toString();
-    }
-
-    public boolean has(Integer id) {
-        try {
-            this.entries.get(id);
-        } catch (IndexOutOfBoundsException e) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean has(DBEntry entry) {
-        if (this.entries.contains(entry)) {
-            return true;
-        }
-        if (this.has(entry.getID())) {
-            getLogger().warning("But the Database has a element at the same ID.");
-        }
-        return false;
-    }
-
-    public int getID(DBEntry dbEntry) {
-        return dbEntry.getID();
     }
 }
 
