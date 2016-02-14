@@ -25,6 +25,8 @@ public class BinFileReaderTest extends ObjectWithLogger {
     long[] expected_uint32 = {3066252147L, 6778473L};
     long[] expected_int64 = {29113322918071155L};
     long[] expected_uint64 = {29113322918071155L};
+    float[] expected_float32 = {(float) -5.82023631068295799195766448975E-6, (float)9.49866380536723574519558603963E-39};
+    double[] expected_float64 = {1.0427274872209864735496543959E-306};
     BinFileReader binFileReader = null;
 
     @Before
@@ -37,58 +39,71 @@ public class BinFileReaderTest extends ObjectWithLogger {
         // -1228715149, 6778473
         // 29113322918071155
         // 29113322918071155
+        // -0.000006, -0.000000
+        // -1.042727e-303
         // "sköing\0"
     }
     @Test
     public void test_int8_t() throws IOException {
-        for (int i = 0; i < expected_int8.length; i++) {
+        for (int anExpected_int8 : expected_int8) {
             SignedByte result = binFileReader.int8_t();
-            Integer exp = expected_int8[i];
+            Integer exp = anExpected_int8;
             assertEquals("Binary int8_t read " + Integer.toHexString(exp) + " asInt()", exp, result.asInt());
-            assertEquals("Binary int8_t read " + Integer.toHexString(exp) + " getSignedValue()", (Byte)exp.byteValue(), result.getSignedValue());
+            assertEquals("Binary int8_t read " + Integer.toHexString(exp) + " getSignedValue()", (Byte) exp.byteValue(), result.getSignedValue());
         }
     }
     @Test
     public void test_uint8_t() throws IOException {
-        for (int i = 0; i < expected_int8.length; i++) {
+        for (int anExpected_int8 : expected_uint8) {
             UnsignedByte result = binFileReader.uint8_t();
-            Integer exp = expected_int8[i];
-            assertEquals("Binary uint8_t read " + Integer.toHexString(exp) + " asInt()", (Integer)Byte.toUnsignedInt(exp.byteValue()), result.asInt());
-            assertEquals("Binary uint8_t read " + Integer.toHexString(exp) + " getSignedValue()", (Byte)exp.byteValue(), result.getSignedValue());
+            Integer exp = anExpected_int8;
+            assertEquals("Binary uint8_t read " + Integer.toHexString(exp) + " asInt()", (Integer) Byte.toUnsignedInt(exp.byteValue()), result.asInt());
+            assertEquals("Binary uint8_t read " + Integer.toHexString(exp) + " getSignedValue()", (Byte) exp.byteValue(), result.getSignedValue());
         }
     }
     @Test
     public void test_int32_t() throws IOException {
-        for (int i = 0; i < expected_int32.length; i++) {
+        for (long anExpected_int32 : expected_int32) {
             SignedInteger result = binFileReader.int32_t();
-            Long exp = expected_int32[i];
+            Long exp = anExpected_int32;
             assertEquals("Binary int32_t read " + exp + " asInt()", exp, result.asLong());
-            assertEquals("Binary int32_t read " + exp + " getSignedValue()", (Integer)exp.intValue(), result.getSignedValue());
+            assertEquals("Binary int32_t read " + exp + " getSignedValue()", (Integer) exp.intValue(), result.getSignedValue());
         }
     }
     @Test
     public void test_uint32_t() throws IOException {
-        for (int i = 0; i < expected_uint32.length; i++) {
+        for (Long exp : expected_uint32) {
             UnsignedInteger result = binFileReader.uint32_t();
-            Long exp = expected_uint32[i];
             assertEquals("Binary uint32_t read " + exp + " asInt()", exp, result.asLong());
-            assertEquals("Binary uint32_t read " + exp + " getSignedValue()", (Integer)exp.intValue(), result.getSignedValue());
+            assertEquals("Binary uint32_t read " + exp + " getSignedValue()", (Integer) exp.intValue(), result.getSignedValue());
         }
     }
     @Test
     public void test_int64_t() throws IOException {
-        for (int i = 0; i < expected_int64.length; i++) {
+        for (Long exp : expected_int64) {
             SignedLong result = binFileReader.int64_t();
-            Long exp = expected_int64[i];
             assertEquals("Binary int64_t read " + exp + " getSignedValue()", exp, result.getSignedValue());
         }
     }
     @Test
     public void test_uint64_t() throws IOException {
-        for (int i = 0; i < expected_uint64.length; i++) {
+        for (Long exp : expected_uint64) {
             UnsignedLong result = binFileReader.uint64_t();
-            Long exp = expected_uint64[i];
-            assertEquals("Binary int64_t read " + exp + " getSignedValue()", exp, result.getSignedValue());
+            assertEquals("Uint64_t" + exp + " getSignedValue()", exp, result.getSignedValue());
+        }
+    }
+    @Test
+    public void test_float32_t() throws IOException {
+        for (Float exp : expected_float32) {
+            Float result = binFileReader.float32_t();
+            assertEquals("float32_t", exp, result);
+        }
+    }
+    @Test
+    public void test_float64_t() throws IOException {
+        for (Double exp : expected_float64) {
+            Double result = binFileReader.float64_t();
+            assertEquals("float64_t", exp, result);
         }
     }
 
