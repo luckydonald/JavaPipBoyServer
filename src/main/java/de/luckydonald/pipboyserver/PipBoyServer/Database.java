@@ -11,10 +11,12 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedExcept
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
+import de.luckydonald.pipboyserver.PipBoyServer.input.BinFileReader;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.interactions.CommandInput;
 import de.luckydonald.utils.ObjectWithLogger;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -68,6 +70,7 @@ public class Database extends ObjectWithLogger {
         e._setID(id);
         e._setDatabase(this);
         this.entriesLock.writeLock().unlock();
+        getLogger().info("Added on id " + id + ": " + e.toSimpleString(false));
         DataUpdate update = new DataUpdate(e);
         queueDataUpdate(update);
         return e;
@@ -201,6 +204,27 @@ public class Database extends ObjectWithLogger {
         System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
         return null;
     }
+
+    public Void cmd_Import(Scanner scanner) {
+        String s = scanner.nextLine();
+        s = (s.trim().equals("") ? "OfflineData.bin" : s);
+        while (!s.trim().equals("")) {
+            File f = new File("OfflineData.bin");
+            if (f.exists() && !f.isDirectory()) {
+                // do something
+                try {
+                    BinFileReader binFileReader = BinFileReader.fromFile("OfflineData.bin");
+                    Database db = new Database();
+                    binFileReader.readAll(db);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    s = scanner.nextLine().trim();
+                }
+                this.print();
+            }
+        }
+        return null;
+    }
     public void print() {
         this.entriesLock.readLock().lock();
         for (Map.Entry<Integer, DBEntry> entry : this.entries.entrySet()) {
@@ -221,6 +245,8 @@ public class Database extends ObjectWithLogger {
         cmd.add("set", f);
         f = this::cmd_Test;
         cmd.add("test", f);
+        f = this::cmd_Import;
+        cmd.add("import", f);
         cmd.start();
     }
 
@@ -475,11 +501,16 @@ public class Database extends ObjectWithLogger {
         //mapper.registerModule(new Jdk8Module());
         ObjectNode rootNode = null;
         try {
-            rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
+            rootNode = (ObjectNode) mapper.readTree(new File("OfflineData.bin.json"));
             db.loadJsonRoot(rootNode);
-        } catch (IOException e){    // MalformedURLException | JsonParseException | JsonMappingException | IOException
-            db.getLogger().info("Getting default from " + DEFAULT_JSON_URL + " failed: " + e.toString());
-            return fillWithBasicDefault(db);
+        } catch (IOException e){
+            try {
+                rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
+                db.loadJsonRoot(rootNode);
+            } catch (IOException ex){    // MalformedURLException | JsonParseException | JsonMappingException | IOException
+                db.getLogger().info("Getting default from " + DEFAULT_JSON_URL + " failed: " + ex.toString());
+                return fillWithBasicDefault(db);
+            }
         }
         return fillWithBasicDefault(db);
         // src can be a File, URL, InputStream etc
