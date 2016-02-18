@@ -215,7 +215,7 @@ public class Database extends ObjectWithLogger {
                 try {
                     BinFileReader binFileReader = BinFileReader.fromFile("OfflineData.bin");
                     Database db = new Database();
-                    binFileReader.readAll(db);
+                    binFileReader.readNextEntry(db);
                 } catch (IOException e) {
                     e.printStackTrace();
                     s = scanner.nextLine().trim();
@@ -501,15 +501,25 @@ public class Database extends ObjectWithLogger {
         //mapper.registerModule(new Jdk8Module());
         ObjectNode rootNode = null;
         try {
-            rootNode = (ObjectNode) mapper.readTree(new File("OfflineData.bin.json"));
-            db.loadJsonRoot(rootNode);
-        } catch (IOException e){
+            File f = new File("OfflineData.bin");
+            //if (f.exists() && !f.isDirectory()) {
+            BinFileReader binFileReader = BinFileReader.fromFile("OfflineData.bin");
+            binFileReader.readNextEntry(db);
+            return db;
+            //}
+        } catch (IOException e) {
+            db.getLogger().info("Getting default from OfflineData.bin: " + e.toString());
             try {
-                rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
+                rootNode = (ObjectNode) mapper.readTree(new File("OfflineData.bin.json"));
                 db.loadJsonRoot(rootNode);
-            } catch (IOException ex){    // MalformedURLException | JsonParseException | JsonMappingException | IOException
-                db.getLogger().info("Getting default from " + DEFAULT_JSON_URL + " failed: " + ex.toString());
-                return fillWithBasicDefault(db);
+            } catch (IOException ex) {
+                try {
+                    rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
+                    db.loadJsonRoot(rootNode);
+                } catch (IOException exc) {    // MalformedURLException | JsonParseException | JsonMappingException | IOException
+                    db.getLogger().info("Getting default from " + DEFAULT_JSON_URL + " failed: " + exc.toString());
+                    return fillWithBasicDefault(db);
+                }
             }
         }
         return fillWithBasicDefault(db);
