@@ -249,7 +249,7 @@ Messages of type 5 are sent by the app to the server to request an action be tak
 |  11            |   |                                                           |                                                                                                                     |
 |  12            |  `[<id>]`                                                     |  Toggle radio with index `<id>` in database                                                                         |
 |  13            |  `[]`                                                         |  Toggle receiving of local map update                                                                               |
-|  14            |  `[]`                                                         |  Refresh? Command with no result. Issued when tab is changed.                                                       |
+|  14            |  `[]`                                                         |  [Clear Idle](https://github.com/matzman666/PyPipboyApp/issues/51#issuecomment-185233103). Issued e.g. when tab is changed. |
 
 ##### Command 1: Drop item
 
