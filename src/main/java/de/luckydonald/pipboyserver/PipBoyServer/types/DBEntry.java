@@ -4,7 +4,6 @@ import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.EntryType;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.utils.ObjectWithLogger;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -13,9 +12,10 @@ import java.nio.ByteOrder;
 public class DBEntry extends ObjectWithLogger {
     private Integer id = null;
     private Database database = null;
+    //private DBContainer parent = null;
     boolean dirty = true;
     public EntryType getType() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
     public Integer getID(){
         return this.id;

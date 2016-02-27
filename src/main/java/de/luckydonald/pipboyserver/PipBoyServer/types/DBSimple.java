@@ -3,7 +3,6 @@ package de.luckydonald.pipboyserver.PipBoyServer.types;
 import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * All {@link DBEntry}s not containing references to other entries.
