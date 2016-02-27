@@ -1,5 +1,6 @@
 package de.luckydonald.utils;
 
+import java.lang.invoke.MethodHandles;
 import java.util.logging.Logger;
 
 /**
@@ -12,5 +13,12 @@ public class ObjectWithLogger {
             this.logger =  Logger.getLogger(this.getClass().getCanonicalName());
         }
         return this.logger;
+    }
+    private static Logger staticLogger;
+    public static Logger getStaticLogger() {
+        if (staticLogger == null) {
+            staticLogger = Logger.getLogger(new Throwable().getStackTrace()[1].getClassName());
+        }
+        return staticLogger;
     }
 }

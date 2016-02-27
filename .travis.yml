@@ -6,4 +6,4 @@ install:
 # - mvn install -DskipTests=true
 
 after_success:
-  - mvn clean test jacoco:report coveralls:report -DrepoToken=$COVERALLS_TOKEN
+  - mvn test jacoco:report coveralls:report -DrepoToken=$COVERALLS_TOKEN

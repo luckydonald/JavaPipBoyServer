@@ -1,11 +1,14 @@
 # JavaPipBoyServer 
 A Fallout 4 PipBoy compatible server implementation.
 
-#### Install && Test
+#### Install & Test  
+[![Build Status](https://travis-ci.org/luckydonald/JavaPipBoyServer.svg?branch=master)](https://travis-ci.org/luckydonald/JavaPipBoyServer) <!--[![Coverage Status](https://coveralls.io/repos/github/luckydonald/JavaPipBoyServer/badge.svg?branch=master)](https://coveralls.io/github/luckydonald/JavaPipBoyServer?branch=master)-->
+
 ```sh
 mvn validate    # this installs required .jar files
 mvn clean test  # the actual test
 ```
+
 
 #### Working:
 - Discovery

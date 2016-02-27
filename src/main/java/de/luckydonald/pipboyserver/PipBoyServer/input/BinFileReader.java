@@ -42,13 +42,8 @@ public class BinFileReader extends ObjectWithLogger {
     private static BufferedInputStream from(URL url) throws IOException {
         HttpURLConnection uc = (HttpURLConnection) url.openConnection();
         int code = uc.getResponseCode();
-        String response = uc.getResponseMessage();
-        for (int j = 1;; j++) {
-            String header = uc.getHeaderField(j);
-            String key = uc.getHeaderFieldKey(j);
-            if (header == null || key == null)
-                break;
-            System.out.println(uc.getHeaderFieldKey(j) + ": " + header);
+        if (code != 200) {
+            getStaticLogger().warning("HTTP Status is " + code);
         }
         return new BufferedInputStream(uc.getInputStream());
     }
