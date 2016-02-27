@@ -155,6 +155,7 @@ class KeepAliveThread extends ObjectWithLogger implements Runnable{
                 int read = 0;
                 while (read < left) {
                     int newlyRead = in.read(bytesToRead, 0, bytesToRead.length);
+                    //System.out.println(new String(bytesToRead,"UTF-8"));
                     if (newlyRead == -1) {
                         getLogger().log(Level.SEVERE, "Got " + read + " of " + left + " bytes.");
                         throw new IOException("Möööp! Left: " + left);

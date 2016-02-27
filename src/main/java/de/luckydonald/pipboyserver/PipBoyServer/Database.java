@@ -70,7 +70,7 @@ public class Database extends ObjectWithLogger {
         e._setID(id);
         e._setDatabase(this);
         this.entriesLock.writeLock().unlock();
-        getLogger().info("Added on id " + id + ": " + e.toSimpleString(false));
+        getLogger().finest("Added on id " + id + ": " + e.toSimpleString(false));
         DataUpdate update = new DataUpdate(e);
         queueDataUpdate(update);
         return e;
