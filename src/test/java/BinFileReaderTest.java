@@ -10,12 +10,8 @@ import static org.junit.Assert.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.StringJoiner;
 
 /**
- * Created by  on
- *
  * @author luckydonald
  * @since 13.02.2016
  **/
@@ -192,8 +188,15 @@ public class BinFileReaderTest extends ObjectWithLogger {
             // do something
             this.binFileReader = BinFileReader.fromFile("OfflineData.bin");
             Database db = new Database();
-            ArrayList<DBEntry> foo = binFileReader.readAll(db);
-            System.out.println(Arrays.toString(foo.toArray()));
+            DBEntry foo = binFileReader.readNextEntry(db);
+            ArrayList<BinFileReadLogger> loggerz = binFileReader.getLoggerz();
+            for (BinFileReadLogger log : loggerz) {
+                if (log.getEndPosition() == 470549) {
+                    System.out.println(log);
+                }
+            }
+            binFileReader.updateHex();
+            System.out.println(foo);
         }
     }
 

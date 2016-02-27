@@ -1,11 +1,13 @@
 package de.luckydonald.pipboyserver.PipBoyServer.input;
 
+import at.HexLib.library.HexLib;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.ObjectWithLogger;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -16,11 +18,16 @@ import java.util.ArrayList;
  * @since 13.02.2016
  **/
 public class BinFileReader extends ObjectWithLogger {
+    private ArrayList<BinFileReadLogger> loggerz = new ArrayList<>();
     private BufferedInputStream buff;
+    private ByteArrayOutputStream buffStore = new ByteArrayOutputStream();
+    HexLib hex = new HexLib();
+    JFrame frame = null;
     long pos;
 
     public BinFileReader(BufferedInputStream buff) {
         this.buff = buff;
+        hex.setByteContent(buffStore.toByteArray());
     }
     public static BinFileReader fromFile(String filename)  throws IOException {
         return new BinFileReader(new BufferedInputStream(new FileInputStream(new File(filename))));
@@ -102,7 +109,6 @@ public class BinFileReader extends ObjectWithLogger {
             char str[length];
         };
         */
-
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         UnsignedInteger length = uint32_t();
         for (long i = 0; i < length.asLong(); i++) {
@@ -118,8 +124,25 @@ public class BinFileReader extends ObjectWithLogger {
         if (read == -1) {
             throw new EOFException();
         }
+        buffStore.write(read);
         pos++;
         return read;
+    }
+    public void updateHex() {
+        if (this.frame == null) {
+            SwingUtilities.invokeLater(() -> {
+                // Erzeugt einen JFrame mit Titel
+                frame = new JFrame( "HAX" );
+                // Macht einen JFrame sichtbar
+                frame.setVisible(true);
+                frame.setSize(200, 200);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.add(hex);
+            });
+        }
+        hex.setByteContent(buffStore.toByteArray());
+        hex.setCursorPostion((int) pos);
+        hex.updateUI();
     }
 
     public ArrayList<DBEntry> readAll(Database db) throws IOException {
@@ -134,89 +157,132 @@ public class BinFileReader extends ObjectWithLogger {
         return entries;
     }
     public DBEntry readNextEntry(Database db) throws IOException {
+        BinFileReadLogger logger = new BinFileReadLogger(pos);
+        getLoggerz().add(logger);
         int value_type = uint8_t().asInt();
         UnsignedInteger value_id = uint32_t();
+        DBEntry d;
         if (value_type == 0) {
             // Primitive
-            int primitive_type = uint8_t().asInt();
-            switch (primitive_type) {
-                case 0: {
-                    SignedInteger integer = int32_t();
-                    return db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue()));
-                }
-                case 1: {
-                    UnsignedInteger integer = uint32_t();
-                    return db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue()));
-                }
-                case 2: {
-                    SignedLong integer = int64_t();
-                    return db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue().intValue()));
-                }
-                case 3: {
-                    Float integer = float32_t();
-                    return db.add(value_id.getSignedValue(), new DBFloat(integer));
-                }
-                case 4: {
-                    Double integer = float64_t();
-                    return db.add(value_id.getSignedValue(), new DBFloat(integer.floatValue()));
-                }
-                case 5: {
-                    int integer = uint8_t().asInt();
-                    return db.add(value_id.getSignedValue(), new DBBoolean(integer != 0));
-                }
-                case 6: {
-                    String string = string_t();
-                    if (string.equals("Klassisches Radio")) {
-                        System.out.println("Breakpoint here!");
-                    }
-                    return db.add(value_id.getSignedValue(), new DBString(string));
-                }
-                default: {
-                    getLogger().info("Position: " + pos);
-                    throw new InvalidObjectException("unknown primitive type: " + primitive_type);
-                }
-            }
-
+            d = this.readPrimitive(db, value_id);
         } else if (value_type == 1) {
             // array/list
-            UnsignedInteger list_count = uint32_t();
-            DBList list = (DBList) db.add(value_id.getSignedValue(), new DBList());
-            for ( long i = 0; i < list_count.asLong(); i++) {
-                UnsignedInteger element_index = uint32_t();
-                DBEntry element_value = this.readNextEntry(db);
-                try {
-                    list.append(element_value);
-                } catch (AlreadyInsertedException | AlreadyTakenException e) {
-                    e.printStackTrace();
-                }
-                if (!element_index.asLong().equals(i)) {
-                    getLogger().severe("List index does not fit!" +
-                            "List index is " + element_index + ", i is " + i + ", " +
-                            "and the element is " + element_value.toSimpleString(false) + ". " +
-                            "Current Position: " + pos
-                    );
-                }
-
-            }
-            return list;
+            d = this.readList(db, value_id);
         } else if (value_type == 2) {
             // object/dict
-            UnsignedInteger dict_count = uint32_t();
-            DBDict dict = (DBDict) db.add(value_id.getSignedValue(),new DBDict());
-            for (long i = 0; i < dict_count.asLong(); i++) {
-                String dict_key = string_t();
-                DBEntry dict_value = readNextEntry(db);
-                try {
-                    dict.add(dict_key, dict_value);
-                } catch (AlreadyInsertedException | AlreadyTakenException e) {
-                    e.printStackTrace();
-                }
-            }
-            return dict;
+            d = this.readDict(db, value_id);
         } else {
             getLogger().info("Position: " + pos);
             throw new InvalidObjectException("unknown type: " + value_type);
         }
+        jumpOut(logger);
+        return d;
+    }
+
+    public void jumpOut(BinFileReadLogger logger) {
+        logger.setEndPosition(pos);
+    }
+
+    private DBEntry readDict(Database db, UnsignedInteger value_id) throws IOException {
+        BinFileReadLogger logger = new BinFileReadLogger(pos);
+        getLoggerz().add(logger);
+        UnsignedInteger dict_count = uint32_t();
+        DBDict dict = (DBDict) db.add(value_id.getSignedValue(),new DBDict());
+        for (long i = 0; i < dict_count.asLong(); i++) {
+            String dict_key = string_t();
+            DBEntry dict_value = readNextEntry(db);
+            try {
+                dict.add(dict_key, dict_value);
+            } catch (AlreadyInsertedException | AlreadyTakenException e) {
+                e.printStackTrace();
+            }
+        }
+        jumpOut(logger);
+        return dict;
+    }
+
+    private DBList readList(Database db, UnsignedInteger value_id) throws IOException {
+        BinFileReadLogger logger = new BinFileReadLogger(pos);
+        getLoggerz().add(logger);
+        UnsignedInteger list_count = uint32_t();
+        DBList list = (DBList) db.add(value_id.getSignedValue(), new DBList());
+        for ( long i = 0; i < list_count.asLong(); i++) {
+            UnsignedInteger element_index = uint32_t();
+            DBEntry element_value = this.readNextEntry(db);
+            try {
+                list.append(element_value);
+            } catch (AlreadyInsertedException | AlreadyTakenException e) {
+                e.printStackTrace();
+            }
+            if (!element_index.asLong().equals(i)) {
+                getLogger().severe("List index does not fit!" +
+                        "List index is " + element_index + ", i is " + i + ", " +
+                        "and the element is " + element_value.toSimpleString(false) + ". " +
+                        "Current Position: " + pos
+                );
+            }
+
+        }
+        jumpOut(logger);
+        return list;
+    }
+
+    private DBEntry readPrimitive(Database db, UnsignedInteger value_id) throws IOException {
+        BinFileReadLogger logger = new BinFileReadLogger(pos);
+        getLoggerz().add(logger);
+        int primitive_type = uint8_t().asInt();
+        DBEntry d;
+        switch (primitive_type) {
+            case 0: {
+                SignedInteger integer = int32_t();
+                d = db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue()));
+                break;
+            }
+            case 1: {
+                UnsignedInteger integer = uint32_t();
+                d = db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue()));
+                break;
+            }
+            case 2: {
+                SignedLong integer = int64_t();
+                d = db.add(value_id.getSignedValue(), new DBInteger32(integer.getSignedValue().intValue()));
+                break;
+            }
+            case 3: {
+                Float integer = float32_t();
+                d = db.add(value_id.getSignedValue(), new DBFloat(integer));
+                break;
+            }
+            case 4: {
+                Double integer = float64_t();
+                d = db.add(value_id.getSignedValue(), new DBFloat(integer.floatValue()));
+                break;
+            }
+            case 5: {
+                int integer = uint8_t().asInt();
+                d = db.add(value_id.getSignedValue(), new DBBoolean(integer != 0));
+                break;
+            }
+            case 6: {
+                String string = string_t();
+                if (string.equals("Klassisches Radio")) {
+                    System.out.println("Breakpoint here!");
+                }
+                d = db.add(value_id.getSignedValue(), new DBString(string));
+                break;
+            }
+            default: {
+                getLogger().info("Position: " + pos);
+                throw new InvalidObjectException("unknown primitive type: " + primitive_type);
+            }
+        }
+        jumpOut(logger);
+        return d;
+
+    }
+
+    public ArrayList<BinFileReadLogger> getLoggerz() {
+        return loggerz;
     }
 }
 
