@@ -8,7 +8,9 @@ import org.junit.Test;
 import static java.lang.Integer.toUnsignedString;
 import static org.junit.Assert.*;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -182,22 +184,42 @@ public class BinFileReaderTest extends ObjectWithLogger {
     }
 
     @Test
-    public void test_main() throws IOException {
-        File f = new File("OfflineData.bin");
-        if(f.exists() && !f.isDirectory()) {
-            // do something
-            this.binFileReader = BinFileReader.fromFile("OfflineData.bin");
-            Database db = new Database();
-            DBEntry foo = binFileReader.readNextEntry(db);
-            ArrayList<BinFileReadLogger> loggerz = binFileReader.getLoggerz();
-            for (BinFileReadLogger log : loggerz) {
-                if (log.getEndPosition() == 470549) {
-                    System.out.println(log);
-                }
+    public void test_main_offline() throws IOException {
+        File offline = new File("OfflineData.bin");
+        if(offline.exists() && !offline.isDirectory()) {
+            if (GraphicsEnvironment.isHeadless()) {
+                this.binFileReader = new BinFileReader(offline);
+            } else {
+                this.binFileReader = new BinFileReaderGui(offline);
             }
-            binFileReader.updateHex();
-            System.out.println(foo);
+            something_test_main_something();
         }
     }
 
+    @Test
+    public void test_main_online() throws IOException {
+        URL online = new URL("http://luckydonald.github.io/OfflineData.bin");
+        if (GraphicsEnvironment.isHeadless()) {
+            this.binFileReader = new BinFileReader(online);
+        } else {
+            this.binFileReader = new BinFileReaderGui(online);
+        }
+        something_test_main_something();
+    }
+
+    public void something_test_main_something() throws IOException {
+        Database db = new Database();
+        DBEntry foo = binFileReader.readNextEntry(db);
+        ArrayList<BinFileReadLogger> loggerz = binFileReader.getLoggerz();
+        for (BinFileReadLogger log : loggerz) {
+            if (log.getEndPosition() == 470549) {
+                System.out.println(log);
+            }
+        }
+        if (GraphicsEnvironment.isHeadless()) {
+            System.out.println(foo);
+        } else {
+            ((BinFileReaderGui) binFileReader).updateHex();
+        }
+    }
 }

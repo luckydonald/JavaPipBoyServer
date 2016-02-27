@@ -213,7 +213,7 @@ public class Database extends ObjectWithLogger {
             if (f.exists() && !f.isDirectory()) {
                 // do something
                 try {
-                    BinFileReader binFileReader = BinFileReader.fromFile("OfflineData.bin");
+                    BinFileReader binFileReader = new BinFileReader(new File("OfflineData.bin"));
                     Database db = new Database();
                     binFileReader.readNextEntry(db);
                 } catch (IOException e) {
@@ -503,7 +503,7 @@ public class Database extends ObjectWithLogger {
         try {
             File f = new File("OfflineData.bin");
             //if (f.exists() && !f.isDirectory()) {
-            BinFileReader binFileReader = BinFileReader.fromFile("OfflineData.bin");
+            BinFileReader binFileReader = new BinFileReader(new File("OfflineData.bin"));
             binFileReader.readNextEntry(db);
             return db;
             //}

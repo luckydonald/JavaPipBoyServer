@@ -1,14 +1,14 @@
 package de.luckydonald.pipboyserver.PipBoyServer.input;
 
-import at.HexLib.library.HexLib;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.ObjectWithLogger;
 
-import javax.swing.*;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -20,17 +20,37 @@ import java.util.ArrayList;
 public class BinFileReader extends ObjectWithLogger {
     private ArrayList<BinFileReadLogger> loggerz = new ArrayList<>();
     private BufferedInputStream buff;
-    private ByteArrayOutputStream buffStore = new ByteArrayOutputStream();
-    HexLib hex = new HexLib();
-    JFrame frame = null;
+    protected ByteArrayOutputStream buffStore = new ByteArrayOutputStream();
     long pos;
 
     public BinFileReader(BufferedInputStream buff) {
         this.buff = buff;
-        hex.setByteContent(buffStore.toByteArray());
     }
-    public static BinFileReader fromFile(String filename)  throws IOException {
-        return new BinFileReader(new BufferedInputStream(new FileInputStream(new File(filename))));
+
+    public BinFileReader(URL url) throws IOException {
+        this(from(url));
+    }
+
+    public BinFileReader(File file) throws IOException {
+        this(from(file));
+    }
+
+    private static BufferedInputStream from(File file)  throws IOException {
+        return new BufferedInputStream(new FileInputStream(file));
+    }
+
+    private static BufferedInputStream from(URL url) throws IOException {
+        HttpURLConnection uc = (HttpURLConnection) url.openConnection();
+        int code = uc.getResponseCode();
+        String response = uc.getResponseMessage();
+        for (int j = 1;; j++) {
+            String header = uc.getHeaderField(j);
+            String key = uc.getHeaderFieldKey(j);
+            if (header == null || key == null)
+                break;
+            System.out.println(uc.getHeaderFieldKey(j) + ": " + header);
+        }
+        return new BufferedInputStream(uc.getInputStream());
     }
 
     public UnsignedLong uint64_t() throws IOException {
@@ -127,22 +147,6 @@ public class BinFileReader extends ObjectWithLogger {
         buffStore.write(read);
         pos++;
         return read;
-    }
-    public void updateHex() {
-        if (this.frame == null) {
-            SwingUtilities.invokeLater(() -> {
-                // Erzeugt einen JFrame mit Titel
-                frame = new JFrame( "HAX" );
-                // Macht einen JFrame sichtbar
-                frame.setVisible(true);
-                frame.setSize(200, 200);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.add(hex);
-            });
-        }
-        hex.setByteContent(buffStore.toByteArray());
-        hex.setCursorPostion((int) pos);
-        hex.updateUI();
     }
 
     public ArrayList<DBEntry> readAll(Database db) throws IOException {
