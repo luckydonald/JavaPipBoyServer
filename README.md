@@ -1,6 +1,12 @@
 # JavaPipBoyServer 
 A Fallout 4 PipBoy compatible server implementation.
 
+#### Install && Test
+```sh
+mvn validate    # this installs required .jar files
+mvn clean test  # the actual test
+```
+
 #### Working:
 - Discovery
 - KeepAlive
