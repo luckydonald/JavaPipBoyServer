@@ -216,10 +216,9 @@ public class BinFileReaderTest extends ObjectWithLogger {
                 System.out.println(log);
             }
         }
-        if (GraphicsEnvironment.isHeadless()) {
-            System.out.println(foo);
-        } else {
+        if (!GraphicsEnvironment.isHeadless()) {
             ((BinFileReaderGui) binFileReader).updateHex();
         }
+        System.out.println(foo.toSimpleString());
     }
 }
