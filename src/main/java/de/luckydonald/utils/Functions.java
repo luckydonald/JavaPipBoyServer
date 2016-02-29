@@ -39,7 +39,6 @@ public class Functions extends ObjectWithLogger {
      */
     public static String getMethodName (int offset) {
         StackTraceElement ste[] = Thread.currentThread().getStackTrace();
-        String thisClass = "";
         int foundThisMethod = -1;
         for ( StackTraceElement s : ste ) {
 

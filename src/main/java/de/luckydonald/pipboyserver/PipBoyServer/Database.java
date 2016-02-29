@@ -340,13 +340,13 @@ public class Database extends ObjectWithLogger {
         return this.get(0);
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         Database db = new Database();
         fillWithBasicDefault(db);
         db.print();
         boolean quit = false;
         while (!quit) {
-            /*DataUpdate update = this.updates.poll();
+            DataUpdate update = this.updates.poll();
             if (update == null) {
                 quit = true;
                 break;
@@ -356,11 +356,10 @@ public class Database extends ObjectWithLogger {
                 System.out.printf("%02X ", b);
             }
             System.out.println("");
-            */
         }
 
         System.out.println("--");
-    }
+    }*/
 
     public static Database newWithDefault() {
         Database db = new Database();
