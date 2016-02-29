@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.io.*;
 import java.util.logging.*;
 
 public class DatabaseTest {
@@ -279,6 +280,49 @@ public class DatabaseTest {
         assertEquals(
                 "root[\"a6.2.c1\"] string traversal",
                 "baz",
+                db.get("a6.2.c1").textValue()
+        );
+    }
+    @Test
+    public void testCommands() throws AlreadyTakenException, AlreadyInsertedException {
+        testCreation();
+        String inContent = "get a1\n\nset a6.2.c1\n\nGünter was here\n";
+        String expected = "Enter command, end with ^D\n" +
+                "(0):\tDBDict(id=0, data={\"a1\":1, \"a2\":2, \"a3\":3, \"a4\":4, \"a5\":5, \"a6\":7}," +
+                " inserts={\"a1\":1, \"a2\":2, \"a3\":3, \"a4\":4, \"a5\":5, \"a6\":7}," +
+                " removes=[]\na1 (1):\tDBBoolean(true)\n" +
+                " _\n" +
+                "| Give a key/index where to go next or \"..\" to move up agan.\n" +
+                "| Blank line exits.\n" +
+                "'>Enter command, end with ^D\n" +
+                "(0):\tDBDict(id=0, data={\"a1\":1, \"a2\":2, \"a3\":3, \"a4\":4, \"a5\":5, \"a6\":7}, inserts={\"a1\":1, \"a2\":2, \"a3\":3, \"a4\":4, \"a5\":5, \"a6\":7}, removes=[]\n" +
+                "a6.2.c1 (10):\tDBString(\"baz\")\n" +
+                " _\n" +
+                "| Give a key/index where to go next or \"..\" to move up agan.\n" +
+                "| Blank line exits.\n" +
+                "'>a6.2.c1 (10):\tDBString(\"baz\")\n" +
+                " _\n" +
+                "| Enter your new value.\n" +
+                "'>a6.2.c1 (10):\tDBString(\"Günter was here\")\n" +
+                "Enter command, end with ^D\n";
+        ByteArrayInputStream in = new ByteArrayInputStream(inContent.getBytes());
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(outContent);
+        System.setOut(out);
+        System.setIn(in);
+        this.db.startCLI();
+        //while(true){
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ignored) {}
+        //}
+        //reset System.in/out to its original. Just to be sure.
+        System.setIn(System.in);
+        System.setOut(System.out);
+        assertEquals("CLI: execute several commands", expected, outContent.toString());
+        assertEquals(
+                "root[\"a6.2.c1\"] is now Günter was here",
+                "Günter was here",
                 db.get("a6.2.c1").textValue()
         );
     }
