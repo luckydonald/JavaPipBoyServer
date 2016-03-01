@@ -1,8 +1,6 @@
 package de.luckydonald.pipboyserver.Messages;
 
-import de.luckydonald.pipboyserver.Constants;
 import de.luckydonald.pipboyserver.MESSAGE_CHANNEL;
-import de.luckydonald.pipboyserver.Messages.Message;
 
 public class ConnectionAccepted extends Message {
     public ConnectionAccepted() {

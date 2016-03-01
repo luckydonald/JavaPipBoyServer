@@ -135,7 +135,7 @@ public class DBDict extends DBContainer {
         getLogger().finest("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
         if (entry.getDBEntry() == null) {
-            throw new NullPointerException("entry.getDBEntry() is null. Did you create it with a DBEntry?");
+            throw new IllegalArgumentException("entry.getDBEntry() is null. Did you create it with a DBEntry?");
         }
         DBDict result = this.add(entry.name, entry.getDBEntry());
         this.getDatabase().getEntriesLock().writeLock().unlock();
@@ -246,7 +246,7 @@ public class DBDict extends DBContainer {
             getLogger().finest("unlocked DB: write");
             this.getUpdateLock().writeLock().unlock();
             getLogger().finest("unlocked Update: write");
-            throw new NullPointerException("Could not find ID in array.");
+            throw new IllegalArgumentException("Could not find ID in array.");
         }
         //  Now remove it and add set the update lists accordingly:
         DBDict result = this.remove(del_key);

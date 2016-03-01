@@ -4,10 +4,8 @@ import de.luckydonald.pipboyserver.PipBoyServer.types.DBEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class DataUpdate extends Message{

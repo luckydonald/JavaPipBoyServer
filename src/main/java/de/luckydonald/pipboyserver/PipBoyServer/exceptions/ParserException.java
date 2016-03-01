@@ -2,7 +2,6 @@ package de.luckydonald.pipboyserver.PipBoyServer.exceptions;
 
 import de.luckydonald.pipboyserver.PipBoyServer.types.DBSimple;
 
-import java.security.PrivilegedActionException;
 /**
  * Thrown if one of the {@link DBSimple#setValueFromString(String)} parsers fail.
  *
@@ -55,7 +54,7 @@ public class ParserException extends Exception {
      * typically contains the class and detail message of <tt>cause</tt>).
      * This constructor is useful for exceptions that are little more than
      * wrappers for other throwables (for example, {@link
-     * PrivilegedActionException}).
+     * java.security.PrivilegedActionException}).
      *
      * @param cause the cause (which is saved for later retrieval by the
      *              {@link #getCause()} method).  (A <tt>null</tt> value is

@@ -154,6 +154,7 @@ public class DatabaseTest {
     @Test
     public void testCreation() throws AlreadyTakenException, AlreadyInsertedException {
         this.testCreation(false);
+        assertNotNull(this.db);
     }
 
     @Test
@@ -239,7 +240,7 @@ public class DatabaseTest {
     public void testUnicodeStrings() throws AlreadyTakenException, AlreadyInsertedException {
         DBString str = new DBString("Günter was here.");
         root.add("äöüß", str);
-        db.get("äöüß").textValue();
+        assertEquals("Unicode strings", "Günter was here.", db.get("äöüß").textValue());
     }
 
     @Test

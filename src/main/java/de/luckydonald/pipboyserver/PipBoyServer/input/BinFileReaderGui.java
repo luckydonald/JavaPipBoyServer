@@ -1,13 +1,10 @@
 package de.luckydonald.pipboyserver.PipBoyServer.input;
 
 import at.HexLib.library.HexLib;
-import de.luckydonald.utils.ObjectWithLogger;
 import javax.swing.*;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**

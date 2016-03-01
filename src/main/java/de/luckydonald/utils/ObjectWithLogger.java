@@ -1,6 +1,5 @@
 package de.luckydonald.utils;
 
-import java.lang.invoke.MethodHandles;
 import java.util.logging.Logger;
 
 /**

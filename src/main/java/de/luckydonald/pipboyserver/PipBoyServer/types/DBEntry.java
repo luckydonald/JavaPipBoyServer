@@ -65,7 +65,7 @@ public class DBEntry extends ObjectWithLogger {
     //TODO Doc
     public Database getDatabase(){
         if (database == null) {
-            throw new NullPointerException("this.database is null");
+            throw new IllegalArgumentException("this.database is null");
         }
         return this.database;
     }

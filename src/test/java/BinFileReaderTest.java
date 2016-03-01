@@ -5,7 +5,6 @@ import de.luckydonald.utils.ObjectWithLogger;
 import org.junit.Before;
 import org.junit.Test;
 
-import static java.lang.Integer.toUnsignedString;
 import static org.junit.Assert.*;
 
 import java.awt.*;
@@ -18,15 +17,15 @@ import java.util.ArrayList;
  * @since 13.02.2016
  **/
 public class BinFileReaderTest extends ObjectWithLogger {
-    byte[] input = {115, 75, -61, -74, 105, 110, 103, 0};
-    int[] expected_int8 = {115, 75, -61, -74, 105, 110, 103, 0};
-    int[] expected_uint8 = {115, 75, 195, 182, 105, 110, 103, 0};
-    long[] expected_int32 = {-1228715149L, 6778473L};
-    long[] expected_uint32 = {3066252147L, 6778473L};
-    long[] expected_int64 = {29113322918071155L};
-    long[] expected_uint64 = {29113322918071155L};
-    float[] expected_float32 = {(float) -5.82023631068295799195766448975E-6, (float)9.49866380536723574519558603963E-39};
-    double[] expected_float64 = {1.0427274872209864735496543959E-306};
+    private byte[] input = {115, 75, -61, -74, 105, 110, 103, 0};
+    private int[] expected_int8 = {115, 75, -61, -74, 105, 110, 103, 0};
+    private int[] expected_uint8 = {115, 75, 195, 182, 105, 110, 103, 0};
+    private long[] expected_int32 = {-1228715149L, 6778473L};
+    private long[] expected_uint32 = {3066252147L, 6778473L};
+    private long[] expected_int64 = {29113322918071155L};
+    private long[] expected_uint64 = {29113322918071155L};
+    private float[] expected_float32 = {(float) -5.82023631068295799195766448975E-6, (float)9.49866380536723574519558603963E-39};
+    private double[] expected_float64 = {1.0427274872209864735496543959E-306};
     //String[] expected_string = {"sKöing\0"}; // HTML sK&uuml;ing&#0; OR sK&#195;&#182;ing&#0;
     //73 4B C3 B6 69 6E 67 00
     // 115, 75, -61, -74, 105, 110, 103, 0
@@ -41,7 +40,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
     BinFileReader binFileReader = null;
 
     @Before
-    public void setup() throws IOException {
+    public void setUp() throws IOException {
         this.binFileReader = new BinFileReader(new BufferedInputStream(new ByteArrayInputStream(this.input)));
     }
     @Test

@@ -47,7 +47,7 @@ public class Database extends ObjectWithLogger {
 
     public DBEntry add(DBDict.DictEntry entry) {
         if (entry.getDBEntry() == null) {
-            throw new NullPointerException("entry.getDBEntry() is null. Did you create the DictEntry with a DBEntry?");
+            throw new IllegalArgumentException("entry.getDBEntry() is null. Did you create the DictEntry with a DBEntry?");
         }
         return this.add(entry.getDBEntry());
     }

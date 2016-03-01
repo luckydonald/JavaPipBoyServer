@@ -1,7 +1,5 @@
 package de.luckydonald.pipboyserver;
 
-import de.luckydonald.pipboyserver.Messages.Message;
-
 public class MessagePackage {
     /*struct Packet {
         uint32_t size,

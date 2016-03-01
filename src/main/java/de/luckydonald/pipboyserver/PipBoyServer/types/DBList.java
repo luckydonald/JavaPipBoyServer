@@ -82,12 +82,12 @@ public class DBList extends DBContainer {
      * @return itself.
      * @throws AlreadyInsertedException See {@link DBContainer#addNewEntryToDB}.
      * @throws AlreadyTakenException See {@link DBContainer#addNewEntryToDB}.
-     * @throws NullPointerException if the specified element is null
+     * @throws IllegalArgumentException if the specified element is null
      */
     public DBList append(DBEntry entry) throws AlreadyInsertedException, AlreadyTakenException {
         //TODO: update notification
         if (entry == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("Given entry is null.");
         }
         getLogger().finest("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();
