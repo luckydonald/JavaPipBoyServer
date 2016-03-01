@@ -130,7 +130,9 @@ public class DatabaseTest {
         if (printDebug) System.out.println("a6 -> b3 -> c1");
         DBString c1 = new DBString(db, "baz");
         DBInteger32 c2 = new DBInteger32(db, 35);
-        b3.add("c1", c1).add("c2", c2);
+        b3.add("c1", c1);
+        db.add(c2);
+        b3.add(new DBDict.DictEntry("c2", c2));
         // {
         //  "a1": True,
         //  "a2": 0x08,

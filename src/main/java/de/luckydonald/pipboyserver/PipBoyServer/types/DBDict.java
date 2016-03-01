@@ -56,6 +56,7 @@ public class DBDict extends DBContainer {
         this.inserts = new ConcurrentHashMap<String, DBEntry>(data);
         this.removes = new ArrayList<>();
     }
+
     public DBDict(Database db, String key, DBEntry data) {
         this(db);
         this.data.put(key, data);
@@ -82,7 +83,7 @@ public class DBDict extends DBContainer {
         int insertCount = this.inserts.size();
         b.putShort((short) insertCount);
         for (Map.Entry<String, DBEntry> entry  : this.inserts.entrySet()) {
-            DictEntry e = new DictEntry(this.getDatabase(), entry.getKey(), entry.getValue());
+            DictEntry e = new DictEntry(entry.getKey(), entry.getValue());
             e.putValueIntoByteBuffer(b);
             boolean successfullyRemoved = this.inserts.remove(entry.getKey(), entry.getValue());
             if(successfullyRemoved){
@@ -268,13 +269,13 @@ public class DBDict extends DBContainer {
         public DictEntry(int id, String name) {
             this(name, id);
         }
-        public DictEntry(Database db, String name, DBEntry entry){
+        public DictEntry(String name, DBEntry entry){
             this.id = entry.getID();
             this.name = name;
             this.value = entry;
         }
-        public DictEntry(Database db, DBEntry entry, String name) {
-            this(db, name, entry);
+        public DictEntry(DBEntry entry, String name) {
+            this(name, entry);
         }
         public int getID() {
             return this.id;
