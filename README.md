@@ -2,7 +2,7 @@
 A Fallout 4 PipBoy compatible server implementation.
 
 #### Install & Test  
-[![Build Status](https://travis-ci.org/luckydonald/JavaPipBoyServer.svg?branch=master)](https://travis-ci.org/luckydonald/JavaPipBoyServer) [![Coverage Status](https://coveralls.io/repos/github/luckydonald/JavaPipBoyServer/badge.svg?branch=master)](https://coveralls.io/github/luckydonald/JavaPipBoyServer?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/grade/d0fbe9967ed44eadb1997a1e6522ccb0)](https://www.codacy.com/app/t-duebel/JavaPipBoyServer)
+[![Build Status](https://travis-ci.org/luckydonald/JavaPipBoyServer.svg?branch=master)](https://travis-ci.org/luckydonald/JavaPipBoyServer) [![Coverage Status](https://coveralls.io/repos/github/luckydonald/JavaPipBoyServer/badge.svg?branch=master)](https://coveralls.io/github/luckydonald/JavaPipBoyServer?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/grade/d0fbe9967ed44eadb1997a1e6522ccb0)](https://www.codacy.com/app/luckydonald/JavaPipBoyServer)
 
 ```sh
 mvn validate    # this installs required .jar files
