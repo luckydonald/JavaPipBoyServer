@@ -16,37 +16,42 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 /**
+ * The Pip Boy Server. Contains a Database.
+ *
  * Created by luckydonald on 14.01.16.
  */
 public class Server {
     public static final int MAX_CLIENTS = 10;
-    ServerSocket socket;
-    Database db;
-    boolean quit = false;
-    ExecutorService threadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
+    private boolean quit = false;
+    private ExecutorService threadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
     public void run() {
-        db = new Database();
+        Database db = new Database();
         db.fillWithDefault();
         db.startCLI();
         while (!this.quit) {
+            ServerSocket socket;
             try {
-                ServerSocket socket = new ServerSocket(Constants.CONNECT_TCP_PORT);
+                socket = new ServerSocket(Constants.CONNECT_TCP_PORT);
                 while (!this.quit) {
                     System.out.println("Waiting for game to connect.");
                     Socket acceptedSocket = socket.accept();
                     Runnable session = new Session(acceptedSocket, db);
                     threadPool.submit(session);
                     System.out.println("Started Game session.");
-                    //System.out.println(db.toSimpleString());
                 }
             } catch (IOException e) {
-                socket = null;
                 e.printStackTrace();
                 try {
                     Thread.sleep(999);
                 } catch (InterruptedException ignored) {}
             }
         }
+    }
+    public boolean shouldQuit() {
+        return quit;
+    }
+    public void setQuit(boolean quit) {
+        this.quit = quit;
     }
 }
 class Session extends ObjectWithLogger implements Runnable, IDataUpdateListener {
@@ -58,7 +63,7 @@ class Session extends ObjectWithLogger implements Runnable, IDataUpdateListener 
     public Session(Socket socket, Database db) {
         this.socket = socket;
         this.db = db;
-        this.updates = new ConcurrentLinkedQueue<DataUpdate>();
+        this.updates = new ConcurrentLinkedQueue<>();
         this.db.registerDataUpdateListener(this);
     }
 
@@ -69,7 +74,7 @@ class Session extends ObjectWithLogger implements Runnable, IDataUpdateListener 
         System.out.println("Started session.");
         try {
             OutputStream stream = socket.getOutputStream();
-            InputStream inStream = socket.getInputStream();
+            //InputStream inStream = socket.getInputStream();  //TODO: Read what app says.
             heartbeat = new KeepAliveThread(socket);
             stream.write(new ConnectionAccepted().toBytes());
             stream.flush();

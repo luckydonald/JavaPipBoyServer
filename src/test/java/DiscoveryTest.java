@@ -30,13 +30,13 @@ public class DiscoveryTest{
 
         DatagramPacket packet = new DatagramPacket(
                 sendBuffer, sendBuffer.length, receiverAddress, DISCOVER_UDP_PORT);
-        String receicedText = "{\"IsBusy\": false, \"MachineType\": \"PC\", \"name\": \"Test\"}";
-        byte[] buffer = receicedText.getBytes();
+        String receivedText = "{\"IsBusy\": false, \"MachineType\": \"PC\", \"name\": \"Test\"}";
+        byte[] buffer = receivedText.getBytes();
         DatagramPacket receivedPackage = new DatagramPacket(buffer, buffer.length);
         Thread.sleep(1000);
         datagramSocket.send(packet);
         datagramSocket.receive(receivedPackage);
-        assertEquals("Discovery", new String(receicedText.getBytes()), new String(receivedPackage.getData()));
+        assertEquals("Discovery", receivedText, new String(receivedPackage.getData()));
         d.shouldStop();
     }
 

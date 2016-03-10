@@ -25,24 +25,20 @@ import java.util.function.Function;
 import java.util.logging.Level;
 
 /**
+ * This is the Database for the Pip Boy.
+ *
  * Created by luckydonald on 15.01.16.
  */
 public class Database extends ObjectWithLogger {
     public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/NimVek/pipboy/1087a1c820fae6265fbce2a614e62e85cd146442/DemoMode.json";
+    final ReentrantReadWriteLock updateListenerLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
+
+    private HashMap<Integer, DBEntry> entries = new HashMap<>();
+    private List<IDataUpdateListener> updateListener = new LinkedList<>();
 
     public ReentrantReadWriteLock getEntriesLock() {
         return entriesLock;
-    }
-
-    private final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
-    private HashMap<Integer, DBEntry> entries = new HashMap<Integer, DBEntry>();
-
-
-    final ReentrantReadWriteLock updateListenerLock = new ReentrantReadWriteLock();
-    private List<IDataUpdateListener> updateListener = new LinkedList<>();
-
-    public Database() {
-        //do nothing.
     }
 
     public DBEntry add(DBDict.DictEntry entry) {
@@ -106,15 +102,15 @@ public class Database extends ObjectWithLogger {
         this.updateListenerLock.readLock().unlock();
     }
 
-    public Void cmd_List(Scanner command) {
+    public Void cmdList(Scanner command) {
         print();
         return null;
     }
-    public Void cmd_Test(Scanner command) {
+    public Void cmdTest(Scanner command) {
         System.out.println("command: \"" + command.nextLine() + "\".");
         return null;
     }
-    public Void cmd_Get(Scanner scanner) {
+    public Void cmdGet(Scanner scanner) {
         cmdGetter(scanner);
         return null;
     }
@@ -183,7 +179,6 @@ public class Database extends ObjectWithLogger {
                 System.out.println("Selected element is a container. Please choose a simple element.");
             } else {
                 isSimple = true;
-                break;
             }
         }
         System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
@@ -237,13 +232,13 @@ public class Database extends ObjectWithLogger {
     }
 
     public void startCLI() {
-        Function<Scanner, Void> f = this::cmd_List;
+        Function<Scanner, Void> f = this::cmdList;
         CommandInput cmd = new CommandInput("list", f);
-        f = this::cmd_Get;
+        f = this::cmdGet;
         cmd.add("get", f);
         f = this::cmd_Set;
         cmd.add("set", f);
-        f = this::cmd_Test;
+        f = this::cmdTest;
         cmd.add("test", f);
         f = this::cmd_Import;
         cmd.add("import", f);
@@ -269,11 +264,9 @@ public class Database extends ObjectWithLogger {
         return size;
     }
     public DBEntry get(String path) {
-        int level = 0;
         getLogger().finest("locking DB: read");
         getEntriesLock().readLock().lock();
-        DBDict root = (DBDict) this.get(0);  // root node should be 0.
-        DBEntry node = root;
+        DBEntry node = this.get(0);
         String[] parts = path.split("\\.");
         if (parts.length == 0) {
             parts = new String[]{path};
@@ -306,7 +299,6 @@ public class Database extends ObjectWithLogger {
                     getLogger().finest("unlocked DB: read");
                     throw new KeyDoesNotExistsException("There should be the key \"" + s + "\". But have a "+ node.getType() + " object: " + node);
             }
-            level++;
         }
         getEntriesLock().readLock().unlock();
         getLogger().finest("unlocked DB: read");

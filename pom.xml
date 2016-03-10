@@ -18,6 +18,7 @@
         <hexlib.artifactId>HexLib</hexlib.artifactId>
         <hexlib.version>0.50</hexlib.version>
         <hexlib.url>https://sourceforge.net/projects/hexlib/</hexlib.url>
+        <mockito.version>2.0.43-beta</mockito.version>
     </properties>
 
     <build>
@@ -117,6 +118,11 @@
             <version>${hexlib.version}</version>
             <!--<systemPath>${basedir}/libs/HexLib.jar</systemPath>-->
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
         </dependency>
     </dependencies>
 </project>

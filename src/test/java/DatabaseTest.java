@@ -1,4 +1,6 @@
 /**
+ * This testes the Database Class.
+ *
  * Created by luckydonald on 11.02.16.
  */
 import de.luckydonald.pipboyserver.PipBoyServer.*;
@@ -21,8 +23,8 @@ public class DatabaseTest {
         jlog.log(Level.INFO, "Loaded.");
     }
 
-    Database db;
-    DBDict root;
+    private Database db;
+    private DBDict root;
 
     @Before
     public void setUp() {
