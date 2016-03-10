@@ -32,10 +32,10 @@ public class Functions extends ObjectWithLogger {
      * {@code
      *   void foo() {
      *      getMethodName(0) // == "foo"
- *      }
+     *      }
      * }
-     * @param offset
-     * @return
+     * @param offset how far in the stack we should go.
+     * @return Name of the method.
      */
     public static String getMethodName (int offset) {
         StackTraceElement ste[] = Thread.currentThread().getStackTrace();
