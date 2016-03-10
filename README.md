@@ -16,7 +16,8 @@ Now you are ready to go.
 - Database + structure
 - Packaging data for sending
 - My first project which uses tests `:D` [![Build Status](https://travis-ci.org/luckydonald/JavaPipBoyServer.svg?branch=master)](https://travis-ci.org/luckydonald/JavaPipBoyServer)
-
+    - [x] Discovery
+    - [x] DB access/interactions
 
 #### Known Bugs
  - not complete
@@ -27,6 +28,10 @@ Now you are ready to go.
 
 #### Roadmap
  - Fix Server.
+ - [x] Test Discovery
+ - [x] Test DB 
+ - [ ] Test DB Messages
+ - [ ] Sucessfully import BinFiles (from Android)
 
 #### FAQ
 - Will it emulate the PC or PS4?
