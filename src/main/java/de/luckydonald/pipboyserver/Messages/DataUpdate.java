@@ -1,5 +1,6 @@
 package de.luckydonald.pipboyserver.Messages;
 
+import de.luckydonald.pipboyserver.MESSAGE_CHANNEL;
 import de.luckydonald.pipboyserver.PipBoyServer.types.DBEntry;
 
 import java.io.ByteArrayOutputStream;
@@ -9,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DataUpdate extends Message{
-    static final int TYPE = 3;
+    static final int TYPE = MESSAGE_CHANNEL.DataUpdate;
     private List<DBEntry> entries = new ArrayList<DBEntry>();
 
     /*public DataUpdate(byte[] data) {

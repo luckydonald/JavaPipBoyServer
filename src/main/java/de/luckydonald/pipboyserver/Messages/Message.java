@@ -20,7 +20,6 @@ public class Message extends ObjectWithLogger{
         if(type != KeepAlive.type) {
             getLogger().fine("created new Message, type " + type + " (" + this.getClass().getSimpleName() + ").");
         }
-
     }
 
     public byte[] toBytes() {
@@ -35,29 +34,11 @@ public class Message extends ObjectWithLogger{
         if (this.content != null) {
             header.put(this.content);
         }
-        //System.out.println(header);
-
-        /*Path file = Paths.get("/tmp/the-file-name.txt");
-        try {
-            Files.write(file, header.array());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
-        //Files.write(file, data, StandardOpenOption.APPEND);
         return header.array();
     }
-    /*public static void main(String[] args) throws IOException {
-        //new Message(2, "HELLOWORLD".getBytes());
-        new ConnectionAccepted().toBytes();
-    }*/
     public static void printBytes(byte[] bytes){
-        //int i = 0;
         for (byte b : bytes) {
             System.out.printf("%02X ", b);
-            //if ((i++) % 2 == 1) {
-            //    System.out.print(" ");
-            //}
         }
     }
 

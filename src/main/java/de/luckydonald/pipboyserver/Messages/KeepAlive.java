@@ -1,9 +1,9 @@
 package de.luckydonald.pipboyserver.Messages;
 
-import de.luckydonald.pipboyserver.Messages.Message;
+import de.luckydonald.pipboyserver.MESSAGE_CHANNEL;
 
 public class KeepAlive extends Message {
-    final static int type = 0;
+    final static int type = MESSAGE_CHANNEL.KeepAlive;
     public KeepAlive() {
         super(type, null);
     }

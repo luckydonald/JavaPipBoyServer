@@ -167,7 +167,7 @@ public class Database extends ObjectWithLogger {
         return levels;
     }
     //Radio.1.text Günters Radio
-    public Void cmd_Set(Scanner scanner) {
+    public Void cmdSet(Scanner scanner) {
         boolean isSimple = false;
         String key = null;
         DBEntry e = null;
@@ -200,7 +200,7 @@ public class Database extends ObjectWithLogger {
         return null;
     }
 
-    public Void cmd_Import(Scanner scanner) {
+    public Void cmdImport(Scanner scanner) {
         String s = scanner.nextLine();
         s = (s.trim().equals("") ? "OfflineData.bin" : s);
         while (!s.trim().equals("")) {
@@ -220,6 +220,11 @@ public class Database extends ObjectWithLogger {
         }
         return null;
     }
+
+    /**
+     * Print the database in a readable format.
+     * Formatted like {@code "<id>:  <value>"}.
+     */
     public void print() {
         this.entriesLock.readLock().lock();
         for (Map.Entry<Integer, DBEntry> entry : this.entries.entrySet()) {
@@ -231,16 +236,24 @@ public class Database extends ObjectWithLogger {
         entriesLock.readLock().unlock();
     }
 
+    /**
+     * Starts a new {@link CommandInput} instance, and registers the
+     * "{@link #cmdList(Scanner) list}", "{@link #cmdGet(Scanner) get}", "{@link #cmdSet(Scanner) set}",
+     * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
+     * commands.
+     *
+     * Note: You could start multiple instances, all trying to use stdin. That would probably be a bad thing.
+     */
     public void startCLI() {
         Function<Scanner, Void> f = this::cmdList;
         CommandInput cmd = new CommandInput("list", f);
         f = this::cmdGet;
         cmd.add("get", f);
-        f = this::cmd_Set;
+        f = this::cmdSet;
         cmd.add("set", f);
         f = this::cmdTest;
         cmd.add("test", f);
-        f = this::cmd_Import;
+        f = this::cmdImport;
         cmd.add("import", f);
         cmd.start();
     }
