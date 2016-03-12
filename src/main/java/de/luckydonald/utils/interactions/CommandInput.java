@@ -1,5 +1,6 @@
 package de.luckydonald.utils.interactions;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -13,22 +14,45 @@ import java.util.function.Function;
  */
 public class CommandInput extends Thread implements Runnable {
     private HashMap<String, FunctionWrapper> commandCallbacks = new HashMap<>();
-
-    public CommandInput(String command, Function<Scanner, Void> callback) {
+    public InputStream input;
+    public CommandInput() {
+        this(System.in);
+    }
+    public CommandInput(InputStream input) {
         super("CommandInput Thread");
+        this.input = input;
+    }
+    public CommandInput(String command, Function<Scanner, Void> callback) {
+        this();
+        this.commandCallbacks.put(command, new FunctionWrapper(callback, command));
+    }
+    public CommandInput(InputStream input, String command, Function<Scanner, Void> callback) {
+        this(input);
         this.commandCallbacks.put(command, new FunctionWrapper(callback, command));
     }
     public CommandInput(String[] commands, Function<Scanner, Void>[] callbacks) {
         this(Arrays.asList(commands), Arrays.asList(callbacks));
     }
+    public CommandInput(InputStream input, String[] commands, Function<Scanner, Void>[] callbacks) {
+        this(input, Arrays.asList(commands), Arrays.asList(callbacks));
+    }
     public CommandInput(List<String> commands, List<Function<Scanner, Void>> callbacks) {
-        super("CommandInput Thread");
+        this();
         do_assert(commands.size() == callbacks.size());
+        this.input = System.in;
         for (int i = 0; i < commands.size(); i++) {
             this.commandCallbacks.put(commands.get(i), new FunctionWrapper(callbacks.get(i), commands.get(i)));
         }
     }
-    
+    public CommandInput(InputStream input, List<String> commands, List<Function<Scanner, Void>> callbacks) {
+        this(input);
+        do_assert(commands.size() == callbacks.size());
+        this.input = System.in;
+        for (int i = 0; i < commands.size(); i++) {
+            this.commandCallbacks.put(commands.get(i), new FunctionWrapper(callbacks.get(i), commands.get(i)));
+        }
+    }
+
     static void do_assert(boolean test) {
         if(!test) {
             throw new RuntimeException("Test Failed.");
@@ -84,7 +108,7 @@ public class CommandInput extends Thread implements Runnable {
      * @see Thread#run()
      */
     public void run() {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(input);
         String line = "";
         while ( line != null) {
             System.out.println("Enter command, end with ^D");
