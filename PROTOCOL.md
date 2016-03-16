@@ -68,6 +68,8 @@ Basic format example:
 | 0A000000 | 03      | 48454C4C4F574F524C44    |
 | 10       | 3       | HELLOWORLD              |
 
+All strings are UTF-8.
+
 ### Message Types
 #### Type 0: Heartbeat
 
