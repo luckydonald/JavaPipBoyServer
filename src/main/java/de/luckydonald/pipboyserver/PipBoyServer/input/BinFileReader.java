@@ -49,6 +49,7 @@ public class BinFileReader extends ObjectWithLogger {
     }
 
     public UnsignedLong uint64_t() throws IOException {
+        long posBefore = this.pos;
         long i1 = readByte(),
                 i2 = readByte(),
                 i3 = readByte(),
@@ -58,9 +59,12 @@ public class BinFileReader extends ObjectWithLogger {
                 i7 = readByte(),
                 i8 = readByte();
         long integer = (i8 << 56) + (i7 << 48) + (i6 << 40) + (i5 << 32) + (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        return new UnsignedLong(integer);
+        UnsignedLong result = new UnsignedLong(integer);
+        getLogger().fine("uint64_t:  " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
     public SignedLong int64_t() throws IOException {
+        long posBefore = this.pos;
         long i1 = readByte(),
                 i2 = readByte(),
                 i3 = readByte(),
@@ -70,43 +74,61 @@ public class BinFileReader extends ObjectWithLogger {
                 i7 = readByte(),
                 i8 = readByte();
         long integer = (i8 << 56) + (i7 << 48) + (i6 << 40) + (i5 << 32) + (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        return new SignedLong(integer);
+        SignedLong result = new SignedLong(integer);
+        getLogger().fine("int64_t:   " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
 
     public UnsignedInteger uint32_t() throws IOException {
+        long posBefore = this.pos;
         int i1 = readByte(),
             i2 = readByte(),
             i3 = readByte(),
             i4 = readByte();
         int integer = (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        return new UnsignedInteger(integer);
+        UnsignedInteger result = new UnsignedInteger(integer);
+        getLogger().fine("uint32_t:  " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
     public SignedInteger int32_t() throws IOException {
+        long posBefore = this.pos;
         int i1 = readByte(),
             i2 = readByte(),
             i3 = readByte(),
             i4 = readByte();
         int integer = (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        return new SignedInteger(integer);
+        SignedInteger result = new SignedInteger(integer);
+        getLogger().fine("int32_t:   " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
 
     public UnsignedByte uint8_t() throws IOException {
+        long posBefore = this.pos;
         Integer i1 = readByte();
-        return new UnsignedByte(i1.byteValue());
+        UnsignedByte result = new UnsignedByte(i1.byteValue());
+        getLogger().fine("uint8_t:   " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
     public SignedByte int8_t() throws IOException {
+        long posBefore = this.pos;
         Integer i1 = readByte();
-        return new SignedByte(i1.byteValue());
+        SignedByte result = new SignedByte(i1.byteValue());
+        getLogger().fine("int8_t:    " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
     public Float float32_t() throws IOException {
+        long posBefore = this.pos;
         int i1 = readByte(),
             i2 = readByte(),
             i3 = readByte(),
             i4 = readByte();
         int integer = (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        return Float.intBitsToFloat(integer);
+        Float result = Float.intBitsToFloat(integer);
+        getLogger().fine("float32_t: " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
     public Double float64_t() throws IOException {
+        long posBefore = this.pos;
         long i1 = readByte(),
                 i2 = readByte(),
                 i3 = readByte(),
@@ -116,7 +138,9 @@ public class BinFileReader extends ObjectWithLogger {
                 i7 = readByte(),
                 i8 = readByte();
         long integer = (i8 << 56) + (i7 << 48) + (i6 << 40) + (i5 << 32) + (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        return Double.longBitsToDouble(integer);
+        Double result = Double.longBitsToDouble(integer);
+        getLogger().fine("float64_t: " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
     public String string_t() throws IOException {
         /*struct  String {
@@ -124,6 +148,7 @@ public class BinFileReader extends ObjectWithLogger {
             char str[length];
         };
         */
+        long posBefore = this.pos;
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         UnsignedInteger length = uint32_t();
         for (long i = 0; i < length.asLong(); i++) {
@@ -131,7 +156,9 @@ public class BinFileReader extends ObjectWithLogger {
             c = readByte();
             b.write(c);
         }
-        return new String(b.toByteArray(), "UTF-8");
+        String result = new String(b.toByteArray(), "UTF-8");
+        getLogger().fine("string_t:  " + result + " (" + posBefore + "-" + pos + ")");
+        return result;
     }
 
     public synchronized int readByte() throws IOException {
@@ -163,16 +190,21 @@ public class BinFileReader extends ObjectWithLogger {
         DBEntry d;
         if (value_type == 0) {
             // Primitive
+            getLogger().fine("Primitive " + value_id + " start: " + (pos-5));
             d = this.readPrimitive(db, value_id);
+            getLogger().fine("Primitive " + value_id + " ended: " + pos + " > " + d.toSimpleString());
         } else if (value_type == 1) {
             // array/list
+            getLogger().fine("List " + value_id + " start: " + (pos-5));
             d = this.readList(db, value_id);
+            getLogger().fine("List " + value_id + " ended: " + pos + " > " + d.toSimpleString());
         } else if (value_type == 2) {
             // object/dict
+            getLogger().fine("Dict " + value_id + " start: " + (pos-5));
             d = this.readDict(db, value_id);
+            getLogger().fine("Dict " + value_id + " ended: " + pos + " > " + d.toSimpleString());
         } else {
-            getLogger().info("Position: " + pos);
-            throw new InvalidObjectException("unknown type: " + value_type);
+            throw new InvalidObjectException("unknown type: " + value_type + ", position: " + pos);
         }
         jumpOut(logger);
         return d;
@@ -203,6 +235,7 @@ public class BinFileReader extends ObjectWithLogger {
     private DBList readList(Database db, UnsignedInteger value_id) throws IOException {
         BinFileReadLogger logger = new BinFileReadLogger(pos);
         getLoggerz().add(logger);
+        long posBefore = this.pos;
         UnsignedInteger list_count = uint32_t();
         DBList list = (DBList) db.add(value_id.getSignedValue(), new DBList());
         for ( long i = 0; i < list_count.asLong(); i++) {

@@ -370,16 +370,33 @@ public class Database extends ObjectWithLogger {
         Database db = new Database();
         return db.fillWithDefault();
     }
+
     public Database fillWithDefault() {
         return fillWithDefault(this);
     }
+
+    /**
+     * Creates a new database and adds some very basic values into the database.
+     * @return The created database
+     */
     public static Database newWithBasicDefault() {
         Database db = new Database();
         return db.fillWithBasicDefault();
     }
+
+    /**
+     * Inserts some very basic values into the database.
+     * @return The created database
+     */
     public Database fillWithBasicDefault() {
         return fillWithBasicDefault(this);
     }
+
+    /**
+     * Inserts some very basic values into the database.
+     * @param db The database
+     * @return The same database
+     */
     public static Database fillWithBasicDefault(Database db) {
         try {
             DBDict rootDict = new DBDict(null);
@@ -500,6 +517,13 @@ public class Database extends ObjectWithLogger {
         return db;
 
     }
+
+    /**
+     * Inserts values into the database.
+     *
+     * @param db The database
+     * @return The same database
+     */
     public static Database fillWithDefault(Database db) {
         ObjectMapper mapper = new ObjectMapper();
         //mapper.registerModule(new Jdk8Module());
@@ -526,8 +550,8 @@ public class Database extends ObjectWithLogger {
                 }
             }
         }
+        // else
         return fillWithBasicDefault(db);
-        // src can be a File, URL, InputStream etc
     }
 
     public void loadJsonRoot(ObjectNode node) {
