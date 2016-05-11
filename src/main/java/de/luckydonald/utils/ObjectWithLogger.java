@@ -9,8 +9,8 @@ import java.util.logging.Logger;
  * Created by luckydonald on 12.02.16.
  */
 public class ObjectWithLogger {
-    static
     private Logger logger = null;
+    private static Logger staticLogger = null;
     public Logger getLogger() {
         if (logger == null) {
             logger =  Logger.getLogger(this.getClass().getCanonicalName());
@@ -18,7 +18,6 @@ public class ObjectWithLogger {
         logger.setLevel(Level.FINE);
         return logger;
     }
-    private static Logger staticLogger;
     public static Logger getStaticLogger() {
         if (staticLogger == null) {
             staticLogger = Logger.getLogger(new Throwable().getStackTrace()[1].getClassName());
@@ -26,10 +25,10 @@ public class ObjectWithLogger {
         return staticLogger;
     }
 
-    public void addLogConsoleHandler() {
-        addLogConsoleHandler(null);
+    public Handler addLogConsoleHandler() {
+        return addLogConsoleHandler(null);
     }
-    public void addLogConsoleHandler(Level l) {
+    public Handler addLogConsoleHandler(Level l) {
         if (l == null) {
             l = Level.ALL;
         }
@@ -41,5 +40,6 @@ public class ObjectWithLogger {
 
         // Prevent logs from processed by default Console handler.
         getLogger().setUseParentHandlers( false ); // Solution 1
+        return systemOut;
     }
 }

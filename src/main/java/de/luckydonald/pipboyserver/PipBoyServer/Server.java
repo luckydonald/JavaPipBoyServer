@@ -20,12 +20,15 @@ import java.util.logging.Level;
  *
  * Created by luckydonald on 14.01.16.
  */
-public class Server {
+public class Server extends ObjectWithLogger {
     public static final int MAX_CLIENTS = 10;
     private boolean quit = false;
     private ExecutorService threadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
     public void run() {
         Database db = new Database();
+        db.addLogConsoleHandler(Level.FINER).setFilter(
+                record -> true //record.getSourceMethodName().startsWith("fill")
+        );
         db.fillWithDefault();
         db.startCLI();
         while (!this.quit) {
@@ -33,11 +36,11 @@ public class Server {
             try {
                 socket = new ServerSocket(Constants.CONNECT_TCP_PORT);
                 while (!this.quit) {
-                    System.out.println("Waiting for game to connect.");
+                    getLogger().info("Waiting for game to connect.");
                     Socket acceptedSocket = socket.accept();
                     Runnable session = new Session(acceptedSocket, db);
                     threadPool.submit(session);
-                    System.out.println("Started Game session.");
+                    getLogger().info("Started Game session.");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -151,23 +154,26 @@ class KeepAliveThread extends ObjectWithLogger implements Runnable{
             InputStream in = this.socket.getInputStream();
             while (!quit) {
                 byte[] bytesToSend = new KeepAlive().toBytes();
-                byte[] bytesToRead = new byte[bytesToSend.length];
+                //byte[] bytesToRead = new byte[bytesToSend.length];
                 byte[] bytesToSendInstead = sendMe.poll();
                 bytesToSendInstead = (bytesToSendInstead == null ? bytesToSend : bytesToSendInstead);
                 stream.write(bytesToSendInstead);
                 stream.flush();
+                // TODO: read answer.
+                /*
                 int left = bytesToSend.length;
                 int read = 0;
                 while (read < left) {
+
                     int newlyRead = in.read(bytesToRead, 0, bytesToRead.length);
-                    //System.out.println(new String(bytesToRead,"UTF-8"));
+                    getLogger().finest(new String(bytesToRead,"UTF-8"));
                     if (newlyRead == -1) {
                         getLogger().log(Level.SEVERE, "Got " + read + " of " + left + " bytes.");
                         throw new IOException("Möööp! Left: " + left);
                     }
                     read += newlyRead;
                 }
-                //TODO: read answer.
+                */
                 try {
                     Thread.sleep(999);
                 } catch (InterruptedException ignore) {
