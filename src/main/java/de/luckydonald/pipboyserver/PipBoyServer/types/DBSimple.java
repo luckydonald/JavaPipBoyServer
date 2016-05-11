@@ -13,7 +13,7 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
  */
 public abstract class DBSimple<T> extends DBEntry {
 
-    private T value = null;
+    protected T value = null;
 
     public DBSimple(Database db) {
         super(db);
