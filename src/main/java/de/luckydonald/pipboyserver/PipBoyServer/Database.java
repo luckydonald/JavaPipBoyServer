@@ -31,6 +31,7 @@ import java.util.logging.Level;
  */
 public class Database extends ObjectWithLogger {
     public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/NimVek/pipboy/1087a1c820fae6265fbce2a614e62e85cd146442/DemoMode.json";
+    public static final String DEFAULT_BIN_URL = "http://luckydonald.github.io/OfflineData.bin";
     final ReentrantReadWriteLock updateListenerLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock entriesLock = new ReentrantReadWriteLock();
 
@@ -528,32 +529,98 @@ public class Database extends ObjectWithLogger {
         ObjectMapper mapper = new ObjectMapper();
         //mapper.registerModule(new Jdk8Module());
         ObjectNode rootNode = null;
+        db.getLogger().info("Filling with default.");
         try {
-            File f = new File("OfflineData.bin");
-            //if (f.exists() && !f.isDirectory()) {
-            BinFileReader binFileReader = new BinFileReader(new File("OfflineData.bin"));
-            binFileReader.readNextEntry(db);
-            return db;
-            //}
+            return fillWithBinFile(db, "OfflineData.bin");
         } catch (IOException e) {
-            db.getLogger().info("Getting default from OfflineData.bin: " + e.toString());
+            db.getLogger().warning("Could not load default OfflineData.bin from disk: " + e.toString());
+        }
+        // would have returned.
+        try {
+            return fillWithBinFile(db, new URL(DEFAULT_BIN_URL));
+        } catch (IOException exc) {
+            db.getLogger().warning("Could not load default OfflineData.bin from " + DEFAULT_BIN_URL + ": " + exc.toString());
+        }
+        /* //this does not respect the needed integer types etc.
+        try {
+            rootNode = (ObjectNode) mapper.readTree(new File("OfflineData.bin.json"));
+            db.loadJsonRoot(rootNode);
+        } catch (IOException ex) {
             try {
-                rootNode = (ObjectNode) mapper.readTree(new File("OfflineData.bin.json"));
+                rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
                 db.loadJsonRoot(rootNode);
-            } catch (IOException ex) {
-                try {
-                    rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
-                    db.loadJsonRoot(rootNode);
-                } catch (IOException exc) {    // MalformedURLException | JsonParseException | JsonMappingException | IOException
-                    db.getLogger().info("Getting default from " + DEFAULT_JSON_URL + " failed: " + exc.toString());
-                    return fillWithBasicDefault(db);
-                }
+            } catch (IOException exc) {    // MalformedURLException | JsonParseException | JsonMappingException | IOException
+                db.getLogger().info("Could not get default from " + DEFAULT_JSON_URL + " failed: " + exc.toString());
+                return fillWithBasicDefault(db);
             }
         }
         // else
+        */
+        db.getLogger().warning("Using the basic default instead.");
         return fillWithBasicDefault(db);
     }
 
+    /**
+     * Fills the database with a given .bin file.
+     *
+     * This file is created by the mobile apps, and contains the data the device got from the game.
+     * It will be loaded by the app, when a user activates the offline mode. Android saves that file on the SD card.
+     *
+     * @param db The database to fill
+     * @param path the path of the file
+     * @return the same database instance
+     * @throws IOException
+     */
+    public static Database fillWithBinFile(Database db, String path) throws IOException {
+        return fillWithBinFile(db, new File(path));
+    }
+
+    /**
+     * Fills the database with a given .bin file, which will be downloaded from the given url.
+     *
+     * This file is created by the mobile apps, and contains the data the device got from the game.
+     * It will be loaded by the app, when a user activates the offline mode. Android saves that file on the SD card.
+     *
+     * @param db The database to fill
+     * @param url the url of the file
+     * @return the same database instance
+     * @throws IOException
+     */
+    public static Database fillWithBinFile(Database db, URL url) throws IOException {
+        return fillWithBinFile(db, url);
+    }
+
+    /**
+     * Fills the database with a given .bin file.
+     *
+     * @see #fillWithBinFile(Database, BinFileReader)
+     *
+     *
+     * @param db The database to fill
+     * @param file the file to load
+     * @return the same database instance
+     * @throws IOException
+     */
+    public static Database fillWithBinFile(Database db, File file) throws IOException {
+        BinFileReader binFileReader = new BinFileReader(file);
+        binFileReader.readNextEntry(db);
+        return db;
+    }
+    /**
+     * Fills the database with a given .bin file.
+     *
+     * This file is created by the mobile apps, and contains the data the device got from the game.
+     * It will be loaded by the app, when a user activates the offline mode. Android saves that file on the SD card.
+     *
+     * @param db The database to fill
+     * @param binFileReader The BinFileReader instance.
+     * @return the same database instance
+     * @throws IOException
+     */
+    public static Database fillWithBinFile(Database db, BinFileReader binFileReader) throws IOException {
+        binFileReader.readNextEntry(db);
+        return db;
+    }
     public void loadJsonRoot(ObjectNode node) {
         DBDict rootDict = new DBDict(null);
         this.add(rootDict);

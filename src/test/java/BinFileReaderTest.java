@@ -11,6 +11,7 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+// import java.util.logging.Level;
 
 /**
  * @author luckydonald
@@ -26,7 +27,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
     private long[] expected_uint64 = {29113322918071155L};
     private float[] expected_float32 = {(float) -5.82023631068295799195766448975E-6, (float)9.49866380536723574519558603963E-39};
     private double[] expected_float64 = {1.0427274872209864735496543959E-306};
-    //String[] expected_string = {"sKöing\0"}; // HTML sK&uuml;ing&#0; OR sK&#195;&#182;ing&#0;
+    String[] expected_string = {"sKöing"}; // HTML sK&uuml;ing&#0; OR sK&#195;&#182;ing&#0;
     //73 4B C3 B6 69 6E 67 00
     // 115, 75, -61, -74, 105, 110, 103, 0
     // 115, 75, 195, 182, 105, 110, 103, 0
@@ -42,6 +43,9 @@ public class BinFileReaderTest extends ObjectWithLogger {
     @Before
     public void setUp() throws IOException {
         this.binFileReader = new BinFileReader(new BufferedInputStream(new ByteArrayInputStream(this.input)));
+        /*this.binFileReader.addLogConsoleHandler(Level.FINER).setFilter(
+                record -> record.getSourceMethodName().equals("readNextEntry")
+        );*/
     }
     @Test
     public void test_int8_t() throws IOException {
@@ -103,13 +107,13 @@ public class BinFileReaderTest extends ObjectWithLogger {
             assertEquals("float64_t", exp, result);
         }
     }
-    /*@Test
+    @Test
     public void test_string_t() throws IOException {
         for (String exp : expected_string) {
-            String result = binFileReader.string_t();
+            String result = binFileReader.string_t(false);
             assertEquals("string_t", exp, result);
         }
-    }*/
+    }
 
 
     @Test
@@ -186,12 +190,16 @@ public class BinFileReaderTest extends ObjectWithLogger {
     public void test_main_offline() throws IOException {
         File offline = new File("OfflineData.bin");
         if(offline.exists() && !offline.isDirectory()) {
+            this.getLogger().info("OfflineData.bin file exists.");
             if (GraphicsEnvironment.isHeadless()) {
                 this.binFileReader = new BinFileReader(offline);
             } else {
                 this.binFileReader = new BinFileReaderGui(offline);
             }
-            something_test_main_something();
+            do_read_from_bin();
+            System.out.println("");
+        } else {
+            getLogger().warning("No OfflineData.bin file!");
         }
     }
 
@@ -203,21 +211,26 @@ public class BinFileReaderTest extends ObjectWithLogger {
         } else {
             this.binFileReader = new BinFileReaderGui(online);
         }
-        something_test_main_something();
+        do_read_from_bin();
     }
 
-    public void something_test_main_something() throws IOException {
+    public void do_read_from_bin() throws IOException {
         Database db = new Database();
         DBEntry foo = binFileReader.readNextEntry(db);
         ArrayList<BinFileReadLogger> loggerz = binFileReader.getLoggerz();
+        long endPos = -1;
+        this.getLogger();
         for (BinFileReadLogger log : loggerz) {
-            if (log.getEndPosition() == 470549) {
-                System.out.println(log);
-            }
+            endPos = log.getEndPosition();
+            //System.out.println(log);
         }
         if (!GraphicsEnvironment.isHeadless()) {
             ((BinFileReaderGui) binFileReader).updateHex();
         }
         System.out.println(foo.toSimpleString());
+        if (endPos < 499796) {
+            //Le fail.
+            this.getLogger().warning("Didn't read the complete file. Read " + endPos + " of 499796 bytes.");
+        }
     }
 }

@@ -142,7 +142,10 @@ public class BinFileReader extends ObjectWithLogger {
         getLogger().fine("float64_t: " + result + " (" + posBefore + "-" + pos + ")");
         return result;
     }
-    public String string_t() throws IOException {
+        public String string_t() throws IOException {
+            return string_t(true);
+        }
+        public String string_t(boolean hasLength) throws IOException {
         /*struct  String {
             uint32_t length;
             char str[length];
@@ -150,11 +153,18 @@ public class BinFileReader extends ObjectWithLogger {
         */
         long posBefore = this.pos;
         ByteArrayOutputStream b = new ByteArrayOutputStream();
-        UnsignedInteger length = uint32_t();
-        for (long i = 0; i < length.asLong(); i++) {
+        if (hasLength) {
+            UnsignedInteger length = uint32_t();
+            for (long i = 0; i < length.asLong(); i++) {
+                int c;
+                c = readByte();
+                b.write(c);
+            }
+        } else {
             int c;
-            c = readByte();
-            b.write(c);
+            while ((c = readByte()) != 0) {
+                b.write(c);
+            }
         }
         String result = new String(b.toByteArray(), "UTF-8");
         getLogger().fine("string_t:  " + result + " (" + posBefore + "-" + pos + ")");
