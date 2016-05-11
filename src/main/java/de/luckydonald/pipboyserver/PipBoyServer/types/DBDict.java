@@ -119,7 +119,6 @@ public class DBDict extends DBContainer {
         getLogger().finest("locking DB: read");
         this.getDatabase().getEntriesLock().readLock().lock();
         for (Map.Entry<String, DBEntry> entry  : this.inserts.entrySet()) {
-            DBEntry ent = entry.getValue();
             length += entry.getKey().getBytes().length + 1; //name string .length + null terminator
             length += 4; // id = 4
         }

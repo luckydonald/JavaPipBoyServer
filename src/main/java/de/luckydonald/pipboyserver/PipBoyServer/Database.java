@@ -526,9 +526,6 @@ public class Database extends ObjectWithLogger {
      * @return The same database
      */
     public static Database fillWithDefault(Database db) {
-        ObjectMapper mapper = new ObjectMapper();
-        //mapper.registerModule(new Jdk8Module());
-        ObjectNode rootNode = null;
         db.getLogger().info("Filling with default.");
         try {
             return fillWithBinFile(db, "OfflineData.bin");
@@ -541,21 +538,6 @@ public class Database extends ObjectWithLogger {
         } catch (IOException exc) {
             db.getLogger().warning("Could not load default OfflineData.bin from " + DEFAULT_BIN_URL + ": " + exc.toString());
         }
-        /* //this does not respect the needed integer types etc.
-        try {
-            rootNode = (ObjectNode) mapper.readTree(new File("OfflineData.bin.json"));
-            db.loadJsonRoot(rootNode);
-        } catch (IOException ex) {
-            try {
-                rootNode = (ObjectNode) mapper.readTree(new URL(DEFAULT_JSON_URL));
-                db.loadJsonRoot(rootNode);
-            } catch (IOException exc) {    // MalformedURLException | JsonParseException | JsonMappingException | IOException
-                db.getLogger().info("Could not get default from " + DEFAULT_JSON_URL + " failed: " + exc.toString());
-                return fillWithBasicDefault(db);
-            }
-        }
-        // else
-        */
         db.getLogger().warning("Using the basic default instead.");
         return fillWithBasicDefault(db);
     }

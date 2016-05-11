@@ -142,7 +142,7 @@ public class CommandInput extends Thread implements Runnable {
         }
 
         public FunctionWrapper(Function<Scanner, Void> callback) {
-            this.func = func;
+            this.func = callback;
         }
 
         public Function<Scanner, Void> getFunction() {

@@ -151,7 +151,7 @@ class KeepAliveThread extends ObjectWithLogger implements Runnable{
     public void run(){
         try {
             OutputStream stream = this.socket.getOutputStream();
-            InputStream in = this.socket.getInputStream();
+            //InputStream in = this.socket.getInputStream();
             while (!quit) {
                 byte[] bytesToSend = new KeepAlive().toBytes();
                 //byte[] bytesToRead = new byte[bytesToSend.length];

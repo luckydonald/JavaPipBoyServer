@@ -193,24 +193,25 @@ public class BinFileReader extends ObjectWithLogger {
         return entries;
     }
     public DBEntry readNextEntry(Database db) throws IOException {
-        BinFileReadLogger logger = new BinFileReadLogger(pos);
+        long posBefore = this.pos;
+        BinFileReadLogger logger = new BinFileReadLogger(posBefore);
         getLoggerz().add(logger);
         int value_type = uint8_t().asInt();
         UnsignedInteger value_id = uint32_t();
         DBEntry d;
         if (value_type == 0) {
             // Primitive
-            getLogger().fine("Primitive " + value_id + " start: " + (pos-5));
+            getLogger().fine("Primitive " + value_id + " start: " + (posBefore));
             d = this.readPrimitive(db, value_id);
             getLogger().fine("Primitive " + value_id + " ended: " + pos + " > " + d.toSimpleString());
         } else if (value_type == 1) {
             // array/list
-            getLogger().fine("List " + value_id + " start: " + (pos-5));
+            getLogger().fine("List " + value_id + " start: " + (posBefore));
             d = this.readList(db, value_id);
             getLogger().fine("List " + value_id + " ended: " + pos + " > " + d.toSimpleString());
         } else if (value_type == 2) {
             // object/dict
-            getLogger().fine("Dict " + value_id + " start: " + (pos-5));
+            getLogger().fine("Dict " + value_id + " start: " + (posBefore));
             d = this.readDict(db, value_id);
             getLogger().fine("Dict " + value_id + " ended: " + pos + " > " + d.toSimpleString());
         } else {
@@ -245,7 +246,6 @@ public class BinFileReader extends ObjectWithLogger {
     private DBList readList(Database db, UnsignedInteger value_id) throws IOException {
         BinFileReadLogger logger = new BinFileReadLogger(pos);
         getLoggerz().add(logger);
-        long posBefore = this.pos;
         UnsignedInteger list_count = uint32_t();
         DBList list = (DBList) db.add(value_id.getSignedValue(), new DBList());
         for ( long i = 0; i < list_count.asLong(); i++) {
@@ -308,7 +308,7 @@ public class BinFileReader extends ObjectWithLogger {
             case 6: {
                 String string = string_t();
                 if ("Klassisches Radio".equals(string)) {
-                    System.out.println("Breakpoint here!");
+                    System.out.println("Klassisches Radio here!");
                 }
                 d = db.add(value_id.getSignedValue(), new DBString(string));
                 break;
