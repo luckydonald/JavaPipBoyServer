@@ -57,16 +57,16 @@ struct Message {
 }
 ```
 
-Basic format example:
+Basic format example, if the content would be a string (UTF-8):
 
 ```
 0A 00 00 00 03 48 45 4C 4C 4F 57 4F 52 4C 44
 ```
 
-| size(32) | type(8) | content(size)           |
-|----------|---------|-------------------------|
-| 0A000000 | 03      | 48454C4C4F574F524C44    |
-| 10       | 3       | HELLOWORLD              |
+| size(32)    | type(8) | content(size)           |
+|-------------|---------|-------------------------|
+| 0A 00 00 00 | 03      | 48454C4C4F574F524C44    |
+| 10          | 3       | HELLOWORLD              |
 
 All strings are UTF-8.
 
@@ -82,9 +82,9 @@ e.x.
 00 00 00 00 00
 ```
 
-| size(32) | type(8) | content(size) |
-|----------|---------|---------------|
-| 00000000 | 00      |               |
+| size(32)    | type(8) | content(size) |
+|-------------|---------|---------------|
+| 00 00 00 00 | 00      |               |
 
 When the app receives a heartbeat, the app must send the same heartbeat (5 bytes of zeros) back to let the server know that the app is still running. If the app does not respond with a heartbeat, the server will close the TCP connection.
 
@@ -97,6 +97,12 @@ Messages of type 1 are sent when the app first connects to the server. It contai
 ```JSON
 {"lang": "de", "version": "1.1.30.0"}
 ```
+The complete string send:
+
+| size(32)    | type(8) | content(size)                           |
+|-------------|---------|-----------------------------------------|
+| 25 00 00 00 | 01      | 7B 22 6C 61 6E 67 22 3A 20 22 64 65 22 2C 20 22 76 65 72 73 69 6F 6E 22 3A 20 22 31 2E 31 2E 33 30 2E 30 22 7D |
+| 37          | 1       | `{"lang": "de", "version": "1.1.30.0"}` |
 
 The App presumably verifies version & lang, then replies with a heartbeat.
 #### Type 2: Busy
@@ -136,15 +142,15 @@ This is followed by data depending on the value type. The possible types are as 
 | 3       | INT32    | `int`     | `int`     |   4             | `int32_t` \[0x00000000-0xFFFFFFFF\]                                                      |
 | 4       | UINT32   | -         | (?)       |   4             | `uint32_t` \[0-4294967295\]                                                              |
 | 5       | FLOAT    | `float`   | `float`   |   4             | `float32_t`                                                                              |
-| 6       | STRING   | `String`  | `str`     |   n             | Null(`0x00`)-termined byte string. Encoding?                                             |
+| 6       | STRING   | `String`  | `str`     |   n             | Null(`0x00`)-termined byte string. Most likely UTF-8.                                    |
 | 7       | ARRAY    | `[]`      | `list`    | 2+(n*4)         | `uint16_t length, uint32_t ids[length]`, ids are the value IDs of previously sent values |
-| 8       | OBJECT   | `Hashmap` | `dict  `  | 2+(i*4)+2+(d*4) | See picture/text below                                                                   |
+| 8       | OBJECT   | `Hashmap` | `dict  `  | 2+(i*4)+2+(d*4) | Very complex. See picture/text below.                                                    |
 
 
 ![fallout4](https://cloud.githubusercontent.com/assets/2737108/12401272/a91e8db2-be25-11e5-85f5-533f6e7f4006.png)
 
 
-Objects are complex. There are two parts - a set of (key, value) pairs to add, followed by a set of old values to remove.
+**Objects** are complex. There are two parts - a set of (key, value) pairs to add, followed by a set of old values to remove.
 The first time an object is sent, the remove set will be empty.
 
 The first part, (key, value) pairs to add, begins with a `uint16_t length`,
@@ -161,13 +167,13 @@ In this case, the new value replaces the old value.
 Objects are unordered and keys will not be repeated.
 
 ###### Example
-(Read from top to down, left to right. Remember, data is [little-endian](https://en.wikipedia.org/wiki/Endianness#Calculation_order))
+(Read from top to down, left to right. Remember, data is [little-endian](https://en.wikipedia.org/wiki/Endianness#Calculation_order) and strings are UTF-8)
 
 | Data Update Attributes | example (bytes) | Interpretation                                       |
 | -----------            | ------------    | --------------                                       |
 | size                   | 3b000000        | `59` bytes content, size of packages (next table) included |
 | type                   | 03              | Type 3: Data Update                                  |
-| content                | (`59` bytes)    | **See next Table**                                   |
+| content                | `030a0000002a0000`<br>`00070b0000000200`<br>`0100000002000000`<br>`080c000000020005`<br>`0000000500000066`<br>`6f6f000600000068`<br>`656c6c6f00020003`<br>`00000004000000`  | **See next Table** |
 
 
 The content can contain many Data Packages.
@@ -237,21 +243,23 @@ Messages of type 5 are sent by the app to the server to request an action be tak
 
 |  Command Type  |  Args                                                         |  Comment                                                                                                            |
 | -------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-|  0             |  `[ <HandleId>, 0, <$.Inventory.Version> ]`                   |  Use an instance of item specified by `<HandleId>`                                                                  |
-|  1             |  `[ <HandleId>, <count>, <$.Inventory.Version>, <StackID> ]`  |  Drop `<count>` instances of item, `<StackID>` is the whole list under `StackID`                                    |
-|  2             |  `[<HandleId>, <StackID>, <position>, <$.Inventory.Version>]` |  Put item on favorite `<position>` counts from far left 0 to right 5, and north 6 to south 11                       |
-|  3             |  `[<ComponentFormId>, <$.Inventory.Version>]`                 |  Toggle *Tag for search* on component specified by `<ComponentFormId>`                                              |
-|  4             |  `[<page>]`                                                   |  Cycle through search mode on inventory page ( 0: Weapons, 1: Apparel, 2: Aid, 3: Misc, 4: Junk, 5: Mods, 6: Ammo ) |
-|  5             |  `[<QuestId>, ??, ??]`                                        |  Toggle marker for quest                                                                                            |
-|  6             |  `[ <x>, <y>, false ]`                                        |  Place custom marker at `<x>,<y>`                                                                                   |
-|  7             |  `[]`                                                         |  remove custom marker                                                                                               |
-|  8             |   |                                                           |                                                                                                                     |
-|  9             |  `[<id>]`                                                     |  Fast travel to location with index `<id>` in database                                                              |
-|  10            |   |                                                           |                                                                                                                     |
-|  11            |   |                                                           |                                                                                                                     |
+|  0             |  `[ <HandleId>, 0, <$.Inventory.Version> ]`                   |  Use an instance of item specified by `<HandleId>`.                                                                  |
+|  1             |  `[ <HandleId>, <count>, <$.Inventory.Version>, <StackID> ]`  |  Drop `<count>` instances of item, `<StackID>` is the whole list under `StackID`.                                    |
+|  2             |  `[<HandleId>, <StackID>, <position>, <$.Inventory.Version>]` |  Put item on favorite `<position>` counts from far left 0 to right 5, and north 6 to south 11.                       |
+|  3             |  `[<ComponentFormId>, <$.Inventory.Version>]`                 |  Toggle *Tag for search* on component specified by `<ComponentFormId>`.                                              |
+|  4             |  `[<page>]`                                                   |  Cycle through search mode on inventory page. ( 0: Weapons, 1: Apparel, 2: Aid, 3: Misc, 4: Junk, 5: Mods, 6: Ammo ) |
+|  5             |  `[<QuestId>, ??, ??]`                                        |  Toggle marker for quest.                                                                                            |
+|  6             |  `[ <x>, <y>, false ]`                                        |  Place custom marker at `<x>,<y>`.                                                                                   |
+|  7             |  `[]`                                                         |  Remove the set custom marker.                                                                                       |
+|  8             |   ?                                                           |  `CheckFastTravel`                                                                                                   |
+|  9             |  `[<id>]`                                                     |  Fast travel to location with index `<id>` in database.                                                              |
+|  10            |   ?                                                           |  `MoveLocapMap` (Probably meant localmap)                                                                            |
+|  11            |   ?                                                           |  `ZoomLocalMap`                                                                                                      |
 |  12            |  `[<id>]`                                                     |  Toggle radio with index `<id>` in database                                                                         |
 |  13            |  `[]`                                                         |  Toggle receiving of local map update                                                                               |
-|  14            |  `[]`                                                         |  [Clear Idle](https://github.com/matzman666/PyPipboyApp/issues/51#issuecomment-185233103). Issued e.g. when tab is changed. |
+|  14            |  `[]`                                                         |  [Clear Idle](https://github.com/matzman666/PyPipboyApp/issues/51#issuecomment-185233103). Issued when display is touched/ a key is pressed after some time. |
+
+_Internally, in the C# files, the function responsible for sending them is called `SendNetworkRequest(...)` and is defined in the `PipboyMenuBase.cs` file._
 
 ##### Command 1: Drop item
 

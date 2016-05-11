@@ -14,6 +14,6 @@ public class UtilsTest extends ObjectWithLogger {
     @Test
     public void testMethodName() {
         assertEquals("getMethodName()", "testMethodName", getMethodName());
-        assertEquals("(static) Logger", getLogger().getName(), getStaticLogger().getName());
+        assertEquals("get(static)Logger() name", getLogger().getName(), getStaticLogger().getName());
     }
 }
