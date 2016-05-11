@@ -12,10 +12,6 @@ import static de.luckydonald.pipboyserver.Constants.DISCOVER_UDP_PORT;
  *  The APP client
  */
 public class PipBoyClient {
-
-    public PipBoyClient() {
-    }
-
     public static void main(String[] args) throws IOException {
         while (true) {
 
