@@ -307,7 +307,7 @@ public class BinFileReader extends ObjectWithLogger {
             }
             case 6: {
                 String string = string_t();
-                if (string.equals("Klassisches Radio")) {
+                if ("Klassisches Radio".equals(string)) {
                     System.out.println("Breakpoint here!");
                 }
                 d = db.add(value_id.getSignedValue(), new DBString(string));

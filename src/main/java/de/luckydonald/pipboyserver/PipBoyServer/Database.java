@@ -125,18 +125,18 @@ public class Database extends ObjectWithLogger {
                 isJustStarted = false;
                 e = this.get("");
                 System.out.println("(" + e.getID() + "):\t" + e.toSimpleString(false));
-            } else if (lineInput.trim().equals("")){
+            } else if ("".equals(lineInput.trim())){
                 // empty row => done
                 break;
             }
             Scanner ss = new Scanner(lineInput);
             while (ss.hasNext()) {
                 String input = ss.next();
-                if (input.trim().equals("..")) {
+                if ("..".equals(input.trim())) {
                     levels.removeLast();
                 } else {
                     for (String part : input.split("\\.")) {
-                        if (!part.trim().equals("")) {
+                        if (!("".equals(part.trim()))) {
                             levels.add(part);
                             try {
                                 this.get(String.join(".", levels));  // just try to see if it raises an exception.
@@ -203,8 +203,8 @@ public class Database extends ObjectWithLogger {
 
     public Void cmdImport(Scanner scanner) {
         String s = scanner.nextLine();
-        s = (s.trim().equals("") ? "OfflineData.bin" : s);
-        while (!s.trim().equals("")) {
+        s = ("".equals(s.trim()) ? "OfflineData.bin" : s);
+        while (!("".equals(s.trim()))) {
             File f = new File("OfflineData.bin");
             if (f.exists() && !f.isDirectory()) {
                 // do something

@@ -81,7 +81,7 @@ public class CommandInput extends Thread implements Runnable {
         }
         if (longestHit != null) {
             longestHit.getValue().getFunction().apply(scanner);
-        } else if (line.trim().equals("help")){
+        } else if ("help".equals(line.trim())){
             this.printHelp();
         }
 
@@ -166,7 +166,7 @@ public class CommandInput extends Thread implements Runnable {
          * @return if it its Help string has a value.
          */
         public boolean hasHelp() {
-            return this.help != null && !this.help.trim().equals("");
+            return this.help != null && !("".equals(this.help.trim()));
         }
         /**
          * Returns the help string, or an empty string if not set.

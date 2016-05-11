@@ -18,9 +18,9 @@ public class Main {
         String machineType = "PC";
         if (args.length == 0) {
             return machineType;
-        } else if (args[0].toLowerCase().trim().equals("PS4")) {
+        } else if ("PS4".equals(args[0].toLowerCase().trim())) {
             machineType = "PS4";
-        } else if (args[0].toLowerCase().trim().equals("PC")) {
+        } else if ("PC".equals(args[0].toLowerCase().trim())) {
             machineType = "PC";
         }
         System.out.println("Serving as " + machineType); //TODO: move into Discovery, as logger.
