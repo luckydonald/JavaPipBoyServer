@@ -52,7 +52,7 @@ public class Database extends ObjectWithLogger {
     public DBEntry add(DBEntry e) {
         this.entriesLock.writeLock().lock();
         int nextFreeInt = this.getNextFreeIndex();
-        e = this.add(nextFreeInt, e);
+        this.add(nextFreeInt, e);
         this.entriesLock.writeLock().unlock();
         return e;
     }

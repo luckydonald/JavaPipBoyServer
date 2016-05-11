@@ -13,6 +13,8 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
  */
 public abstract class DBSimple<T> extends DBEntry {
 
+    private T value = null;
+
     public DBSimple(Database db) {
         super(db);
     }
@@ -24,7 +26,6 @@ public abstract class DBSimple<T> extends DBEntry {
      * @throws ParserException the parser failed.
      */
     abstract public DBSimple setValueFromString(String s) throws ParserException;
-    T value = null;
     public void setValue(T value) {
         getLogger().finest("locking DB: write");
         this.getDatabase().getEntriesLock().writeLock().lock();

@@ -30,7 +30,7 @@ public class ObjectWithLogger {
     }
     public Handler addLogConsoleHandler(Level l) {
         if (l == null) {
-            l = Level.ALL;
+            return addLogConsoleHandler(Level.ALL);
         }
         // Create and set handler
         Handler systemOut = new ConsoleHandler();

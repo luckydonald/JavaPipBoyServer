@@ -73,10 +73,8 @@ public class CommandInput extends Thread implements Runnable {
         //todo commands with spaces
         Map.Entry<String, FunctionWrapper> longestHit = null;
         for (Map.Entry<String, FunctionWrapper> entry: this.commandCallbacks.entrySet()) {
-            if (line.startsWith(entry.getKey())) {
-                if (longestHit == null || longestHit.getKey().length() < entry.getKey().length()) {
-                    longestHit = entry;
-                }
+            if (line.startsWith(entry.getKey()) && (longestHit == null || longestHit.getKey().length() < entry.getKey().length())) {
+                longestHit = entry;
             }
         }
         if (longestHit != null) {
