@@ -12,6 +12,7 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.KeyDoesNotExistsException;
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.ParserException;
 import de.luckydonald.pipboyserver.PipBoyServer.input.BinFileReader;
+import static de.luckydonald.utils.interactions.CommandInput.CallbackArguments;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.interactions.CommandInput;
 import de.luckydonald.utils.ObjectWithLogger;
@@ -105,28 +106,28 @@ public class Database extends ObjectWithLogger {
         this.updateListenerLock.readLock().unlock();
     }
 
-    public Void cmdList(Scanner command) {
+    public Void cmdList(CallbackArguments args) {
         print();
         return null;
     }
-    public Void cmdTest(Scanner command) {
-        System.out.println("command: \"" + command.nextLine() + "\".");
+    public Void cmdTest(CallbackArguments args) {
+        args.output.println("command: \"" + args.scanner.nextLine() + "\".");
         return null;
     }
-    public Void cmdGet(Scanner scanner) {
-        cmdGetter(scanner);
+    public Void cmdGet(CallbackArguments args) {
+        cmdGetter(args);
         return null;
     }
-    public LinkedList<String> cmdGetter(Scanner scanner) {
+    public LinkedList<String> cmdGetter(CallbackArguments args) {
         LinkedList<String> levels = new LinkedList<>();
         boolean isJustStarted = true;
         DBEntry e;
-        while (scanner.hasNextLine()) {
-            String lineInput = scanner.nextLine();
+        while (args.scanner.hasNextLine()) {
+            String lineInput = args.scanner.nextLine();
             if (isJustStarted) {
                 isJustStarted = false;
                 e = this.get("");
-                System.out.println("(" + e.getID() + "):\t" + e.toSimpleString(false));
+                args.output.println("(" + e.getID() + "):\t" + e.toSimpleString(false));
             } else if ("".equals(lineInput.trim())){
                 // empty row => done
                 break;
@@ -144,7 +145,7 @@ public class Database extends ObjectWithLogger {
                                 this.get(String.join(".", levels));  // just try to see if it raises an exception.
                             } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                                 levels.removeLast();
-                                System.out.println("Failed to go further as \"" + String.join(".", levels) + "\". Ignoring rest. (" + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage() + ")");
+                                args.output.println("Failed to go further as \"" + String.join(".", levels) + "\". Ignoring rest. (" + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage() + ")");
                                 getLogger().log(Level.FINE,ex.toString(), ex);
                                 break;
                             }
@@ -155,56 +156,56 @@ public class Database extends ObjectWithLogger {
                 String key = String.join(".", levels);
                 try {
                     e = this.get(key);
-                    System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
+                    args.output.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
                 } catch (IndexOutOfBoundsException | NumberFormatException ex) {
-                    System.out.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
+                    args.output.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
                     getLogger().log(Level.FINE,ex.toString(), ex);
                     levels.removeLast();
                 }
             }
-            System.out.println(" _");
-            System.out.println("| Give a key/index where to go next or \"..\" to move up agan.");
-            System.out.println("| Blank line exits.");
-            System.out.print("'>");
+            args.output.println(" _");
+            args.output.println("| Give a key/index where to go next or \"..\" to move up agan.");
+            args.output.println("| Blank line exits.");
+            args.output.print("'>");
         }
         return levels;
     }
     //Radio.1.text Günters Radio
-    public Void cmdSet(Scanner scanner) {
+    public Void cmdSet(CallbackArguments args) {
         boolean isSimple = false;
         String key = null;
         DBEntry e = null;
         while (!isSimple) {
-            LinkedList<String> levels = cmdGetter(scanner);
+            LinkedList<String> levels = cmdGetter(args);
             key = String.join(".", levels);
             e = this.get(key);
             if (e.isContainer()) {
-                System.out.println("Selected element is a container. Please choose a simple element.");
+                args.output.println("Selected element is a container. Please choose a simple element.");
             } else {
                 isSimple = true;
             }
         }
-        System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
+        args.output.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
         boolean didUpdate = false;
         while (!didUpdate) {
-            System.out.println(" _");
-            System.out.println("| Enter your new value.");
-            System.out.print("'>");
-            String line = scanner.nextLine();
+            args.output.println(" _");
+            args.output.println("| Enter your new value.");
+            args.output.print("'>");
+            String line = args.scanner.nextLine();
             try {
                 e = ((DBSimple) e).setValueFromString(line);
                 didUpdate = true;
             } catch (ParserException ex) {
-                System.out.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
+                args.output.println("Failed with " + ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage());
                 getLogger().log(Level.FINE,ex.toString(), ex);
             }
         }
-        System.out.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
+        args.output.println(key + " (" + e.getID() + "):\t" + e.toSimpleString(false));
         return null;
     }
 
-    public Void cmdImport(Scanner scanner) {
-        String s = scanner.nextLine();
+    public Void cmdImport(CallbackArguments args) {
+        String s = args.scanner.nextLine();
         s = ("".equals(s.trim()) ? "OfflineData.bin" : s);
         while (!("".equals(s.trim()))) {
             File f = new File("OfflineData.bin");
@@ -216,7 +217,7 @@ public class Database extends ObjectWithLogger {
                     binFileReader.readNextEntry(db);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    s = scanner.nextLine().trim();
+                    s = args.scanner.nextLine().trim();
                 }
                 this.print();
             }
@@ -225,13 +226,26 @@ public class Database extends ObjectWithLogger {
     }
 
     /**
-     * Print the database in a readable format.
+     * Print the database in a readable format to {@link System#out}.
      * Formatted like {@code "<id>:  <value>"}.
+     *
+     * @see #print(PrintStream)
      */
     public void print() {
+        this.print(System.out);
+    }
+    /**
+     * Print the database in a readable format to the specified {@link PrintStream}.
+     * Formatted like {@code "<id>:  <value>"}.
+     *
+     * @param output The stream where to print.
+     *
+     * @see #print()
+     */
+    public void print(PrintStream output) {
         this.entriesLock.readLock().lock();
         for (Map.Entry<Integer, DBEntry> entry : this.entries.entrySet()) {
-            System.out.println(entry.getKey() + ":\t" + entry.getValue().toSimpleString(false));
+            output.println(entry.getKey() + ":\t" + entry.getValue().toSimpleString(false));
             if (!entry.getKey().equals(entry.getValue().getID())) {
                 getLogger().severe("IDs are different! DB says " + entry.getKey() + ", while DBEntry says " + entry.getValue().getID());
             }
@@ -241,8 +255,8 @@ public class Database extends ObjectWithLogger {
 
     /**
      * Starts a new {@link CommandInput} instance, and registers the
-     * "{@link #cmdList(Scanner) list}", "{@link #cmdGet(Scanner) get}", "{@link #cmdSet(Scanner) set}",
-     * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
+     * "{@link #cmdList(CallbackArguments) list}", "{@link #cmdGet(CallbackArguments) get}", "{@link #cmdSet(CallbackArguments) set}",
+     * "{@link #cmdTest(CallbackArguments) test}" and "{@link #cmdImport(CallbackArguments) import}"
      * commands.
      *
      * Note: You could start multiple instances, all trying to use the same input. That would probably be a bad thing.
@@ -255,7 +269,7 @@ public class Database extends ObjectWithLogger {
      * @see #startCLI() startCLI()
      */
     public void startCLI(InputStream input, PrintStream output) {
-        Function<Scanner, Void> f = this::cmdList;
+        Function<CallbackArguments, Void> f = this::cmdList;
         CommandInput cmd = new CommandInput("list", f);
         cmd.input = input;
         cmd.output = output;
@@ -271,8 +285,8 @@ public class Database extends ObjectWithLogger {
     }
     /**
      * Starts a new {@link CommandInput} instance, and registers the
-     * "{@link #cmdList(Scanner) list}", "{@link #cmdGet(Scanner) get}", "{@link #cmdSet(Scanner) set}",
-     * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
+     * "{@link #cmdList(CallbackArguments) list}", "{@link #cmdGet(CallbackArguments) get}", "{@link #cmdSet(CallbackArguments) set}",
+     * "{@link #cmdTest(CallbackArguments) test}" and "{@link #cmdImport(CallbackArguments) import}"
      * commands.
      *
      * The input stream to read from defaults to {@link System#in}, the output to {@link System#out}.

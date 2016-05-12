@@ -35,21 +35,21 @@ public class CommandInput extends Thread implements Runnable {
         this(System.in);
     }
 
-    public CommandInput(String command, Function<Scanner, Void> callback) {
+    public CommandInput(String command, Function<CallbackArguments, Void> callback) {
         this();
         this.commandCallbacks.put(command, new FunctionWrapper(callback, command));
     }
-    public CommandInput(InputStream input, String command, Function<Scanner, Void> callback) {
+    public CommandInput(InputStream input, String command, Function<CallbackArguments, Void> callback) {
         this(input);
         this.commandCallbacks.put(command, new FunctionWrapper(callback, command));
     }
-    public CommandInput(String[] commands, Function<Scanner, Void>[] callbacks) {
+    public CommandInput(String[] commands, Function<CallbackArguments, Void>[] callbacks) {
         this(Arrays.asList(commands), Arrays.asList(callbacks));
     }
-    public CommandInput(InputStream input, String[] commands, Function<Scanner, Void>[] callbacks) {
+    public CommandInput(InputStream input, String[] commands, Function<CallbackArguments, Void>[] callbacks) {
         this(input, Arrays.asList(commands), Arrays.asList(callbacks));
     }
-    public CommandInput(List<String> commands, List<Function<Scanner, Void>> callbacks) {
+    public CommandInput(List<String> commands, List<Function<CallbackArguments, Void>> callbacks) {
         this();
         do_assert(commands.size() == callbacks.size());
         this.input = System.in;
@@ -57,7 +57,7 @@ public class CommandInput extends Thread implements Runnable {
             this.commandCallbacks.put(commands.get(i), new FunctionWrapper(callbacks.get(i), commands.get(i)));
         }
     }
-    public CommandInput(InputStream input, List<String> commands, List<Function<Scanner, Void>> callbacks) {
+    public CommandInput(InputStream input, List<String> commands, List<Function<CallbackArguments, Void>> callbacks) {
         this(input);
         do_assert(commands.size() == callbacks.size());
         for (int i = 0; i < commands.size(); i++) {
@@ -71,14 +71,14 @@ public class CommandInput extends Thread implements Runnable {
         }
     }
 
-    public Function<Scanner, Void> getFunction(String command) {
+    public Function<CallbackArguments, Void> getFunction(String command) {
         return commandCallbacks.get(command).getFunction();
     }
 
-    public void add(String command, Function<Scanner, Void> callback) {
+    public void add(String command, Function<CallbackArguments, Void> callback) {
         this.commandCallbacks.put(command, new FunctionWrapper(callback, command));
     }
-    public void put(String command, Function<Scanner, Void> callback){
+    public void put(String command, Function<CallbackArguments, Void> callback){
         this.add(command, callback);
     }
 
@@ -99,7 +99,8 @@ public class CommandInput extends Thread implements Runnable {
             }
         }
         if (longestHit != null) {
-            longestHit.getValue().getFunction().apply(scanner);
+            CallbackArguments argumentsObject = new CallbackArguments(scanner, output);
+            longestHit.getValue().getFunction().apply(argumentsObject);
         } else if (HELP_COMMAND.equals(line.trim())){
             this.printHelp();
         }
@@ -154,7 +155,7 @@ public class CommandInput extends Thread implements Runnable {
         }
     }
     public static class FunctionWrapper{
-        private Function<Scanner, Void> func;
+        private Function<CallbackArguments, Void> func;
         private String cmd;
         private String help;
 
@@ -163,25 +164,25 @@ public class CommandInput extends Thread implements Runnable {
          * @param cmd the command string
          * @param help the help text
          */
-        public FunctionWrapper(Function<Scanner, Void> callback, String cmd, String help) {
+        public FunctionWrapper(Function<CallbackArguments, Void> callback, String cmd, String help) {
             this.func = callback;
             this.cmd = cmd;
             this.help = help;
         }
-        public FunctionWrapper(Function<Scanner, Void> callback, String cmd) {
+        public FunctionWrapper(Function<CallbackArguments, Void> callback, String cmd) {
             this.func = callback;
             this.cmd = cmd;
         }
 
-        public FunctionWrapper(Function<Scanner, Void> callback) {
+        public FunctionWrapper(Function<CallbackArguments, Void> callback) {
             this.func = callback;
         }
 
-        public Function<Scanner, Void> getFunction() {
+        public Function<CallbackArguments, Void> getFunction() {
             return func;
         }
 
-        public void setFunction(Function<Scanner, Void> func) {
+        public void setFunction(Function<CallbackArguments, Void> func) {
             this.func = func;
         }
 
@@ -220,16 +221,15 @@ public class CommandInput extends Thread implements Runnable {
      * Class to give multible things as one argument to the callback functions.
      */
     public static class CallbackArguments extends ObjectWithLogger {
-        public final OutputStream output;
+        public final PrintStream output;
         public final Scanner scanner;
 
         /**
          * Class to give multible things as one argument to the callback functions.
-         *
-         * @param scanner The scanner
+         *  @param scanner The scanner
          * @param output The output to print to. Use this instead of {@link System#out}.
          */
-        public CallbackArguments(Scanner scanner, OutputStream output) {
+        public CallbackArguments(Scanner scanner, PrintStream output) {
             this.scanner = scanner;
             this.output = output;
         }

@@ -2,6 +2,7 @@ package de.luckydonald.utils.interactions;
 
 import de.luckydonald.utils.ObjectWithLogger;
 import static de.luckydonald.utils.interactions.CommandInput.FunctionWrapper;
+import static de.luckydonald.utils.interactions.CommandInput.CallbackArguments;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,8 +23,8 @@ public class FunctionWrapperTest extends ObjectWithLogger {
     private String command1 = "test1";
     private String help0 = "this is the help0";
     private String help1 = "this is the help1";
-    private Function<Scanner, Void> callback0 = this::helper_callback0;
-    private Function<Scanner, Void> callback1 = this::helper_callback1;
+    private Function<CallbackArguments, Void> callback0 = this::helper_callback0;
+    private Function<CallbackArguments, Void> callback1 = this::helper_callback1;
 
     @Before
     public void setUp() throws Exception {
@@ -92,12 +93,12 @@ public class FunctionWrapperTest extends ObjectWithLogger {
         }
     }
 
-    public Void helper_callback0(Scanner s) {
+    public Void helper_callback0(CallbackArguments args) {
         this.getLogger().info("called callback0");
         return null;
     }
 
-    public Void helper_callback1(Scanner s) {
+    public Void helper_callback1(CallbackArguments args) {
         this.getLogger().info("called callback1");
         return null;
     }

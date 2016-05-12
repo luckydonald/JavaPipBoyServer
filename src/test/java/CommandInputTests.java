@@ -1,3 +1,4 @@
+import static de.luckydonald.utils.interactions.CommandInput.CallbackArguments;
 import de.luckydonald.utils.interactions.CommandInput;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,7 @@ import static org.junit.Assert.*;
 public class CommandInputTests {
     private String var_test_commands[] = {"test", "foobar"};
     private boolean[] use_callback_was_called = {false, false};
-    private Function<Scanner, Void>[] var_callback_functions = new Function[2];
+    private Function<CallbackArguments, Void>[] var_callback_functions = new Function[2];
     private InputStream exp_in_stream;
     private CommandInput use_cmd_in;
     private CommandInput cmd_in;
@@ -141,11 +142,11 @@ public class CommandInputTests {
         testProcess_Help();
     }
 
-    public Void helper_callback0(Scanner s) {
+    public Void helper_callback0(CallbackArguments args) {
         use_callback_was_called[0] = true;
         return null;
     }
-    public Void helper_callback1(Scanner s) {
+    public Void helper_callback1(CallbackArguments args) {
         use_callback_was_called[1] = true;
         return null;
     }

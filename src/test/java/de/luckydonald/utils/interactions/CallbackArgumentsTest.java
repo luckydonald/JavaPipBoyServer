@@ -5,9 +5,11 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
+import static de.luckydonald.utils.interactions.CommandInput.CallbackArguments;
 
 /**
  * Created by luckydonald
@@ -24,10 +26,11 @@ public class CallbackArgumentsTest extends ObjectWithLogger {
             public void write(int b) throws IOException {
             }
         };
-        CommandInput.CallbackArguments foo = new CommandInput.CallbackArguments(s, o);
+        PrintStream p = new PrintStream(o);
+        CallbackArguments foo = new CallbackArguments(s, p);
 
         assertEquals("Scanner", s, foo.scanner);
-        assertEquals("Output", o, foo.output);
+        assertEquals("Output", p, foo.output);
 
     }
 }
