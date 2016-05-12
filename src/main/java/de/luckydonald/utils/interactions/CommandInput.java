@@ -24,13 +24,17 @@ public class CommandInput extends Thread implements Runnable {
      * Set a custom output where to print.
      */
     public PrintStream output;
-    public CommandInput() {
-        this(System.in);
-    }
+
     public CommandInput(InputStream input) {
         super("CommandInput Thread");
         this.input = input;
+        this.output = System.out;
     }
+
+    public CommandInput() {
+        this(System.in);
+    }
+
     public CommandInput(String command, Function<Scanner, Void> callback) {
         this();
         this.commandCallbacks.put(command, new FunctionWrapper(callback, command));
@@ -149,11 +153,16 @@ public class CommandInput extends Thread implements Runnable {
             }
         }
     }
-    class FunctionWrapper{
-        Function<Scanner, Void> func;
-        String cmd;
-        String help;
+    public static class FunctionWrapper{
+        private Function<Scanner, Void> func;
+        private String cmd;
+        private String help;
 
+        /**
+         * @param callback the callback function
+         * @param cmd the command string
+         * @param help the help text
+         */
         public FunctionWrapper(Function<Scanner, Void> callback, String cmd, String help) {
             this.func = callback;
             this.cmd = cmd;
@@ -196,10 +205,10 @@ public class CommandInput extends Thread implements Runnable {
          * @return the help string or {@code ""}
          */
         public String getHelp() {
-            if (help == null) {
-                return "";
+            if (hasHelp()) {
+                return help;
             }
-            return help;
+            return "";
         }
 
         public void setHelp(String help) {
@@ -210,9 +219,9 @@ public class CommandInput extends Thread implements Runnable {
     /**
      * Class to give multible things as one argument to the callback functions.
      */
-    class CallbackArguments extends ObjectWithLogger {
-        private final OutputStream output;
-        private final Scanner scanner;
+    public static class CallbackArguments extends ObjectWithLogger {
+        public final OutputStream output;
+        public final Scanner scanner;
 
         /**
          * Class to give multible things as one argument to the callback functions.

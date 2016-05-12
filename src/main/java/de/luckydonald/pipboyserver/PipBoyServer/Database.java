@@ -18,6 +18,7 @@ import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -243,11 +244,16 @@ public class Database extends ObjectWithLogger {
      * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
      * commands.
      *
+     * //@param input  the input used.
+     * @param output the output used.
+     *
      * Note: You could start multiple instances, all trying to use stdin. That would probably be a bad thing.
+     * @see #startCLI() Use the parameterless version if you want to use System.in and System.out
      */
-    public void startCLI() {
+    public void startCLI(PrintStream output) {
         Function<Scanner, Void> f = this::cmdList;
         CommandInput cmd = new CommandInput("list", f);
+        cmd.output = output;
         f = this::cmdGet;
         cmd.add("get", f);
         f = this::cmdSet;
@@ -257,6 +263,17 @@ public class Database extends ObjectWithLogger {
         f = this::cmdImport;
         cmd.add("import", f);
         cmd.start();
+    }
+    /**
+     * Starts a new {@link CommandInput} instance, and registers the
+     * "{@link #cmdList(Scanner) list}", "{@link #cmdGet(Scanner) get}", "{@link #cmdSet(Scanner) set}",
+     * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
+     * commands.
+     *
+     * Note: You could start multiple instances, all trying to use stdin. That would probably be a bad thing.
+     */
+    public void startCLI() {
+        this.startCLI(System.out);
     }
 
     public DataUpdate initialDump() {
