@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet/less" type="text/css" href="parser.less">
+    <script src="https://cdn.jsdelivr.net/jquery/2.2.3/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/less/2.7.1/less.min.js"></script>
+</head>
+<body>
+<script>
+    jQuery.fn.outerHTML = function() {
+        return jQuery('<div />').append(this.eq(0).clone()).html();
+    };
+</script>
+<script>
+    function Renderer (bytes) {
+        this.bytes = bytes;
+        this.pos = 0;
+    }
+    Renderer.prototype.new_byte = function(byte) {
+        byte = (byte !== undefined ? byte : this.bytes[this.pos++]);
+        var obj = $("<div>");
+        obj.addClass("byte");
+        obj.text(byte);
+        return obj;
+    };
+    Renderer.prototype.new_type = function(type, values_to_read) {
+        var obj = $("<div>");
+        obj.addClass(type).addClass("part");
+        for(var i = 0; i < values_to_read; i++)
+        {
+            obj.append(this.new_byte());
+        }
+        var label = $("<div>");
+        label.addClass("caption");
+        label.text(type);
+        obj.append(label);
+        return obj;
+    };
+    Renderer.prototype.new_boolean = function() {
+        var obj = $("<div>");
+        obj.addClass("bool");
+        obj.append(this.new_type("value", 1));
+        //elem.append(obj);
+        return obj;
+    };
+    Renderer.prototype.new_int8 = function() {
+        var obj = $("<div>");
+        obj.addClass("int8");
+        obj.append(this.new_type("value", 1));
+        //elem.append(obj);
+        return obj;
+    };
+    Renderer.prototype.new_int32 = function() {
+        var obj = $("<div>");
+        obj.addClass("int32");
+        obj.append(this.new_type("value", 4));
+        return obj;
+    };
+    Renderer.prototype.new_string = function() {
+        var obj_string = $("<div>");
+        obj_string.addClass("string");
+        var obj = $("<div>");
+        obj.addClass("value").addClass("part");
+        while (this.bytes[this.pos] != 0)
+        {
+            obj.append(this.new_byte());
+        }
+        this.pos++; // the skippend "\0"
+        var label = $("<div>");
+        label.addClass("caption");
+        label.text("string");
+        obj.append(label);
+        obj_string.append(obj);
+        return obj_string;
+    };
+    Renderer.prototype.new_whatever = function() {
+        var type = this.bytes[this.pos];
+        var type_obj = this.new_type("type", 1);
+        var id_obj = this.new_type("id", 4);
+        switch (type) {
+            case 0: //BOOLEAN
+                obj = this.new_boolean();
+                break;
+            case 1:
+                    obj = this.new_int8();
+                break;
+            case 3:
+                    obj = this.new_int32();
+                break;
+            case 6:
+                    obj = this.new_string();
+                break;
+            default:
+                var obj = $("<div>");
+                obj.text("nope");
+                break;
+        }
+        obj.prepend(id_obj);
+        obj.prepend(type_obj);
+        return obj;
+
+    };
+    function render() {
+        var input = document.getElementById("input");
+        var text = input.value;
+        var the_list = JSON.parse(text);
+        var renderer = new Renderer(the_list);
+        var output = $("#output");
+        output.empty();
+        while (renderer.pos < renderer.bytes.length) {
+            output.append(renderer.new_whatever());
+        }
+    }
+</script>
+<input id="input" value="[0, 1, 0, 0, 0, 1,    1, 2, 0, 0, 0, 3,    6, 2, 0, 0, 0, 115, 75, -61, -74, 105, 110, 103, 0]"/>
+<input type="submit" onclick="render()" value="render!"/>
+<div id="output"></div>
+</body>
+</html>

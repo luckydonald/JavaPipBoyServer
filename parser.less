@@ -1,0 +1,71 @@
+@type_bool_dark: #570605;
+@type_bool_light: #ffb3b3;
+@type_int8_dark: #924606;
+@type_int32_dark: #C3971A;
+@type_string_dark: #0B4108;
+@type_dark: #53585F;
+@id_dark: #A37510;
+
+
+.colorz(@color_dark) {
+  @color_light: hsv(hsvhue(@color_dark), 3%, 100%);
+  margin-left: 0.5em;
+  &:first-child {
+    margin-left: 0;
+  }
+  border: 1px solid @color_dark;
+  border-left: none;
+  background-color: @color_light;
+  .byte {
+    background-color: @color_dark;
+  }
+  .caption {
+    color: @color_dark;
+    text-align: center;
+  }
+  .part {
+    border-left: solid 1px @color_dark;
+    text-align: center;
+  }
+}
+
+#output div {
+  display: inline-block;
+  color: white;
+  &.bool {
+    .colorz(@type_bool_dark);
+  }
+  &.int8 {
+    .colorz(@type_int8_dark);
+  }
+  &.int32 {
+    .colorz(@type_int32_dark);
+  }
+  &.string {
+    .colorz(@type_string_dark);
+  }
+  &.byte {
+    border:solid 1px white;
+    margin: 0.2em;
+    padding:3px 5px;
+    font-size:12px;
+    line-height:10px;
+    /*color:#555;*/
+    vertical-align:middle;
+    /*background-color:#fcfcfc;*/
+    border-bottom-color:white;
+    color: white;
+    border-radius:3px;
+  }
+  &.type .byte {
+    background-color: @type_dark;
+  }
+  &.id .byte {
+    background-color: @id_dark;
+  }
+  &.caption {
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+}
