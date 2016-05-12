@@ -24,6 +24,7 @@ public class CallbackArgumentsTest extends ObjectWithLogger {
         OutputStream o = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
+                getLogger().finest("Would write " + b);
             }
         };
         PrintStream p = new PrintStream(o);
