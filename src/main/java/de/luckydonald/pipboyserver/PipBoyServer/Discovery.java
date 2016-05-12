@@ -6,7 +6,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.logging.Level;
 
+import de.luckydonald.utils.ObjectWithLogger;
 import static de.luckydonald.pipboyserver.Constants.DISCOVER_STRING;
 import static de.luckydonald.pipboyserver.Constants.DISCOVER_UDP_PORT;
 import static de.luckydonald.pipboyserver.Constants.discover_response;
@@ -17,7 +19,7 @@ import static de.luckydonald.pipboyserver.Constants.discover_response;
  * The GAME server.
  *
  */
-public class Discovery implements Runnable {
+public class Discovery extends ObjectWithLogger implements Runnable {
     private String serverType;
     private boolean shouldStop = false;
 
@@ -38,7 +40,7 @@ public class Discovery implements Runnable {
                 socket = new DatagramSocket(DISCOVER_UDP_PORT, InetAddress.getByName("0.0.0.0"));
                 socket.setBroadcast(true);
                 while (!shouldStop) {
-                    System.out.println(">>>Ready to receive broadcast packets!");
+                    getLogger().info("Ready to receive broadcast packets!");
 
                     //Receive a packet
                     byte[] recvBuf = new byte[22];
@@ -46,29 +48,28 @@ public class Discovery implements Runnable {
                     socket.receive(packet);
 
                     //Packet received
-                    System.out.println(">>>Discovery packet received from: " + packet.getAddress().getHostAddress());
-                    System.out.println(">>>Packet received; data: " + new String(packet.getData()));
+                    getLogger().fine("Discovery packet received from: " + packet.getAddress().getHostAddress());
+                    getLogger().fine("Packet received; data: " + new String(packet.getData()));
                     //See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
                     if (message.equals(DISCOVER_STRING)) {
                         //Send a response
                         byte[] response = discover_response(this.serverType).getBytes();
-                        System.out.println(">>>Sending " + serverType + " packet: " + Arrays.toString(response));
+                        getLogger().fine("Sending " + serverType + " packet: " + Arrays.toString(response));
                         DatagramPacket sendPacket = new DatagramPacket(response, response.length, packet.getAddress(), packet.getPort());
                         socket.send(sendPacket);
-                        System.out.println(">>>Sent packet to " + serverType + " " + sendPacket.getAddress().getHostAddress());
+                        getLogger().fine("Sent packet to " + serverType + " " + sendPacket.getAddress().getHostAddress());
                     }
                 }
             } catch (BindException e) {
                 try {
-                    System.out.println("Failed to bind to Discovery port. Retrying.");
-                    e.printStackTrace();
+                    getLogger().log(Level.WARNING, "Failed to bind to Discovery port. Retrying.", e);
                     Thread.sleep(1000);
                 } catch (InterruptedException e1) {
-                    e1.printStackTrace();
+                    getLogger().log(Level.SEVERE, e1.getMessage(), e1);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                getLogger().log(Level.SEVERE, e.getMessage(), e);
             }
             finally {
                 if (socket != null) {
@@ -78,8 +79,12 @@ public class Discovery implements Runnable {
         }
     }
 
-    public boolean shouldStop() {
+    public boolean getShouldStop() {
         return shouldStop;
+    }
+
+    public void shouldStop() {
+        this.shouldStop(true);
     }
 
     public void shouldStop(boolean shouldStop) {

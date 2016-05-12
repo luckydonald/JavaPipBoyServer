@@ -17,7 +17,7 @@ public class Constants {
     }
 
     public static String discover_response() {
-        return discover_response("PC", false);
+        return discover_response("PC");
     }
 }
 

@@ -51,46 +51,52 @@ public class BinFileReaderTest extends ObjectWithLogger {
     public void test_int8_t() throws IOException {
         for (Integer exp : expected_int8) {
             SignedByte result = binFileReader.int8_t();
-            assertEquals("int8_t" + Integer.toHexString(exp) + " asInt()", exp, result.asInt());
-            assertEquals("int8_t" + Integer.toHexString(exp) + " getSignedValue()", (Byte) exp.byteValue(), result.getSignedValue());
+            assertEquals("int8_t " + Integer.toHexString(exp) + " asInt()", exp, result.asInt());
+            assertEquals("int8_t " + Integer.toHexString(exp) + " getSignedValue()", (Byte) exp.byteValue(), result.getSignedValue());
+            assertEquals("int8_t " + Integer.toHexString(exp) + " toString()", ((Byte) exp.byteValue()).toString(), result.toString());
         }
     }
     @Test
     public void test_uint8_t() throws IOException {
         for (Integer exp : expected_uint8) {
             UnsignedByte result = binFileReader.uint8_t();
-            assertEquals("uint8_t" + Integer.toHexString(exp) + " asInt()", (Integer) Byte.toUnsignedInt(exp.byteValue()), result.asInt());
-            assertEquals("uint8_t" + Integer.toHexString(exp) + " getSignedValue()", (Byte) exp.byteValue(), result.getSignedValue());
+            assertEquals("uint8_t " + Integer.toHexString(exp) + " asInt()", (Integer) Byte.toUnsignedInt(exp.byteValue()), result.asInt());
+            assertEquals("uint8_t " + Integer.toHexString(exp) + " getSignedValue()", (Byte) exp.byteValue(), result.getSignedValue());
+            assertEquals("uint8_t " + Integer.toHexString(exp) + " toString()", Integer.toString((((exp < 0 ? exp + 256: exp)))), result.toString());
         }
     }
     @Test
     public void test_int32_t() throws IOException {
         for (Long exp : expected_int32) {
             SignedInteger result = binFileReader.int32_t();
-            assertEquals("int32_t" + exp + " asInt()", exp, result.asLong());
-            assertEquals("int32_t" + exp + " getSignedValue()", (Integer) exp.intValue(), result.getSignedValue());
+            assertEquals("int32_t " + exp + " asInt()", exp, result.asLong());
+            assertEquals("int32_t " + exp + " getSignedValue()", (Integer) exp.intValue(), result.getSignedValue());
+            assertEquals("int32_t " + exp + " toString()", exp.toString(), result.toString());
         }
     }
     @Test
     public void test_uint32_t() throws IOException {
         for (Long exp : expected_uint32) {
             UnsignedInteger result = binFileReader.uint32_t();
-            assertEquals("uint32_t" + exp + " asInt()", exp, result.asLong());
-            assertEquals("uint32_t" + exp + " getSignedValue()", (Integer) exp.intValue(), result.getSignedValue());
+            assertEquals("uint32_t " + exp + " asInt()", exp, result.asLong());
+            assertEquals("uint32_t " + exp + " getSignedValue()", (Integer) exp.intValue(), result.getSignedValue());
+            assertEquals("uint32_t " + exp + " toString()", Long.toString((((exp < 0 ? exp + 256: exp)))), result.toString());
         }
     }
     @Test
     public void test_int64_t() throws IOException {
         for (Long exp : expected_int64) {
             SignedLong result = binFileReader.int64_t();
-            assertEquals("int64_t" + exp + " getSignedValue()", exp, result.getSignedValue());
+            assertEquals("int64_t " + exp + " getSignedValue()", exp, result.getSignedValue());
+            assertEquals("int64_t " + exp + " toString()", exp.toString(), result.toString());
         }
     }
     @Test
     public void test_uint64_t() throws IOException {
         for (Long exp : expected_uint64) {
             UnsignedLong result = binFileReader.uint64_t();
-            assertEquals("uint64_t" + exp + " getSignedValue()", exp, result.getSignedValue());
+            assertEquals("uint64_t " + exp + " getSignedValue()", exp, result.getSignedValue());
+            assertEquals("uint64_t " + exp + " toString()", Long.toString(exp < 0 ? exp + 256: exp), result.toString());
         }
     }
     @Test
@@ -98,6 +104,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
         for (Float exp : expected_float32) {
             Float result = binFileReader.float32_t();
             assertEquals("float32_t", exp, result);
+            assertEquals("float32_t toString()", exp.toString(), result.toString());
         }
     }
     @Test
@@ -105,6 +112,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
         for (Double exp : expected_float64) {
             Double result = binFileReader.float64_t();
             assertEquals("float64_t", exp, result);
+            assertEquals("float64_t", exp.toString(), result.toString());
         }
     }
     @Test
@@ -112,6 +120,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
         for (String exp : expected_string) {
             String result = binFileReader.string_t(false);
             assertEquals("string_t(length=false)", exp, result);
+            assertEquals("string_t(length=false) toString()", exp.toString(), result.toString());
         }
     }
     @Test
@@ -128,6 +137,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
         for (String exp : expected_string) {
             String result = binFileReader.string_t(true);
             assertEquals("string_t(length=true)", exp, result);
+            assertEquals("string_t(length=true) toString()", exp.toString(), result.toString());
         }
     }
 
@@ -182,8 +192,8 @@ public class BinFileReaderTest extends ObjectWithLogger {
         for (int i = 0; i < input.length; i++) {
             SignedByte result = binFileReader.int8_t();
             Integer exp = expected[i];
-            assertEquals("int8_t" + Integer.toHexString(exp) + " asInt()", exp, result.asInt());
-            assertEquals("int8_t" + Integer.toHexString(exp) + " getSignedValue()", (Byte)exp.byteValue(), result.getSignedValue());
+            assertEquals("int8_t " + Integer.toHexString(exp) + " asInt()", exp, result.asInt());
+            assertEquals("int8_t " + Integer.toHexString(exp) + " getSignedValue()", (Byte)exp.byteValue(), result.getSignedValue());
         }
     }
     @Test
@@ -196,8 +206,8 @@ public class BinFileReaderTest extends ObjectWithLogger {
         for (int i = 0; i < input.length; i++) {
             UnsignedByte result = binFileReader.uint8_t();
             Integer exp = expected[i];
-            assertEquals("uint8_t" + Integer.toHexString(exp) + " asInt()", (Integer)Byte.toUnsignedInt(exp.byteValue()), result.asInt());
-            assertEquals("uint8_t" + Integer.toHexString(exp) + " getSignedValue()", (Byte)exp.byteValue(), result.getSignedValue());
+            assertEquals("uint8_t " + Integer.toHexString(exp) + " asInt()", (Integer)Byte.toUnsignedInt(exp.byteValue()), result.asInt());
+            assertEquals("uint8_t " + Integer.toHexString(exp) + " getSignedValue()", (Byte)exp.byteValue(), result.getSignedValue());
         }
     }
 

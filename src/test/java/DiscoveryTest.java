@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.*;
 
 import static de.luckydonald.pipboyserver.Constants.DISCOVER_UDP_PORT;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
 
 /**
@@ -20,6 +21,8 @@ public class DiscoveryTest{
     @Test(timeout = 10000)
     public void testDiscovery() throws IOException, InterruptedException {
         Discovery d = new Discovery();
+        assertEquals("Default serverType of discovery is PC", "PC", d.getServerType());
+        d.setServerType("PS4");
         Thread t = new Thread(d);
         t.start();
 
@@ -30,7 +33,7 @@ public class DiscoveryTest{
 
         DatagramPacket packet = new DatagramPacket(
                 sendBuffer, sendBuffer.length, receiverAddress, DISCOVER_UDP_PORT);
-        String receivedText = "{\"IsBusy\": false, \"MachineType\": \"PC\", \"name\": \"Test\"}";
+        String receivedText = "{\"IsBusy\": false, \"MachineType\": \"PS4\", \"name\": \"Test\"}";
         byte[] buffer = receivedText.getBytes();
         DatagramPacket receivedPackage = new DatagramPacket(buffer, buffer.length);
         Thread.sleep(1000);
@@ -38,6 +41,7 @@ public class DiscoveryTest{
         datagramSocket.receive(receivedPackage);
         assertEquals("Discovery", receivedText, new String(receivedPackage.getData()));
         d.shouldStop();
+        assertTrue("Should stop = TRUE.", d.getShouldStop());
     }
 
 }

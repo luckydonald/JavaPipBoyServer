@@ -1,6 +1,10 @@
 package de.luckydonald.utils.interactions;
 
+import de.luckydonald.utils.ObjectWithLogger;
+
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +19,10 @@ import java.util.function.Function;
 public class CommandInput extends Thread implements Runnable {
     private HashMap<String, FunctionWrapper> commandCallbacks = new HashMap<>();
     public InputStream input;
+    /**
+     * Set a custom output where to print.
+     */
+    public PrintStream output;
     public CommandInput() {
         this(System.in);
     }
@@ -47,7 +55,6 @@ public class CommandInput extends Thread implements Runnable {
     public CommandInput(InputStream input, List<String> commands, List<Function<Scanner, Void>> callbacks) {
         this(input);
         do_assert(commands.size() == callbacks.size());
-        this.input = System.in;
         for (int i = 0; i < commands.size(); i++) {
             this.commandCallbacks.put(commands.get(i), new FunctionWrapper(callbacks.get(i), commands.get(i)));
         }
@@ -69,6 +76,15 @@ public class CommandInput extends Thread implements Runnable {
     public void put(String command, Function<Scanner, Void> callback){
         this.add(command, callback);
     }
+
+    /**
+     * Process a line. Searches for the longest fitting command and calls that callback.
+     *
+     * If no command registers for "help", {@link #printHelp()} will be called.
+     *
+     * @param scanner A scanner to give to the callback.
+     * @param line The line to process, starts with the command.
+     */
     public void process(Scanner scanner, String line) {
         //todo commands with spaces
         Map.Entry<String, FunctionWrapper> longestHit = null;
@@ -90,7 +106,7 @@ public class CommandInput extends Thread implements Runnable {
      */
     public void printHelp() {
         for (Map.Entry<String, FunctionWrapper> cmd : this.commandCallbacks.entrySet()) {
-            System.out.println(" - " + cmd.getKey() + "\t" + (cmd.getValue().hasHelp() ? cmd.getValue().getHelp() : cmd.getValue().getFunction().toString()));
+            this.output.println(" - " + cmd.getKey() + "\t" + (cmd.getValue().hasHelp() ? cmd.getValue().getHelp() : cmd.getValue().getFunction().toString()));
         }
     }
 
@@ -109,18 +125,18 @@ public class CommandInput extends Thread implements Runnable {
         Scanner scanner = new Scanner(input);
         String line = "";
         while ( line != null) {
-            System.out.println("Enter command, end with ^D");
+            this.output.println("Enter command, end with ^D");
             line = scanner.next();
             try {
                 try {
                     this.process(scanner, line);
                 } catch (RuntimeException e) {
                     e.printStackTrace();
-                    System.out.println("Continuing.");
+                    this.output.println("Continuing.");
                 }
             } catch (Exception | StackOverflowError e) {
                 e.printStackTrace();
-                System.out.println("Continuing.");
+                this.output.println("Continuing.");
             }
         }
     }
@@ -179,6 +195,25 @@ public class CommandInput extends Thread implements Runnable {
 
         public void setHelp(String help) {
             this.help = help;
+        }
+    }
+
+    /**
+     * Class to give multible things as one argument to the callback functions.
+     */
+    class CallbackArguments extends ObjectWithLogger {
+        private final OutputStream output;
+        private final Scanner scanner;
+
+        /**
+         * Class to give multible things as one argument to the callback functions.
+         *
+         * @param scanner The scanner
+         * @param output The output to print to. Use this instead of {@link System#out}.
+         */
+        public CallbackArguments(Scanner scanner, OutputStream output) {
+            this.scanner = scanner;
+            this.output = output;
         }
     }
 }
