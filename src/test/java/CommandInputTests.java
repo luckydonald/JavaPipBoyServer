@@ -106,6 +106,7 @@ public class CommandInputTests {
     public void testProcess_Commands() {
         testInit_Commands();
         for (int i = 0; i < var_test_commands.length; i++) {
+            assertFalse("process() [i]", use_callback_was_called[i]);
             this.use_cmd_in.process(this.exp_scanner, var_test_commands[i]);
             assertTrue("process() [i]", use_callback_was_called[i]);
         }
@@ -128,6 +129,7 @@ public class CommandInputTests {
         use_cmd_in.process(exp_scanner, "help");
         String result = outContent.toString();
         System.setOut(System.out);
+        assertNotEquals("printHelp not empty", "", exp_help);
         assertTrue("printHelp().length > 0", exp_help.length() > 0);
         assertTrue("process() \"help\" > 0", result.length() > 0);
         assertEquals("process() \"help\"", exp_help, result);

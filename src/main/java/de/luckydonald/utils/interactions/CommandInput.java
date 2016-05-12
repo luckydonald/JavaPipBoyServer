@@ -17,6 +17,7 @@ import java.util.function.Function;
  * Created by luckydonald on 09.02.16.
  */
 public class CommandInput extends Thread implements Runnable {
+    public static final String HELP_COMMAND = "help";
     private HashMap<String, FunctionWrapper> commandCallbacks = new HashMap<>();
     public InputStream input;
     /**
@@ -80,7 +81,7 @@ public class CommandInput extends Thread implements Runnable {
     /**
      * Process a line. Searches for the longest fitting command and calls that callback.
      *
-     * If no command registers for "help", {@link #printHelp()} will be called.
+     * If no command registers for {@link #HELP_COMMAND "help"}, {@link #printHelp()} will be called.
      *
      * @param scanner A scanner to give to the callback.
      * @param line The line to process, starts with the command.
@@ -95,7 +96,7 @@ public class CommandInput extends Thread implements Runnable {
         }
         if (longestHit != null) {
             longestHit.getValue().getFunction().apply(scanner);
-        } else if ("help".equals(line.trim())){
+        } else if (HELP_COMMAND.equals(line.trim())){
             this.printHelp();
         }
 
@@ -105,9 +106,17 @@ public class CommandInput extends Thread implements Runnable {
      * Prints the help about this commands.
      */
     public void printHelp() {
+        boolean isHelpOverridden = false;
         for (Map.Entry<String, FunctionWrapper> cmd : this.commandCallbacks.entrySet()) {
-            this.output.println(" - " + cmd.getKey() + "\t" + (cmd.getValue().hasHelp() ? cmd.getValue().getHelp() : cmd.getValue().getFunction().toString()));
+            this.output.println(" - " + cmd.getKey() + ":\t" + (cmd.getValue().hasHelp() ? cmd.getValue().getHelp() : cmd.getValue().getFunction()));
+            if (HELP_COMMAND.equals(cmd.getKey())) {
+                isHelpOverridden = true;
+            }
         }
+        if (!isHelpOverridden) {
+            this.output.println(" - " + HELP_COMMAND + ":\tDisplays a list of available commands.");
+        }
+
     }
 
     /**
