@@ -7,3 +7,5 @@ install:
 
 after_success:
   - mvn test jacoco:report coveralls:report -DrepoToken=$COVERALLS_TOKEN
+  # - (curl https://www.jpm4j.org/install/script | sh) && jpm install com.codacy:codacy-coverage-reporter:assembly && codacy-coverage-reporter -l Java -r coverage.xml
+  - codacy-coverage-reporter -l Java -r coverage.xml
