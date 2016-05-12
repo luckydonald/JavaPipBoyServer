@@ -313,17 +313,10 @@ public class DatabaseTest {
         ByteArrayInputStream in = new ByteArrayInputStream(inContent.getBytes());
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(outContent);
-        System.setOut(out);
-        System.setIn(in);
-        this.db.startCLI();
-        //while(true){
+        this.db.startCLI(in, out);
         try {
             Thread.sleep(5000);
         } catch (InterruptedException ignored) {}
-        //}
-        //reset System.in/out to its original. Just to be sure.
-        System.setIn(System.in);
-        System.setOut(System.out);
         assertEquals("CLI: execute several commands", expected, outContent.toString());
         assertEquals(
                 "root[\"a6.2.c1\"] is now Günter was here",

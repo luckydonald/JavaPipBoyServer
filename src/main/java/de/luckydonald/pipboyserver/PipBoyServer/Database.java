@@ -18,6 +18,7 @@ import de.luckydonald.utils.ObjectWithLogger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.*;
@@ -244,15 +245,19 @@ public class Database extends ObjectWithLogger {
      * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
      * commands.
      *
-     * //@param input  the input used.
+     * Note: You could start multiple instances, all trying to use the same input. That would probably be a bad thing.
+     *
+     * @param input  the input used.
      * @param output the output used.
      *
-     * Note: You could start multiple instances, all trying to use stdin. That would probably be a bad thing.
-     * @see #startCLI() Use the parameterless version if you want to use System.in and System.out
+     * If you are happy with System.in and System.out, use it {@link #startCLI() without parameters}.
+     *
+     * @see #startCLI() startCLI()
      */
-    public void startCLI(PrintStream output) {
+    public void startCLI(InputStream input, PrintStream output) {
         Function<Scanner, Void> f = this::cmdList;
         CommandInput cmd = new CommandInput("list", f);
+        cmd.input = input;
         cmd.output = output;
         f = this::cmdGet;
         cmd.add("get", f);
@@ -270,10 +275,15 @@ public class Database extends ObjectWithLogger {
      * "{@link #cmdTest(Scanner) test}" and "{@link #cmdImport(Scanner) import}"
      * commands.
      *
+     * The input stream to read from defaults to {@link System#in}, the output to {@link System#out}.
+     * Use {@link #startCLI(InputStream, PrintStream)} if you need something else.
+     *
      * Note: You could start multiple instances, all trying to use stdin. That would probably be a bad thing.
+     *
+     * @see #startCLI(InputStream, PrintStream) startCLI(InputStream, PrintStream)
      */
     public void startCLI() {
-        this.startCLI(System.out);
+        this.startCLI(System.in, System.out);
     }
 
     public DataUpdate initialDump() {
