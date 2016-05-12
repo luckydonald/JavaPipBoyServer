@@ -147,8 +147,8 @@ public class BinFileReader extends ObjectWithLogger {
         }
         public String string_t(boolean hasLength) throws IOException {
         /*struct  String {
-            uint32_t length;
-            char str[length];
+            uint32_t length;   // present only if hasLength = true
+            char str[length];  // ends with \0 if not hasLength
         };
         */
         long posBefore = this.pos;

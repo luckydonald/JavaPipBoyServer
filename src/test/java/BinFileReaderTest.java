@@ -27,7 +27,7 @@ public class BinFileReaderTest extends ObjectWithLogger {
     private long[] expected_uint64 = {29113322918071155L};
     private float[] expected_float32 = {(float) -5.82023631068295799195766448975E-6, (float)9.49866380536723574519558603963E-39};
     private double[] expected_float64 = {1.0427274872209864735496543959E-306};
-    String[] expected_string = {"sKöing"}; // HTML sK&uuml;ing&#0; OR sK&#195;&#182;ing&#0;
+    private String[] expected_string = {"sKöing"}; // HTML sK&uuml;ing&#0; OR sK&#195;&#182;ing&#0;
     //73 4B C3 B6 69 6E 67 00
     // 115, 75, -61, -74, 105, 110, 103, 0
     // 115, 75, 195, 182, 105, 110, 103, 0
@@ -108,13 +108,28 @@ public class BinFileReaderTest extends ObjectWithLogger {
         }
     }
     @Test
-    public void test_string_t() throws IOException {
+    public void test_string_t_endsWithNull() throws IOException {
         for (String exp : expected_string) {
             String result = binFileReader.string_t(false);
-            assertEquals("string_t", exp, result);
+            assertEquals("string_t(length=false)", exp, result);
         }
     }
-
+    @Test
+    public void test_string_t_length() throws IOException {
+        int string_lenght = this.input.length - 1; // ignore the \0 at the end.
+        byte[] foo = new byte[string_lenght+4];
+        // Insert the string length at first 4 positions. Is LittleEndian!
+        foo[0] = (byte)(string_lenght);
+        foo[1] = (byte)(string_lenght >>> 8);
+        foo[2] = (byte)(string_lenght >>> 16);
+        foo[3] = (byte)(string_lenght >>> 24);
+        System.arraycopy(this.input, 0, foo, 4, string_lenght); // ignore the \0 at the end
+        this.binFileReader = new BinFileReader(new BufferedInputStream(new ByteArrayInputStream(foo)));
+        for (String exp : expected_string) {
+            String result = binFileReader.string_t(true);
+            assertEquals("string_t(length=true)", exp, result);
+        }
+    }
 
     @Test
     public void test_manuel_uint32_t() throws IOException {
