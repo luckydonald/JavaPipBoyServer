@@ -173,7 +173,7 @@ Objects are unordered and keys will not be repeated.
 | -----------            | ------------    | --------------                                       |
 | size                   | 3b000000        | `59` bytes content, size of packages (next table) included |
 | type                   | 03              | Type 3: Data Update                                  |
-| content                | `030a0000002a0000`<br>`00070b0000000200`<br>`0100000002000000`<br>`080c000000020005`<br>`0000000500000066`<br>`6f6f000600000068`<br>`656c6c6f00020003`<br>`00000004000000`  | **See next Table** |
+| content                | `030a0000002a0000`<br>`00070b0000000200`<br>`0100000002000000`<br>`080c000000020005`<br>`000000666f6f0006`<br>`00000068656c6c6f`<br>`0002000300000004`<br>`000000`  | **See next Table** |
 
 
 The content can contain many Data Packages.
@@ -182,25 +182,25 @@ They just follow after each other.
 | Data Item          | Attributes   | Data Attributes | example (bytes) | Interpretation |
 | ------------------ | ------------ | --------------- | --------------- | -------------- |
 | **First Package**  | type         |                 | 03              | Data Type 3: `INT32` |
-|                    | id           |                 | 0a000000        | ID: 10 |
-|                    | data         |                 | 2a000000        | Value: 42 |
+|                    | id           |                 | 0a 00 00 00     | ID: 10 |
+|                    | data         |                 | 2a 00 00 00     | Value: 42 |
 |                    |              |                 |                 |  |
 | **Second Package** | type         |                 | 07              | Data Type 7: Array |
-|                    | id           |                 | 0b000000        | ID: 11 |
-|                    | data         | length          | 0200            | Length 2: Array has 2 entries |
-|                    |              | `id #1`         | 01000000        | ID of element 1: >>1 |
-|                    |              | `id #2`         | 02000000        | ID of element 2: >>2 |
+|                    | id           |                 | 0b 00 00 00     | ID: 11 |
+|                    | data         | length          | 02 00           | Length 2: Array has 2 entries |
+|                    |              | `id #1`         | 01 00 00 00     | ID of element 1: >>1 |
+|                    |              | `id #2`         | 02 00 00 00     | ID of element 2: >>2 |
 |                    |              |                 |                 |  |
 | **Third Package**  | type         |                 | 08              | Data Type 8:  |
-|                    | id           |                 | 0c000000        | ID: 12 |
+|                    | id           |                 | 0c 00 00 00     | ID: 12 |
 |                    | added        | length          | 0200            | 2 elements to insert |
-|                    |              | `id  #1`        | 05000000        | ID  of element 1: >>5 |
-|                    |              | `key #1`        | 666f6f00        | Key of element 1: `"foo\0"` |
-|                    |              | `id  #2`        | 06000000        | ID  of element 2: >>6 |
-|                    |              | `key #2`        | 68656c6c6f00    | Key of element 2: `"hello\0"` |
-|                    | removed      | length          | 0200            | 2 elements to remove |
-|                    |              | first id        | 03000000        | remove element with ID >>3 |
-|                    |              | second id       | 04000000        | remove element with ID >>4 |
+|                    |              | `id  #1`        | 05 00 00 00     | ID  of element 1: >>5 |
+|                    |              | `key #1`        | 66 6f 6f 00     | Key of element 1: `"foo\0"` |
+|                    |              | `id  #2`        | 06 00 00 00     | ID  of element 2: >>6 |
+|                    |              | `key #2`        |68 65 6c 6c 6f 00| Key of element 2: `"hello\0"` |
+|                    | removed      | length          | 02 00           | 2 elements to remove |
+|                    |              | first id        | 03 00 00 00     | remove element with ID >>3 |
+|                    |              | second id       | 04 00 00 00     | remove element with ID >>4 |
  
 corresponds to an update that:
 * sets value with id `10` to be a `uint32` equal to `42`
