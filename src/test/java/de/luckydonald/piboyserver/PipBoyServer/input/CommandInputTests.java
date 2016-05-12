@@ -1,3 +1,5 @@
+package de.luckydonald.piboyserver.PipBoyServer.input;
+
 import static de.luckydonald.utils.interactions.CommandInput.CallbackArguments;
 import de.luckydonald.utils.interactions.CommandInput;
 import org.junit.Before;

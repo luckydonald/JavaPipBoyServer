@@ -1,3 +1,5 @@
+package de.luckydonald.piboyserver;
+
 import de.luckydonald.utils.ObjectWithLogger;
 import org.junit.Test;
 

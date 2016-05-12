@@ -1,3 +1,5 @@
+package de.luckydonald.piboyserver;
+
 import de.luckydonald.pipboyserver.PipBoyServer.Discovery;
 import org.junit.Test;
 

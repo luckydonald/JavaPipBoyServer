@@ -1,4 +1,4 @@
-/**
+package de.luckydonald.piboyserver; /**
  * This testes the Database Class.
  *
  * Created by luckydonald on 11.02.16.

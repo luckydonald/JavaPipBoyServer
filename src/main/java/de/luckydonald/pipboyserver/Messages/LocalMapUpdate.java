@@ -3,8 +3,11 @@ package de.luckydonald.pipboyserver.Messages;
 import de.luckydonald.pipboyserver.MESSAGE_CHANNEL;
 
 public class LocalMapUpdate extends Message {
+    static {
+        TYPE = MESSAGE_CHANNEL.LocalMapUpdate;
+    }
     public LocalMapUpdate() {
-        super(MESSAGE_CHANNEL.LocalMapUpdate);
+        super();
         //TODO
     }
 }

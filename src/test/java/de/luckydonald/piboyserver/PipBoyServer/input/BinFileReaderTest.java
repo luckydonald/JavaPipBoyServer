@@ -1,3 +1,5 @@
+package de.luckydonald.piboyserver.PipBoyServer.input;
+
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.input.*;
 import de.luckydonald.pipboyserver.PipBoyServer.types.DBEntry;
