@@ -19,7 +19,6 @@ public class CommandInputTests {
     private Function<CallbackArguments, Void>[] var_callback_functions = new Function[2];
     private InputStream exp_in_stream;
     private CommandInput use_cmd_in;
-    private CommandInput cmd_in;
     private Scanner exp_scanner;
 
     @Before
@@ -122,14 +121,12 @@ public class CommandInputTests {
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(outContent);
         this.use_cmd_in.output = out;
-        System.setOut(out);
         this.use_cmd_in.printHelp();
         String exp_help = outContent.toString();
         out.flush();  // reset
         outContent.reset();
         use_cmd_in.process(exp_scanner, "help");
         String result = outContent.toString();
-        System.setOut(System.out);
         assertNotEquals("printHelp not empty", "", exp_help);
         assertTrue("printHelp().length > 0", exp_help.length() > 0);
         assertTrue("process() \"help\" > 0", result.length() > 0);
