@@ -74,13 +74,20 @@ Renderer.prototype.new_byte = function(byte) {
     obj.text(byte);
     return obj;
 };
+Renderer.prototype.new_obj_bytes = function () {
+    var obj = $("<div>");
+    obj.addClass("bytes");
+    return obj;
+};
 Renderer.prototype.new_type = function(type, values_to_read, calculated) {
     var obj = $("<div>");
     obj.addClass(type).addClass("part");
+    var bytes_obj = this.new_obj_bytes();
     for(var i = 0; i < values_to_read; i++)
     {
-        obj.append(this.new_byte());
+        bytes_obj.append(this.new_byte());
     }
+    obj.append(bytes_obj);
     var label = $("<div>");
     label.addClass("caption");
     label.text(type);
@@ -125,16 +132,18 @@ Renderer.prototype.new_string = function(is_key) {
     obj.addClass("part");
     obj.addClass(is_key === true ? "key" : "value");
     var int_parts = [];
+    var bytes_obj = this.new_obj_bytes();
     while (this.bytes[this.pos] != 0) {
         int_parts[int_parts.length] = this.bytes[this.pos];
-        obj.append(this.new_byte());
+        bytes_obj.append(this.new_byte());
     }
     var uin8array = new Uint8Array(int_parts.length);
     for (var i = 0; i < int_parts.length; i++) {
         uin8array[i] = int_parts[i];
     }
     var str = this.decode(uin8array);
-    obj.append(this.new_byte());  // the skippend "\0"
+    bytes_obj.append(this.new_byte());  // the skippend "\0"
+    obj.append(bytes_obj);
     var label = $("<div>");
     label.addClass("caption");
     label.text(is_key === true ? "key" : "string");
@@ -193,19 +202,19 @@ Renderer.prototype.new_whatever = function() {
         case 0: //BOOLEAN
             obj = this.new_boolean();
             break;
-        case 1:
+        case 1:case 2: //INT8
             obj = this.new_int8();
             break;
-        case 3:
+        case 3:case 4: //INT32
             obj = this.new_int32();
             break;
-        case 6:
+        case 6: //STRING
             obj = this.new_string();
             break;
-        case 7:
+        case 7: //LIST
             obj = this.new_list();
             break;
-        case 8:
+        case 8: //DICT
             obj = this.new_dict();
             break;
         default:
@@ -213,12 +222,15 @@ Renderer.prototype.new_whatever = function() {
             obj.text("nope");
             break;
     }
+    obj.addClass("element");
     obj.prepend(id_obj);
     obj.prepend(type_obj);
     return obj;
 
 };
-function render() {
+
+
+function func_render() {
     var input = document.getElementById("input");
     var text = input.value;
     var the_list = JSON.parse(text);
@@ -227,5 +239,14 @@ function render() {
     output.empty();
     while (renderer.pos < renderer.bytes.length) {
         output.append(renderer.new_whatever());
+    }
+}
+function func_use_single_row () {
+    var output = $("#output");
+    console.log($("#use_single_row").is(":checked"), output);
+    if($("#use_single_row").is(":checked")) {
+        output.addClass("single_row");
+    } else {
+        output.removeClass("single_row");
     }
 }
