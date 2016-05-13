@@ -110,7 +110,8 @@
     Renderer.prototype.new_boolean = function() {
         var obj = $("<div>");
         obj.addClass("bool");
-        obj.append(this.new_type("value", 1));
+        var bool = this.next_int(1);
+        obj.append(this.new_type("value", 1, (bool == 0 ? "false" : "true")));
         //elem.append(obj);
         return obj;
     };
