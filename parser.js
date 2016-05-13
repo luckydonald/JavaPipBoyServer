@@ -192,15 +192,16 @@ ByteStringParser.prototype.new_dict = function() {
     obj.addClass("dict");
     var count = this.next_int(2);
     obj.append(this.new_something("count", 2, count, "add count"));
-    for (var i = 0; i < count; i++) {
-        var elem = this.new_id();
+    var i, elem;
+    for (i = 0; i < count; i++) {
+        elem = this.new_id();
         obj.append(elem);
         var key = this.new_string(true);
         obj.append(key);
     }
     obj.append(this.new_something("count", 2, count, "del. count"));
-    for (var i = 0; i < count; i++) {
-        var elem = this.new_id();
+    for (i = 0; i < count; i++) {
+        elem = this.new_id();
         obj.append(elem);
     }
     return obj;
@@ -286,7 +287,6 @@ Application.get_parser = function () {
     return parsers[$("#parsers").val() || 0];
 };
 Application.get_render = function () {
-    console.log($("#renderers").val(), renders[$("#renderers").val() || 0]);
     return renders[$("#renderers").val() || 0] || function (byte) {return ""+byte};
 };
 Application.parse = function (string) {
@@ -297,7 +297,18 @@ Application.render = function (byte) {
 };
 
 parsers[parsers.length] = new Parser(
-    "json list", "uses the build in json parser.", JSON.parse
+    "json list", "uses the build in json parser. Is capable of hex in a format of 0x2E.", JSON.parse
+);
+parsers[parsers.length] = new Parser(
+    "hex blob", "all non-hex character are simply ignored.", function (string) {
+        string = string.replace(/[^0-9a-f]+/gi, '');
+        if(string.length % 2 === 1) {throw "not an even number of digits..."}
+        var array = new Uint8Array(string.length/2);
+        for (var i = 0; i < string.length-1; i += 2) {
+            array[i/2] = parseInt(string.substring(i, i+2), 16);
+        }
+        return array;
+    }
 );
 renders[renders.length] = new Renderer(
     "decimal", "negative possible.", function (byte) {return byte}
