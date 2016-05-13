@@ -3,12 +3,15 @@
 @type_int8_dark: #924606;
 @type_int32_dark: #C3971A;
 @type_string_dark: #0B4108;
-@type_dark: #53585F;
-@id_dark: #A37510;
+@type_list_dark: #085251;
+@type_dict_dark: #4e034e;
+@field_type_dark: #53585F;
+@field_id_dark: #A37510;
+@field_count_dark: #022452;
 
 
 .colorz(@color_dark) {
-  @color_light: hsv(hsvhue(@color_dark), 3%, 100%);
+  @color_light: hsv(hsvhue(@color_dark), 10%, 100%);
   margin-left: 0.5em;
   &:first-child {
     margin-left: 0;
@@ -50,6 +53,12 @@
     &.string {
       .colorz(@type_string_dark);
     }
+    &.list {
+      .colorz(@type_list_dark);
+    }
+    &.dict {
+      .colorz(@type_dict_dark);
+    }
     &.byte, &.calculated {
       border:solid 1px white;
       margin: 0.2em;
@@ -59,15 +68,22 @@
       /*color:#555;*/
       vertical-align:middle;
       /*background-color:#fcfcfc;*/
-      border-bottom-color:white;
       color: white;
       border-radius:3px;
     }
-    &.type .byte, &.type .calculated {
-      background-color: @type_dark;
+    &.id .byte, &.id .calculated {
+      background-color: @field_id_dark;
     }
-    &.id .byte {
-      background-color: @id_dark;
+    &.count .byte, &.count .calculated {
+      background-color: @field_count_dark;
+    }
+    &.type .byte, &.type .calculated {
+      background-color: @field_type_dark;
+
+    }
+    &.key .byte, &.key .calculated {
+      background-color: @type_string_dark;
+
     }
     &.caption {
       display: block;

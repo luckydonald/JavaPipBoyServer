@@ -113,11 +113,17 @@ Renderer.prototype.new_int8 = function() {
 Renderer.prototype.new_int32 = function() {
     return this.new_intX(4);
 };
-Renderer.prototype.new_string = function() {
+/**
+ *
+ * @param is_key false/undefined (default): Add a normal String element. true: omit the outer object, only add the part.
+ * @returns {*|jQuery|HTMLElement}
+ */
+Renderer.prototype.new_string = function(is_key) {
     var obj_string = $("<div>");
     obj_string.addClass("string");
     var obj = $("<div>");
-    obj.addClass("value").addClass("part");
+    obj.addClass("part");
+    obj.addClass(is_key === true ? "key" : "value");
     var int_parts = [];
     while (this.bytes[this.pos] != 0) {
         int_parts[int_parts.length] = this.bytes[this.pos];
@@ -131,32 +137,58 @@ Renderer.prototype.new_string = function() {
     obj.append(this.new_byte());  // the skippend "\0"
     var label = $("<div>");
     label.addClass("caption");
-    label.text("string");
+    label.text(is_key === true ? "key" : "string");
     obj.append(label);
     var value = $("<div>");
     value.addClass("calculated");
     value.text(str);
     obj.append(value);
+    if (is_key === true) {
+        return obj;
+    }
     obj_string.append(obj);
     return obj_string;
 };
 Renderer.prototype.new_list = function() {
     var obj = $("<div>");
     obj.addClass("list");
-    obj.append(this.new_type("count", 4));
+    var count = this.next_int(2);
+    obj.append(this.new_type("count", 2, count));
+    for (var i = 0; i < count; i++) {
+        var elem = this.new_id();
+        obj.append(elem);
+    }
     return obj;
 };
 Renderer.prototype.new_dict = function() {
     var obj = $("<div>");
     obj.addClass("dict");
-    obj.append(this.new_type("count", 4));
+    var count = this.next_int(2);
+    obj.append(this.new_type("count", 2, count));
+    for (var i = 0; i < count; i++) {
+        var elem = this.new_id();
+        obj.append(elem);
+        var key = this.new_string(true);
+        obj.append(key);
+    }
+    obj.append(this.new_type("count", 2, count));
+    for (var i = 0; i < count; i++) {
+        var elem = this.new_id();
+        obj.append(elem);
+    }
     return obj;
+};
+Renderer.prototype.new_id = function () {
+    var id_int = this.next_int(4);
+    var id_obj = this.new_type("id", 4, id_int);
+    id_obj.data("value", id_int);
+    //id_obj.onclick("Renderer.show_element($(this).data(\"value\"))");
+    return id_obj
 };
 Renderer.prototype.new_whatever = function() {
     var type = this.bytes[this.pos];
     var type_obj = this.new_type("type", 1, this.types[type]);
-    var id_int = this.next_int(4);
-    var id_obj = this.new_type("id", 4, id_int);
+    var id_obj = this.new_id();
     switch (type) {
         case 0: //BOOLEAN
             obj = this.new_boolean();
