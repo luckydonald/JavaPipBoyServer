@@ -2,6 +2,14 @@ function Renderer (bytes) {
     this.bytes = bytes;
     this.pos = 0;
 }
+function Parser (name, desc, func) {
+    this.name = name;
+    this.desc = desc;
+    this.func = func;
+}
+var parsers = [];
+
+
 Renderer.prototype.decode0 = function (array) {
     return new TextDecoder("UTF-8").decode(array);
 };
@@ -199,22 +207,22 @@ Renderer.prototype.new_whatever = function() {
     var type_obj = this.new_type("type", 1, this.types[type]);
     var id_obj = this.new_id();
     switch (type) {
-        case 0: //BOOLEAN
+        case 0: // BOOLEAN
             obj = this.new_boolean();
             break;
-        case 1:case 2: //INT8
+        case 1:case 2: // INT8
             obj = this.new_int8();
             break;
-        case 3:case 4: //INT32
+        case 3:case 4: // INT32
             obj = this.new_int32();
             break;
-        case 6: //STRING
+        case 6: // STRING
             obj = this.new_string();
             break;
-        case 7: //LIST
+        case 7: // LIST
             obj = this.new_list();
             break;
-        case 8: //DICT
+        case 8: // DICT
             obj = this.new_dict();
             break;
         default:
@@ -228,12 +236,34 @@ Renderer.prototype.new_whatever = function() {
     return obj;
 
 };
+parsers[parsers.length] = new Parser(
+    "json list", "uses the build in json parser.", JSON.parse
+);
 
+function onload() {
+    var select = $("#parsers");
+    for(var i = 0; i < parsers.length; i++) {
+        var parser = parsers[i];
+        if (!parser instanceof Parser) {
+            continue;
+        }
+        var option = $("<option/>")
+            .val(i)
+            .text(parser.name)
+            .data("func", parser.func);
+        if (i == 0) {
+            option.attr('selected',true);
+        }
+        //option.appendTo("#renderer");
+        select.append(option);
+        //<option value="" selected>Please choose</option>
+    }
+}
 
 function func_render() {
-    var input = document.getElementById("input");
-    var text = input.value;
-    var the_list = JSON.parse(text);
+    var input = document.getElementById("input").value;
+    var renderer = parsers[$("#renderer").val() || 0];
+    var the_list = renderer.func(input);
     var renderer = new Renderer(the_list);
     var output = $("#output");
     output.empty();
@@ -243,7 +273,6 @@ function func_render() {
 }
 function func_use_single_row () {
     var output = $("#output");
-    console.log($("#use_single_row").is(":checked"), output);
     if($("#use_single_row").is(":checked")) {
         output.addClass("single_row");
     } else {
