@@ -95,7 +95,10 @@ ByteStringParser.prototype.new_obj_bytes = function () {
     obj.addClass("bytes");
     return obj;
 };
-ByteStringParser.prototype.new_type = function(type, values_to_read, calculated) {
+ByteStringParser.prototype.new_something = function(type, values_to_read, calculated, name) {
+    if (name === undefined || name === null) {
+        name = type;
+    }
     var obj = $("<div>");
     obj.addClass(type).addClass("part");
     var bytes_obj = this.new_obj_bytes();
@@ -106,7 +109,7 @@ ByteStringParser.prototype.new_type = function(type, values_to_read, calculated)
     obj.append(bytes_obj);
     var label = $("<div>");
     label.addClass("caption");
-    label.text(type);
+    label.text(name);
     obj.append(label);
     var value = $("<div>");
     value.addClass("calculated");
@@ -118,7 +121,7 @@ ByteStringParser.prototype.new_boolean = function() {
     var obj = $("<div>");
     obj.addClass("bool");
     var bool = this.next_int(1);
-    obj.append(this.new_type("value", 1, (bool == 0 ? "false" : "true")));
+    obj.append(this.new_something("value", 1, (bool == 0 ? "false" : "true")));
     //elem.append(obj);
     return obj;
 };
@@ -126,7 +129,7 @@ ByteStringParser.prototype.new_intX = function(values_to_read) {
     var obj = $("<div>");
     obj.addClass("int" + (8*values_to_read));
     var int = this.next_int(values_to_read);
-    obj.append(this.new_type("value", values_to_read, int));
+    obj.append(this.new_something("value", values_to_read, int));
     return obj;
 };
 ByteStringParser.prototype.new_int8 = function() {
@@ -177,7 +180,7 @@ ByteStringParser.prototype.new_list = function() {
     var obj = $("<div>");
     obj.addClass("list");
     var count = this.next_int(2);
-    obj.append(this.new_type("count", 2, count));
+    obj.append(this.new_something("count", 2, count, "count"));
     for (var i = 0; i < count; i++) {
         var elem = this.new_id();
         obj.append(elem);
@@ -188,14 +191,14 @@ ByteStringParser.prototype.new_dict = function() {
     var obj = $("<div>");
     obj.addClass("dict");
     var count = this.next_int(2);
-    obj.append(this.new_type("count", 2, count));
+    obj.append(this.new_something("count", 2, count, "add count"));
     for (var i = 0; i < count; i++) {
         var elem = this.new_id();
         obj.append(elem);
         var key = this.new_string(true);
         obj.append(key);
     }
-    obj.append(this.new_type("count", 2, count));
+    obj.append(this.new_something("count", 2, count, "del. count"));
     for (var i = 0; i < count; i++) {
         var elem = this.new_id();
         obj.append(elem);
@@ -204,14 +207,14 @@ ByteStringParser.prototype.new_dict = function() {
 };
 ByteStringParser.prototype.new_id = function () {
     var id_int = this.next_int(4);
-    var id_obj = this.new_type("id", 4, id_int);
+    var id_obj = this.new_something("id", 4, id_int);
     id_obj.data("value", id_int);
     //id_obj.onclick("ByteStringParser.show_element($(this).data(\"value\"))");
     return id_obj
 };
 ByteStringParser.prototype.new_whatever = function() {
     var type = this.bytes[this.pos];
-    var type_obj = this.new_type("type", 1, this.types[type]);
+    var type_obj = this.new_something("type", 1, this.types[type]);
     var id_obj = this.new_id();
     switch (type) {
         case 0: // BOOLEAN

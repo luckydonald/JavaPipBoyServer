@@ -16,7 +16,10 @@
   background-color: @color_light;
   .byte, .calculated {
     background-color: @color_dark;
-    color: white;
+    color: @color_light;
+    border: none;
+    margin-left: 1px;
+    text-align: center;
   }
   .caption {
     color: @color_dark;
@@ -28,6 +31,7 @@
 
 #input {
   width: 100%;
+  .code;
 }
 
 #output {
@@ -43,6 +47,11 @@
     .part {
       text-align: center;
       border-left: solid 1px;
+      .calculated, .bytes {
+        text-align: center;
+        margin-left: 0.2em;
+        margin-right: 0.2em;
+      }
     }
   }
   &.single_row {
@@ -52,7 +61,6 @@
       display: inline-block;
       padding-top: 0;
     }
-    /*height: 6em;*/
   }
   div {
     display: inline-block;
@@ -76,30 +84,16 @@
       .colorz(@type_dict_dark);
     }
     &.byte, &.calculated {
-      border:solid 1px white;
-      border-left: none;
+      //border:solid 1px white;
+      //border-left: none;
       margin: 0.2em 0;
       padding:3px 5px;
       font-size:1.2em;
       line-height:1em;
-      /*color:#555;*/
       vertical-align:middle;
-      /*background-color:#fcfcfc;*/
       color: white;
-      /*border-radius:3px;*/
-    }
-    &.byte {
-      &:first-child {
-        margin-left: 0.2em;
-        border-left: solid 1px white;
-      }
-      &:last-child {
-        margin-right: 0.2em;
-      }
-    }
-    &.calculated {
-      margin-left: 0.2em;
-      margin-right: 0.2em;
+      .code;
+      font-weight: bold;
     }
     &.id .byte, &.id .calculated {
       background-color: @field_id_dark;
@@ -126,5 +120,23 @@
   padding-left: 2em;
   &:first-child {
     padding-left: 0;
+  }
+}
+
+.code {
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 12px;
+}
+body{
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  font-stretch: normal;
+  font: 13px/1.4 Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  input {
+    background-color: rgb(248, 248, 248);
+    border: 1px solid rgb(166, 166, 166);
+    border-radius: 5px;
   }
 }
