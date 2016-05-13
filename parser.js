@@ -62,7 +62,7 @@ Renderer.prototype.types = ["boolean", "int8", "uint8", "int32", "uint32", "floa
 Renderer.prototype.next_int = function(values_to_read) {
     var int = 0;
     for (var i = 0; i < values_to_read; i++) {
-        int += (this.bytes[this.pos + values_to_read - i] << 8 * i);
+        int += (this.bytes[this.pos + i] << (8 * i));
     }
     return int;
 };
@@ -155,7 +155,8 @@ Renderer.prototype.new_dict = function() {
 Renderer.prototype.new_whatever = function() {
     var type = this.bytes[this.pos];
     var type_obj = this.new_type("type", 1, this.types[type]);
-    var id_obj = this.new_type("id", 4);
+    var id_int = this.next_int(4);
+    var id_obj = this.new_type("id", 4, id_int);
     switch (type) {
         case 0: //BOOLEAN
             obj = this.new_boolean();
