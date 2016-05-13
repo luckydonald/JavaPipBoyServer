@@ -27,45 +27,50 @@
     border-left: solid 1px @color_dark;
     text-align: center;
   }
+
+
 }
 
-#output div {
-  display: inline-block;
-  color: white;
-  &.bool {
-    .colorz(@type_bool_dark);
-  }
-  &.int8 {
-    .colorz(@type_int8_dark);
-  }
-  &.int32 {
-    .colorz(@type_int32_dark);
-  }
-  &.string {
-    .colorz(@type_string_dark);
-  }
-  &.byte, &.calculated {
-    border:solid 1px white;
-    margin: 0.2em;
-    padding:3px 5px;
-    font-size:12px;
-    line-height:10px;
-    /*color:#555;*/
-    vertical-align:middle;
-    /*background-color:#fcfcfc;*/
-    border-bottom-color:white;
+#output {
+  padding-top:2em;
+  div {
+    display: inline-block;
     color: white;
-    border-radius:3px;
-  }
-  &.type .byte, &.type .calculated {
-    background-color: @type_dark;
-  }
-  &.id .byte {
-    background-color: @id_dark;
-  }
-  &.caption {
-    display: block;
-    text-align: center;
-    width: 100%;
+    &.bool {
+      .colorz(@type_bool_dark);
+    }
+    &.int8 {
+      .colorz(@type_int8_dark);
+    }
+    &.int32 {
+      .colorz(@type_int32_dark);
+    }
+    &.string {
+      .colorz(@type_string_dark);
+    }
+    &.byte, &.calculated {
+      border:solid 1px white;
+      margin: 0.2em;
+      padding:3px 5px;
+      font-size:12px;
+      line-height:10px;
+      /*color:#555;*/
+      vertical-align:middle;
+      /*background-color:#fcfcfc;*/
+      border-bottom-color:white;
+      color: white;
+      border-radius:3px;
+    }
+    &.type .byte, &.type .calculated {
+      background-color: @type_dark;
+    }
+    &.id .byte {
+      background-color: @id_dark;
+    }
+    &.caption {
+      display: block;
+      text-align: center;
+      width: 100%;
+    }
   }
 }
