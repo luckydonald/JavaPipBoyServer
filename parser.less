@@ -16,12 +16,12 @@
   border: 1px solid @color_dark;
   border-left: none;
   background-color: @color_light;
-  .byte {
+  .byte, .calculated {
     background-color: @color_dark;
+    color: white;
   }
   .caption {
     color: @color_dark;
-    text-align: center;
   }
   .part {
     border-left: solid 1px @color_dark;
@@ -44,7 +44,7 @@
   &.string {
     .colorz(@type_string_dark);
   }
-  &.byte {
+  &.byte, &.calculated {
     border:solid 1px white;
     margin: 0.2em;
     padding:3px 5px;
@@ -57,7 +57,7 @@
     color: white;
     border-radius:3px;
   }
-  &.type .byte {
+  &.type .byte, &.type .calculated {
     background-color: @type_dark;
   }
   &.id .byte {
