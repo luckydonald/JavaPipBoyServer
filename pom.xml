@@ -125,6 +125,11 @@
             <version>${mockito.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.typesafe.netty</groupId>
+            <artifactId>netty-http-pipelining</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+        <dependency>
             <groupId>com.codacy</groupId>
             <artifactId>codacy-coverage-reporter</artifactId>
             <version>1.0.7</version>
