@@ -254,9 +254,7 @@ function onload() {
         if (i == 0) {
             option.attr('selected',true);
         }
-        //option.appendTo("#renderer");
         select.append(option);
-        //<option value="" selected>Please choose</option>
     }
 }
 

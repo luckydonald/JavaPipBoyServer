@@ -97,6 +97,10 @@
         margin-right: 0.2em;
       }
     }
+    &.calculated {
+      margin-left: 0.2em;
+      margin-right: 0.2em;
+    }
     &.id .byte, &.id .calculated {
       background-color: @field_id_dark;
     }
@@ -116,5 +120,11 @@
       text-align: center;
       width: 100%;
     }
+  }
+}
+#controls label {
+  padding-left: 2em;
+  &:first-child {
+    padding-left: 0;
   }
 }
