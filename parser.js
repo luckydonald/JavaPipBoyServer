@@ -1,6 +1,12 @@
-function Renderer (bytes) {
+var Application = {};
+function ByteStringParser (bytes) {
     this.bytes = bytes;
     this.pos = 0;
+}
+function Renderer (name, desc, func) {
+    this.name = name;
+    this.desc = desc;
+    this.func = func;
 }
 function Parser (name, desc, func) {
     this.name = name;
@@ -8,17 +14,18 @@ function Parser (name, desc, func) {
     this.func = func;
 }
 var parsers = [];
+var renders = [];
 
 
-Renderer.prototype.decode0 = function (array) {
+ByteStringParser.prototype.decode0 = function (array) {
     return new TextDecoder("UTF-8").decode(array);
 };
-Renderer.prototype.decode1 = function (array) {
+ByteStringParser.prototype.decode1 = function (array) {
     var encodedString = String.fromCharCode.apply(null, array   ),
         decodedString = decodeURIComponent(escape(encodedString));
     return decodedString;
 };
-Renderer.prototype.decode2 = function (array) {
+ByteStringParser.prototype.decode2 = function (array) {
     var out, i, len, c;
     var char2, char3;
 
@@ -51,7 +58,7 @@ Renderer.prototype.decode2 = function (array) {
 
     return out;
 };
-Renderer.prototype.decode  = function (array) {
+ByteStringParser.prototype.decode  = function (array) {
     try {
         return this.decode0(array);
     } catch (err) {
@@ -65,9 +72,9 @@ Renderer.prototype.decode  = function (array) {
     }
 };
 
-Renderer.prototype.types = ["boolean", "int8", "uint8", "int32", "uint32", "float", "string", "array", "dict"];
+ByteStringParser.prototype.types = ["boolean", "int8", "uint8", "int32", "uint32", "float", "string", "array", "dict"];
 
-Renderer.prototype.next_int = function(values_to_read) {
+ByteStringParser.prototype.next_int = function(values_to_read) {
     var int = 0;
     for (var i = 0; i < values_to_read; i++) {
         int += (this.bytes[this.pos + i] << (8 * i));
@@ -75,19 +82,20 @@ Renderer.prototype.next_int = function(values_to_read) {
     return int;
 };
 
-Renderer.prototype.new_byte = function(byte) {
+ByteStringParser.prototype.new_byte = function(byte) {
     byte = (byte !== undefined ? byte : this.bytes[this.pos++]);
     var obj = $("<div>");
     obj.addClass("byte");
-    obj.text(byte);
+    obj.data("byte", byte);
+    obj.text(Application.render(byte));
     return obj;
 };
-Renderer.prototype.new_obj_bytes = function () {
+ByteStringParser.prototype.new_obj_bytes = function () {
     var obj = $("<div>");
     obj.addClass("bytes");
     return obj;
 };
-Renderer.prototype.new_type = function(type, values_to_read, calculated) {
+ByteStringParser.prototype.new_type = function(type, values_to_read, calculated) {
     var obj = $("<div>");
     obj.addClass(type).addClass("part");
     var bytes_obj = this.new_obj_bytes();
@@ -106,7 +114,7 @@ Renderer.prototype.new_type = function(type, values_to_read, calculated) {
     obj.append(value);
     return obj;
 };
-Renderer.prototype.new_boolean = function() {
+ByteStringParser.prototype.new_boolean = function() {
     var obj = $("<div>");
     obj.addClass("bool");
     var bool = this.next_int(1);
@@ -114,18 +122,17 @@ Renderer.prototype.new_boolean = function() {
     //elem.append(obj);
     return obj;
 };
-Renderer.prototype.new_intX = function(values_to_read) {
+ByteStringParser.prototype.new_intX = function(values_to_read) {
     var obj = $("<div>");
     obj.addClass("int" + (8*values_to_read));
     var int = this.next_int(values_to_read);
     obj.append(this.new_type("value", values_to_read, int));
     return obj;
 };
-
-Renderer.prototype.new_int8 = function() {
+ByteStringParser.prototype.new_int8 = function() {
     return this.new_intX(1);
 };
-Renderer.prototype.new_int32 = function() {
+ByteStringParser.prototype.new_int32 = function() {
     return this.new_intX(4);
 };
 /**
@@ -133,7 +140,7 @@ Renderer.prototype.new_int32 = function() {
  * @param is_key false/undefined (default): Add a normal String element. true: omit the outer object, only add the part.
  * @returns {*|jQuery|HTMLElement}
  */
-Renderer.prototype.new_string = function(is_key) {
+ByteStringParser.prototype.new_string = function(is_key) {
     var obj_string = $("<div>");
     obj_string.addClass("string");
     var obj = $("<div>");
@@ -166,7 +173,7 @@ Renderer.prototype.new_string = function(is_key) {
     obj_string.append(obj);
     return obj_string;
 };
-Renderer.prototype.new_list = function() {
+ByteStringParser.prototype.new_list = function() {
     var obj = $("<div>");
     obj.addClass("list");
     var count = this.next_int(2);
@@ -177,7 +184,7 @@ Renderer.prototype.new_list = function() {
     }
     return obj;
 };
-Renderer.prototype.new_dict = function() {
+ByteStringParser.prototype.new_dict = function() {
     var obj = $("<div>");
     obj.addClass("dict");
     var count = this.next_int(2);
@@ -195,14 +202,14 @@ Renderer.prototype.new_dict = function() {
     }
     return obj;
 };
-Renderer.prototype.new_id = function () {
+ByteStringParser.prototype.new_id = function () {
     var id_int = this.next_int(4);
     var id_obj = this.new_type("id", 4, id_int);
     id_obj.data("value", id_int);
-    //id_obj.onclick("Renderer.show_element($(this).data(\"value\"))");
+    //id_obj.onclick("ByteStringParser.show_element($(this).data(\"value\"))");
     return id_obj
 };
-Renderer.prototype.new_whatever = function() {
+ByteStringParser.prototype.new_whatever = function() {
     var type = this.bytes[this.pos];
     var type_obj = this.new_type("type", 1, this.types[type]);
     var id_obj = this.new_id();
@@ -236,11 +243,7 @@ Renderer.prototype.new_whatever = function() {
     return obj;
 
 };
-parsers[parsers.length] = new Parser(
-    "json list", "uses the build in json parser.", JSON.parse
-);
-
-function onload() {
+Application.load_parser = function () {
     var select = $("#parsers");
     for(var i = 0; i < parsers.length; i++) {
         var parser = parsers[i];
@@ -250,19 +253,75 @@ function onload() {
         var option = $("<option/>")
             .val(i)
             .text(parser.name)
+            .attr("title", parser.desc)
             .data("func", parser.func);
         if (i == 0) {
             option.attr('selected',true);
         }
         select.append(option);
     }
+};
+Application.load_render = function () {
+    var select = $("#renderers");
+    for(var i = 0; i < renders.length; i++) {
+        var parser = renders[i];
+        if (!parser instanceof Renderer) {
+            continue;
+        }
+        var option = $("<option/>")
+            .val(i)
+            .text(parser.name)
+            .attr("title", parser.desc)
+            .data("func", parser.func);
+        if (i == 0) {
+            option.attr('selected',true);
+        }
+        select.append(option);
+    }
+};
+Application.get_parser = function () {
+    return parsers[$("#parsers").val() || 0];
+};
+Application.get_render = function () {
+    console.log($("#renderers").val(), renders[$("#renderers").val() || 0]);
+    return renders[$("#renderers").val() || 0] || function (byte) {return ""+byte};
+};
+Application.parse = function (string) {
+    return this.get_parser().func(string);
+};
+Application.render = function (byte) {
+    return this.get_render().func(byte);
+};
+
+parsers[parsers.length] = new Parser(
+    "json list", "uses the build in json parser.", JSON.parse
+);
+renders[renders.length] = new Renderer(
+    "decimal", "negative possible.", function (byte) {return byte}
+);
+var to_positive_hex= function (byte) {
+    var string = "0" + ((byte >>> 0).toString(16));
+    return string.substring(string.length-2);
+};
+renders[renders.length] = new Renderer(
+    "positive", "always positive", function (byte) {
+        var hex=to_positive_hex(byte);
+        return parseInt(hex, 16);
+    }
+);
+renders[renders.length] = new Renderer(
+    "hex", "without the 0x.. part.", to_positive_hex
+);
+
+function onload() {
+    Application.load_parser();
+    Application.load_render();
 }
 
 function func_render() {
     var input = document.getElementById("input").value;
-    var renderer = parsers[$("#renderer").val() || 0];
-    var the_list = renderer.func(input);
-    var renderer = new Renderer(the_list);
+    var the_list = Application.parse(input);
+    var renderer = new ByteStringParser(the_list);
     var output = $("#output");
     output.empty();
     while (renderer.pos < renderer.bytes.length) {
