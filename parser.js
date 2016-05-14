@@ -1,6 +1,11 @@
 var Application = {};
 function ByteStringParser (bytes) {
     this.bytes = bytes;
+    var buffer = new ArrayBuffer(bytes.length);
+    for (var i = 0; i < bytes.length; i++) {
+        buffer[i] = bytes[i];
+    }
+    this.data = new DataView(buffer);
     this.pos = 0;
 }
 function Renderer (name, desc, func) {
@@ -138,6 +143,14 @@ ByteStringParser.prototype.new_int8 = function() {
 ByteStringParser.prototype.new_int32 = function() {
     return this.new_intX(4);
 };
+ByteStringParser.prototype.new_float = function() {
+    var obj = $("<div>");
+    obj.addClass("float");
+    //var float = Application.parseFloat();
+    //var int = this.next_int(values_to_read);
+    obj.append(this.new_something("value", values_to_read, "little Endian"));
+    return obj;
+};
 /**
  *
  * @param is_key false/undefined (default): Add a normal String element. true: omit the outer object, only add the part.
@@ -199,6 +212,7 @@ ByteStringParser.prototype.new_dict = function() {
         var key = this.new_string(true);
         obj.append(key);
     }
+    count = this.next_int(2);
     obj.append(this.new_something("count", 2, count, "del. count"));
     for (i = 0; i < count; i++) {
         elem = this.new_id();
@@ -294,6 +308,14 @@ Application.parse = function (string) {
 };
 Application.render = function (byte) {
     return this.get_render().func(byte);
+};
+Application.parseFloat = function (str, radix) {
+    var parts = str.split(".");
+    if ( parts.length > 1 )
+    {
+        return parseInt(parts[0], radix) + parseInt(parts[1], radix) / Math.pow(radix, parts[1].length);
+    }
+    return parseInt(parts[0], radix);
 };
 
 parsers[parsers.length] = new Parser(
