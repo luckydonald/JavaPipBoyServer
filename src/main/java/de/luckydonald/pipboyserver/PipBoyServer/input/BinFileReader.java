@@ -66,13 +66,13 @@ public class BinFileReader extends ObjectWithLogger {
     public SignedLong int64_t() throws IOException {
         long posBefore = this.pos;
         long i1 = readByte(),
-                i2 = readByte(),
-                i3 = readByte(),
-                i4 = readByte(),
-                i5 = readByte(),
-                i6 = readByte(),
-                i7 = readByte(),
-                i8 = readByte();
+            i2 = readByte(),
+            i3 = readByte(),
+            i4 = readByte(),
+            i5 = readByte(),
+            i6 = readByte(),
+            i7 = readByte(),
+            i8 = readByte();
         long integer = (i8 << 56) + (i7 << 48) + (i6 << 40) + (i5 << 32) + (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
         SignedLong result = new SignedLong(integer);
         getLogger().fine("int64_t:   " + result + " (" + posBefore + "-" + pos + ")");
@@ -81,12 +81,6 @@ public class BinFileReader extends ObjectWithLogger {
 
     public UnsignedInteger uint32_t() throws IOException {
         long posBefore = this.pos;
-        /*int i1 = readByte(),
-            i2 = readByte(),
-            i3 = readByte(),
-            i4 = readByte();
-        int integer = (i4 << 24) + (i3 << 16) + (i2 << 8) + (i1);
-        */
         int integer = readByte() + (readByte() << 8) + (readByte() << 16) + (readByte() << 24);
         UnsignedInteger result = new UnsignedInteger(integer);
         getLogger().fine("uint32_t:  " + result + " (" + posBefore + "-" + pos + ")");
