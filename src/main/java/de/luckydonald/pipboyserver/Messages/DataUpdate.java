@@ -15,9 +15,6 @@ public class DataUpdate extends Message{
     }
     private List<DBEntry> entries = new ArrayList<DBEntry>();
 
-    /*public DataUpdate(byte[] data) {
-        super(TYPE, data);
-    }*/
     public DataUpdate(DBEntry e) {
         super(e.getBytes());
         this.entries.add(e); //TODO: deep copy
