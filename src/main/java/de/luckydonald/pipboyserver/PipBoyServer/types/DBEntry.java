@@ -88,8 +88,6 @@ public class DBEntry extends ObjectWithLogger {
         this.getDatabase().getEntriesLock().readLock().unlock();
         getLogger().finest("unlocked DB: read");
         return content.array();
-
-        //return new byte[]{(byte) this.getType()};
     }
 
     /**
