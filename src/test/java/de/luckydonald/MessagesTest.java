@@ -1,5 +1,6 @@
 package de.luckydonald;
 
+import de.luckydonald.pipboyserver.MESSAGE_CHANNEL;
 import de.luckydonald.pipboyserver.Messages.KeepAlive;
 import de.luckydonald.pipboyserver.Messages.ConnectionAccepted;
 import de.luckydonald.pipboyserver.Messages.ConnectionRefused;
@@ -39,6 +40,16 @@ public class MessagesTest extends ObjectWithLogger {
     private byte[] expectedDataUpdate_delete = {
             0x08, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00
     };
+    @Test
+    public void testEnums() {
+        assertEquals("KeepAlive",          0x00, MESSAGE_CHANNEL.KeepAlive.toByte());
+        assertEquals("ConnectionAccepted", 0x01, MESSAGE_CHANNEL.ConnectionAccepted.toByte());
+        assertEquals("ConnectionRefused",  0x02, MESSAGE_CHANNEL.ConnectionRefused.toByte());
+        assertEquals("DataUpdate",         0x03, MESSAGE_CHANNEL.DataUpdate.toByte());
+        assertEquals("LocalMapUpdate",     0x04, MESSAGE_CHANNEL.LocalMapUpdate.toByte());
+        assertEquals("Command",            0x05, MESSAGE_CHANNEL.Command.toByte());
+        assertEquals("CommandResult",      0x06, MESSAGE_CHANNEL.CommandResult.toByte());
+    }
 
     @Test
     public void testKeepAlive_Content() throws Exception {
