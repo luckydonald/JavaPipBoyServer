@@ -48,7 +48,7 @@ public class MessagesTest extends ObjectWithLogger {
     }
     @Test
     public void testKeepAlive_Type() throws Exception {
-        assertEquals("TYPE", KeepAlive.TYPE, MESSAGE_CHANNEL.KeepAlive);
+        assertEquals("TYPE", MESSAGE_CHANNEL.KeepAlive, new KeepAlive().getType());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class MessagesTest extends ObjectWithLogger {
     }
     @Test
     public void testConnectionAccepted_Type() throws Exception {
-        assertEquals("TYPE", ConnectionAccepted.TYPE, MESSAGE_CHANNEL.ConnectionAccepted);
+        assertEquals("TYPE", MESSAGE_CHANNEL.ConnectionAccepted,  new ConnectionAccepted().getType());
     }
 
     @Test
@@ -68,7 +68,7 @@ public class MessagesTest extends ObjectWithLogger {
     }
     @Test
     public void testConnectionRefused_Type() throws Exception {
-        assertEquals("TYPE", ConnectionRefused.TYPE, MESSAGE_CHANNEL.ConnectionRefused);
+        assertEquals("TYPE", MESSAGE_CHANNEL.ConnectionRefused, new ConnectionRefused().getType());
     }
 
     @Test
@@ -113,21 +113,20 @@ public class MessagesTest extends ObjectWithLogger {
         msg = new DataUpdate(package3);
         message = msg.toBytes();
         System.out.println();
-
     }
     @Test
     public void testDataUpdate_Type() throws Exception {
-        assertEquals("TYPE", DataUpdate.TYPE, MESSAGE_CHANNEL.DataUpdate);
+        assertEquals("TYPE", MESSAGE_CHANNEL.DataUpdate, new DataUpdate(new DBBoolean(false)).getType());
     }
 
     @Test
     public void testLocalMapUpdate_Type() throws Exception {
-        assertEquals("TYPE", LocalMapUpdate.TYPE, MESSAGE_CHANNEL.LocalMapUpdate);
+        assertEquals("TYPE", MESSAGE_CHANNEL.LocalMapUpdate, new LocalMapUpdate().getType());
     }
 
     /*@Test
     public void testCommandResult_Type() throws Exception {
-        assertEquals("TYPE", CommandResult.TYPE, MESSAGE_CHANNEL.CommandResult);
+        assertEquals("TYPE", MESSAGE_CHANNEL.CommandResult, new CommandResult().getType());
     }*/
 
 

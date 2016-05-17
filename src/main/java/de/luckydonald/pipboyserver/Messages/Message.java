@@ -8,7 +8,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class Message extends ObjectWithLogger{
-    public static MESSAGE_CHANNEL TYPE;
+    public MESSAGE_CHANNEL getType() {
+        return null;
+    }
+
     private byte[] content;
     ByteArrayOutputStream message = new ByteArrayOutputStream();
 
@@ -17,8 +20,8 @@ public class Message extends ObjectWithLogger{
     }
     public Message(byte[] content) {
         this.content = content;
-        if(TYPE != KeepAlive.TYPE) {
-            getLogger().fine("created new Message, type " + TYPE + " (" + this.getClass().getSimpleName() + ").");
+        if(this.getType() != MESSAGE_CHANNEL.KeepAlive) {
+            getLogger().fine("created new Message, type " + this.getType() + " (" + this.getClass().getSimpleName() + ").");
         }
     }
 
@@ -30,7 +33,7 @@ public class Message extends ObjectWithLogger{
         ByteBuffer header = ByteBuffer.allocate(4+1 + length);
         header.order(ByteOrder.LITTLE_ENDIAN);
         header.putInt(length);
-        header.put(TYPE.toByte());
+        header.put(this.getType().toByte());
         if (this.content != null) {
             header.put(this.content);
         }

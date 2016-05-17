@@ -10,15 +10,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DataUpdate extends Message{
-    static {
-        TYPE = MESSAGE_CHANNEL.DataUpdate;
-    }
     private List<DBEntry> entries = new ArrayList<DBEntry>();
 
     public DataUpdate(DBEntry e) {
         super(e.getBytes());
         this.entries.add(e); //TODO: deep copy
     }
+
     public DataUpdate(List<DBEntry> entries) {
         super();
         this.entries.addAll(entries);
@@ -27,10 +25,14 @@ public class DataUpdate extends Message{
     public DataUpdate(DBEntry[] entries) {
         this(Arrays.asList(entries));
     }
-
     public DataUpdate addEntry(DBEntry e) {
         this.entries.add(e);
         return this;
+    }
+
+    @Override
+    public MESSAGE_CHANNEL getType() {
+        return MESSAGE_CHANNEL.DataUpdate;
     }
 
     @Override
