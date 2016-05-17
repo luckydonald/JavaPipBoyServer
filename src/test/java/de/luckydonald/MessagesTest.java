@@ -31,10 +31,13 @@ public class MessagesTest extends ObjectWithLogger {
     };
     private byte[] expected_connectionRefused = {0x00, 0x00, 0x00, 0x00, 0x02};
     private byte[] expectedDataUpdate = {
-            0x3b, 0x00, 0x00, 0x00, 0x03, 0x03, 0x0a, 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x07, 0x0b, 0x00, 0x00,
+            0x33, 0x00, 0x00, 0x00, 0x03, 0x03, 0x0a, 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x07, 0x0b, 0x00, 0x00,
             0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x08, 0x0c, 0x00, 0x00, 0x00, 0x02, 0x00,
             0x05, 0x00, 0x00, 0x00, 0x66, 0x6f, 0x6f, 0x00, 0x06, 0x00, 0x00, 0x00, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x00,
-            0x02, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00
+            0x00, 0x00
+    };
+    private byte[] expectedDataUpdate_delete = {
+            0x08, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00
     };
 
     @Test
@@ -78,19 +81,20 @@ public class MessagesTest extends ObjectWithLogger {
         DBDict package3 = new DBDict();
         db.add(package3);
         assertEquals("package3 id", 12, (int) package3.getID());
-        package3.add("deleteme_1\0", db.get(3));
-        package3.add("deleteme_2\0", db.get(4));
-        package3.add("foo\0", db.get(5));
-        package3.add("hello\0", db.get(6));
-        package3.remove(3);
-        package3.remove(4);
+        //package3.add("deleteme_1", db.get(3));
+        //package3.add("deleteme_2", db.get(4));
+        package3.add("foo", db.get(5));
+        package3.add("hello", db.get(6));
+        //package3.remove(3);
+        //package3.remove(4);
         updates[0] = package1;
         updates[1] = package2;
         updates[2] = package3;
         DataUpdate msg = new DataUpdate(updates);
         Function<Object,String> func = this::formatByte;
-        assertEquals("toBytes()", Array.toString(expectedDataUpdate, func),  Array.toString(msg.toBytes(), func));
-        assertArrayEquals("toBytes()", expectedDataUpdate, msg.toBytes());
+        byte[] message = msg.toBytes(); // content will change after call!
+        assertEquals("toBytes() (strEquals)", Array.toString(expectedDataUpdate, func),  Array.toString(message, func));
+        assertArrayEquals("toBytes() (arrayEquals)", expectedDataUpdate, message);
     }
 
     private String formatByte(Object o) {
