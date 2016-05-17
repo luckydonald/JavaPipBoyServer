@@ -6,10 +6,7 @@ import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyInsertedExcept
 import de.luckydonald.pipboyserver.PipBoyServer.exceptions.AlreadyTakenException;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -82,29 +79,18 @@ public class DBDict extends DBContainer {
         this.getUpdateLock().writeLock().lock();
         int insertCount = this.inserts.size();
         b.putShort((short) insertCount);
-        for (Map.Entry<String, DBEntry> entry  : this.inserts.entrySet()) {
+        for (Iterator<Map.Entry<String, DBEntry>> iterator = this.inserts.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<String, DBEntry> entry = iterator.next();
             DictEntry e = new DictEntry(entry.getKey(), entry.getValue());
             e.putValueIntoByteBuffer(b);
-            boolean successfullyRemoved = this.inserts.remove(entry.getKey(), entry.getValue());
-            if(successfullyRemoved){
-                continue;
-            }
-            getLogger().warning("Failed to remove element \"" + entry.getKey() + "\" by (key, value)");
-            Object removed = this.inserts.remove(entry.getKey());
-            if (removed != null) {
-                getLogger().info("Removed it by key. Value was: " + removed.toString());
-            } else {
-                getLogger().warning("Failed to remove element using only the key, too.");
-            }
+            iterator.remove();
         }
         int removeCount = this.removes.size();
         b.putShort((short) removeCount);
-        for (DBEntry entry  : this.removes) {
+        for (Iterator<DBEntry> iterator = this.removes.iterator(); iterator.hasNext(); ) {
+            DBEntry entry = iterator.next();
             b.putInt(entry.getID());
-            boolean successfullyRemoved = this.removes.remove(entry);
-            if(!successfullyRemoved){
-                getLogger().warning("Failed to remove element \"" + entry + "\" by value");
-            }
+            iterator.remove();
         }
         this.getUpdateLock().writeLock().unlock();
         getLogger().finest("unlocked Update: write");

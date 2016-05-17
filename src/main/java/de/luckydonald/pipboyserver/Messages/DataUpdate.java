@@ -13,7 +13,7 @@ public class DataUpdate extends Message{
     private List<DBEntry> entries = new ArrayList<DBEntry>();
 
     public DataUpdate(DBEntry e) {
-        super(e.getBytes());
+        super();
         this.entries.add(e); //TODO: deep copy
     }
 
