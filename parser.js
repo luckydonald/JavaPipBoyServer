@@ -1,4 +1,9 @@
 var Application = {};
+
+function IOError(message) {
+    this.message = message;
+    this.name = "IOError";
+}
 function ByteStringParser (bytes) {
     this.bytes = bytes;
     var buffer = new ArrayBuffer(bytes.length);
@@ -78,23 +83,93 @@ ByteStringParser.prototype.decode  = function (array) {
 };
 
 ByteStringParser.prototype.types = ["boolean", "int8", "uint8", "int32", "uint32", "float", "string", "array", "dict"];
-
+/**
+ * Read one byte from the array.
+ * If increment is <code>false</code>, the current position on the buffer will not be increased.
+ * If offset is defined, the offset is added to the current position before reading. This does not affect the increment.
+ * @throws IOError if you reached the end of the buffer already.
+ * @param increment if given and not <code>false</code>: <code>this.pos = this.pos + 1</code>
+ * @param offset if given: <code>return this.bytes[this.pos + offset]</code>
+ * @returns {int} byte
+ */
+ByteStringParser.prototype.read = function (increment, offset) {
+    increment = (increment === undefined || increment === null ? true : increment);
+    offset = (offset === undefined || offset === null ? 0 : offset);
+    if ((this.pos + offset) >= this.bytes.length) { //
+        throw new IOError("IOError: Over the end of the buffer.");
+    }
+    var byte = this.bytes[this.pos + offset];
+    if (increment === true) {
+        this.pos++;
+    }
+    return byte;
+};
 ByteStringParser.prototype.next_int = function(values_to_read) {
     var int = 0;
     for (var i = 0; i < values_to_read; i++) {
-        int += (this.bytes[this.pos + i] << (8 * i));
+        int += (this.read(false, i) << (8 * i));
     }
     return int;
 };
 
 ByteStringParser.prototype.new_byte = function(byte) {
-    byte = (byte !== undefined ? byte : this.bytes[this.pos++]);
+    byte = (byte !== undefined ? byte : this.read());
     var obj = $("<div>");
     obj.addClass("byte");
     obj.data("byte", byte);
     obj.text(Application.render(byte));
     return obj;
 };
+/**
+ * Generates a red byte like object, which shows read errors.
+ * @param byte
+ * @returns {*|jQuery|HTMLElement}
+ */
+ByteStringParser.prototype.new_failed_byte = function(byte) {
+    var obj = $("<div>");
+    obj.addClass("byte").addClass("failed");
+    obj.data("byte", byte);
+    var str;
+    if (byte === undefined) {
+        str = Application.render(0);
+        obj.text(Application.repeat("-", str.length));
+    } else {
+        str = Application.render(byte);
+    }
+    obj.text(str);
+    return obj;
+};
+ByteStringParser.prototype.new_failed_rest = function(error_text) {
+    error_text = error_text || "Parse Error";
+    var obj = $("<div>");
+    obj.addClass("failed").addClass("element");
+
+    var obj_part = $("<div>");
+    obj_part.addClass("part");
+
+    var obj_part_bytes = $("<div>");
+    obj_part_bytes.addClass("bytes");
+
+    while (this.pos < this.bytes.length) {
+        obj_part_bytes.append(this.new_failed_byte(this.read()))
+    }
+
+    var obj_part_caption = $("<div>");
+    obj_part_caption.addClass("caption");
+    obj_part_caption.text(error_text);
+
+    var obj_part_calculated = $("<div>");
+    obj_part_calculated.addClass("calculated");
+    obj_part_calculated.text("???");
+
+    obj_part.append(obj_part_bytes);
+    obj_part.append(obj_part_caption);
+    obj_part.append(obj_part_calculated);
+
+    obj.append(obj_part);
+    return obj;
+};
+
 ByteStringParser.prototype.new_obj_bytes = function () {
     var obj = $("<div>");
     obj.addClass("bytes");
@@ -109,7 +184,14 @@ ByteStringParser.prototype.new_something = function(type, values_to_read, calcul
     var bytes_obj = this.new_obj_bytes();
     for(var i = 0; i < values_to_read; i++)
     {
-        bytes_obj.append(this.new_byte());
+        try {
+            bytes_obj.append(this.new_byte());
+        } catch (e) {
+            if (e instanceof IOError) {
+                bytes_obj.append(this.new_failed_byte());
+                break;
+            }
+        }
     }
     obj.append(bytes_obj);
     var label = $("<div>");
@@ -164,8 +246,8 @@ ByteStringParser.prototype.new_string = function(is_key) {
     obj.addClass(is_key === true ? "key" : "value");
     var int_parts = [];
     var bytes_obj = this.new_obj_bytes();
-    while (this.bytes[this.pos] != 0) {
-        int_parts[int_parts.length] = this.bytes[this.pos];
+    while (this.read(false) != 0) {
+        int_parts[int_parts.length] = this.read(false);
         bytes_obj.append(this.new_byte());
     }
     var uin8array = new Uint8Array(int_parts.length);
@@ -228,7 +310,7 @@ ByteStringParser.prototype.new_id = function () {
     return id_obj
 };
 ByteStringParser.prototype.new_whatever = function() {
-    var type = this.bytes[this.pos];
+    var type = this.read(false);
     var type_obj = this.new_something("type", 1, this.types[type]);
     var id_obj = this.new_id();
     switch (type) {
@@ -261,6 +343,12 @@ ByteStringParser.prototype.new_whatever = function() {
     return obj;
 
 };
+
+
+/*
+ APPLICATION STUFF
+ */
+
 Application.load_parser = function () {
     var select = $("#parsers");
     for(var i = 0; i < parsers.length; i++) {
@@ -317,6 +405,14 @@ Application.parseFloat = function (str, radix) {
     }
     return parseInt(parts[0], radix);
 };
+Application.repeat = function (str, n) {
+    return (new Array(n + 1)).join(str);
+};
+if (String.prototype.repeat) {
+    Application.repeat = function (str, n) {
+        return str.repeat(n);
+    }
+}
 
 parsers[parsers.length] = new Parser(
     "json list", "uses the build in json parser. Is capable of hex in a format of 0x2E.", JSON.parse
@@ -360,9 +456,24 @@ function func_render() {
     var renderer = new ByteStringParser(the_list);
     var output = $("#output");
     output.empty();
+    var did_fail = false;
+    var elem_start = 0;
     while (renderer.pos < renderer.bytes.length) {
-        output.append(renderer.new_whatever());
+        try {
+            elem_start = renderer.pos;
+            output.append(renderer.new_whatever());
+        } catch (e) {
+            if (e instanceof IOError) {
+                did_fail = true;
+                renderer.pos = elem_start;
+                break;
+            }
+        }
     }
+    if (did_fail) {
+        output.append(renderer.new_failed_rest())
+    }
+
 }
 function func_use_single_row () {
     var output = $("#output");

@@ -5,6 +5,7 @@
 @type_string_dark: #0B4108;
 @type_list_dark: #085251;
 @type_dict_dark: #4e034e;
+@type_error_dark: darkred;
 @field_type_dark: #53585F;
 @field_id_dark: #A37510;
 @field_count_dark: #022452;
@@ -83,6 +84,9 @@
     &.dict {
       .colorz(@type_dict_dark);
     }
+    &.failed {
+      .colorz(@type_error_dark);
+    }
     &.byte, &.calculated {
       //border:solid 1px white;
       //border-left: none;
@@ -94,6 +98,9 @@
       color: white;
       .code;
       font-weight: bold;
+      &.failed {
+        background-color: darkred;
+      }
     }
     &.id .byte, &.id .calculated {
       background-color: @field_id_dark;
