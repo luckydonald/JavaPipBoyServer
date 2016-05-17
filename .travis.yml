@@ -1,22 +1,20 @@
 language: java
 jdk:
   - oraclejdk8
+  - openjdk8
 
 before_install:
+  - pwd
+  - 'ls target || (echo "no target dir" && ls)'
 install:
   - mvn validate  # install .jar files
-# - mvn install -DskipTests=true
 
 after_success:
+  - pwd
+  - 'ls target'
+  #
   # coveralls.io
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] &&  mvn clean test jacoco:report coveralls:report -DrepoToken=$COVERALLS_TOKEN'
   #
-  # - (curl https://www.jpm4j.org/install/script | sh) && jpm install com.codacy:codacy-coverage-reporter:assembly && codacy-coverage-reporter -l Java -r coverage.xml
-  #- curl -sL https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/biz.aQute.jpm/generated/biz.aQute.jpm.run.jar >jpm4j.jar
-  #- jpm install com.codacy:codacy-coverage-reporter:assembly
-  - echo "---!!!---"
-  - pwd
-  - ls
-  - echo "---!!!---"
-  - 'mkdir --parents target/jpm && curl -sL https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/biz.aQute.jpm/generated/biz.aQute.jpm.run.jar > target/jpm/jpm4j.jar && java -jar target/jpm/jpm4j.jar -u init && export PATH=$PATH:$HOME/jpm/bin && jpm install com.codacy:codacy-coverage-reporter:assembly'
-  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && codacy-coverage-reporter -l Java -r coverage.xml'
+  # codacy
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && (pip install codacy-coverage && python-codacy-coverage -r site/jacoco/jacoco.xml || (mkdir --parents target/jpm && curl -sL https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/biz.aQute.jpm/generated/biz.aQute.jpm.run.jar > target/jpm/jpm4j.jar && java -jar target/jpm/jpm4j.jar -u init && export PATH=$PATH:$HOME/jpm/bin && jpm install com.codacy:codacy-coverage-reporter:assembly && codacy-coverage-reporter -l Java -r site/jacoco/jacoco.xml ))'
