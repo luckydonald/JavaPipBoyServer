@@ -1,10 +1,12 @@
 package de.luckydonald;
 
+import de.luckydonald.pipboyserver.MESSAGE_CHANNEL;
 import de.luckydonald.pipboyserver.Messages.KeepAlive;
 import de.luckydonald.pipboyserver.Messages.ConnectionAccepted;
 import de.luckydonald.pipboyserver.Messages.ConnectionRefused;
 import de.luckydonald.pipboyserver.Messages.DataUpdate;
 import de.luckydonald.pipboyserver.Messages.LocalMapUpdate;
+//import de.luckydonald.pipboyserver.Messages.CommandResult;
 import de.luckydonald.pipboyserver.PipBoyServer.Database;
 import de.luckydonald.pipboyserver.PipBoyServer.types.*;
 import de.luckydonald.utils.Array;
@@ -44,6 +46,10 @@ public class MessagesTest extends ObjectWithLogger {
         KeepAlive msg = new KeepAlive();
         assertArrayEquals("toBytes()", expected_keepAlive, msg.toBytes());
     }
+    @Test
+    public void testKeepAlive_Type() throws Exception {
+        assertEquals("TYPE", KeepAlive.TYPE, MESSAGE_CHANNEL.KeepAlive);
+    }
 
     @Test
     public void testConnectionAccepted_Content() throws Exception {
@@ -51,10 +57,20 @@ public class MessagesTest extends ObjectWithLogger {
         assertArrayEquals("toBytes()", expected_connectionAccepted, msg.toBytes());
     }
     @Test
+    public void testConnectionAccepted_Type() throws Exception {
+        assertEquals("TYPE", ConnectionAccepted.TYPE, MESSAGE_CHANNEL.ConnectionAccepted);
+    }
+
+    @Test
     public void testConnectionRefused_Content() throws Exception {
         ConnectionRefused msg = new ConnectionRefused();
         assertArrayEquals("toBytes()", expected_connectionRefused, msg.toBytes());
     }
+    @Test
+    public void testConnectionRefused_Type() throws Exception {
+        assertEquals("TYPE", ConnectionRefused.TYPE, MESSAGE_CHANNEL.ConnectionRefused);
+    }
+
     @Test
     public void testDataUpdate_Content() throws Exception {
         DBEntry[] updates = new DBEntry[3];
@@ -99,6 +115,21 @@ public class MessagesTest extends ObjectWithLogger {
         System.out.println();
 
     }
+    @Test
+    public void testDataUpdate_Type() throws Exception {
+        assertEquals("TYPE", DataUpdate.TYPE, MESSAGE_CHANNEL.DataUpdate);
+    }
+
+    @Test
+    public void testLocalMapUpdate_Type() throws Exception {
+        assertEquals("TYPE", LocalMapUpdate.TYPE, MESSAGE_CHANNEL.LocalMapUpdate);
+    }
+
+    /*@Test
+    public void testCommandResult_Type() throws Exception {
+        assertEquals("TYPE", CommandResult.TYPE, MESSAGE_CHANNEL.CommandResult);
+    }*/
+
 
     private String formatByte(Object o) {
         if (o instanceof Byte) {
