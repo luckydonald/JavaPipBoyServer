@@ -5,6 +5,7 @@ jdk:
 before_install:
   - pwd
   - 'ls target || (echo "no target dir" && ls)'
+
 install:
   - mvn validate  # install .jar files
 

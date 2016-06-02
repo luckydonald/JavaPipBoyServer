@@ -26,9 +26,10 @@ import static org.junit.Assert.*;
 public class MessagesTest extends ObjectWithLogger {
     private byte[] expected_keepAlive = {0x00, 0x00, 0x00, 0x00, 0x00};
     private byte[] expected_connectionAccepted = {
-            0x25, 0x00, 0x00, 0x00, 0x01, 0x7B, 0x22, 0x6C, 0x61, 0x6E, 0x67, 0x22, 0x3A, 0x20, 0x22, 0x64, 0x65, 0x22,
-            0x2C, 0x20, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x20, 0x22, 0x31, 0x2E, 0x31, 0x2E,
-            0x33, 0x30, 0x2E, 0x30, 0x22, 0x7D
+            0x25, 0x00, 0x00, 0x00, 0x01,
+            0x7B, 0x22, 0x6C, 0x61, 0x6E, 0x67, 0x22, 0x3A, 0x20, 0x22, 0x64, 0x65, 0x22, 0x2C, 0x20, 0x22, 0x76, 0x65,
+            0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x20, 0x22, 0x31, 0x2E, 0x31, 0x2E, 0x33, 0x30, 0x2E, 0x30, 0x22,
+            0x7D
     };
     private byte[] expected_connectionRefused = {0x00, 0x00, 0x00, 0x00, 0x02};
     private byte[] expectedDataUpdate = {
@@ -44,8 +45,18 @@ public class MessagesTest extends ObjectWithLogger {
             0x00, 0x00, 0x00
     };
     private byte[] expectedDataUpdate_delete = {
-            0x11, 0x00, 0x00, 0x00, 0x03,
-            0x08, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00
+            0x11, 0x00, 0x00, 0x00, // length 17,
+            0x03, // type 3: DataUpdate
+            0x08, // type 8: dict
+            0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00
+    };
+    private byte[] expectedDataUpdate_list = {
+            0x0B, 0x00, 0x00, 0x00, // length 11,
+            0x03, // type 3: DataUpdate
+            0x07, // type 7: list
+            0x0D, 0x00, 0x00, 0x00, // id 13
+            0x01, 0x00,  // length: 1
+            0x0A, 0x00, 0x00, 0x00 // id[0] = 10
     };
 
     @Test
@@ -92,22 +103,27 @@ public class MessagesTest extends ObjectWithLogger {
         db.add(new DBString("Placeholder with ID 7"));
         db.add(new DBString("Placeholder with ID 8"));
         db.add(new DBString("Placeholder with ID 9"));
+
         DBInteger32 package1 = new DBInteger32(42);
         db.add(package1);
         assertEquals("package1 id", 10, (int) package1.getID());
+
         DBList package2 = new DBList();
         db.add(package2);
         assertEquals("package2 id", 11, (int) package2.getID());
         package2.append(1);
         package2.append(2);
+
         DBDict package3 = new DBDict();
         db.add(package3);
         assertEquals("package3 id", 12, (int) package3.getID());
         package3.add("foo", db.get(5));
         package3.add("hello", db.get(6));
+
         updates[0] = package1;
         updates[1] = package2;
         updates[2] = package3;
+
         DataUpdate msg = new DataUpdate(updates);
         Function<Object,String> func = this::formatByte;
         byte[] message = msg.toBytes(); // content will change after call!
@@ -127,10 +143,29 @@ public class MessagesTest extends ObjectWithLogger {
         System.out.println(Array.toString(message, func));
         assertEquals("del toBytes() (strEquals)", Array.toString(expectedDataUpdate_delete, func),  Array.toString(message, func));
         assertArrayEquals("del toBytes() (arrayEquals)", expectedDataUpdate_delete, message);
+
+        DBList list = new DBList();
+        db.add(list);
+        assertEquals("List id", 13, (int) list.getID());
+
+        list.append(package1);
+
+        msg = new DataUpdate(list);
+        message = msg.toBytes();
+
+        assertEquals("list toBytes() (strEquals)", Array.toString(expectedDataUpdate_list, func),  Array.toString(message, func));
+        assertArrayEquals("list toBytes() (arrayEquals)", expectedDataUpdate_list, message);
     }
+
     @Test
     public void testDataUpdate_Type() throws Exception {
         assertEquals("TYPE", MESSAGE_CHANNEL.DataUpdate, new DataUpdate(new DBBoolean(false)).getType());
+    }
+
+    @Test
+    public void testLocalMapUpdate_Content() throws Exception {
+        DBEntry[] updates = new DBEntry[3];
+
     }
 
     @Test
